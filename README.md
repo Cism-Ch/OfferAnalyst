@@ -6,7 +6,7 @@
 **AI-Powered Contextual Recommendation Engine**
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 
@@ -107,7 +107,7 @@ Result: Ranked list with safety ratings, school proximity data,
 | **Vite 6.2** | Lightning-fast build tool and dev server |
 | **Gemini 2.5 Flash** | AI model for analysis and search grounding |
 | **Recharts 3.5** | Data visualization for score breakdowns |
-| **Tailwind CSS** | Utility-first styling (via inline classes) |
+| **Tailwind CSS** | Utility-first styling (loaded via CDN) |
 
 ---
 
