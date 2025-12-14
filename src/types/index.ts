@@ -5,6 +5,7 @@ export interface Offer {
   price: string | number;
   location: string;
   category: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

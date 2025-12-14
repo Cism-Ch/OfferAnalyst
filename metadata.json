@@ -1,5 +1,0 @@
-{
-  "name": "Contextual Offer Analyst",
-  "description": "A high-performance recommendation engine that ranks offers based on user context, intrinsic quality, and real-time web trends using Gemini.",
-  "requestFramePermissions": []
-}
