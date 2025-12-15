@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,28 +16,20 @@ export default function ComparePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { savedOffers } = useSavedOffers();
-    const [selectedOffers, setSelectedOffers] = useState<ScoredOffer[]>([]);
 
-    useEffect(() => {
-        // Get the offer IDs from query params
+    const selectedOffers = useMemo(() => {
         const idsParam = searchParams.get('ids');
         if (!idsParam) {
-            router.push('/saved');
-            return;
+            return [];
         }
 
         const ids = idsParam.split(',');
-        const offers = savedOffers.filter(offer => ids.includes(offer.id)) as ScoredOffer[];
-        
-        if (offers.length < 2) {
-            router.push('/saved');
-            return;
-        }
+        return savedOffers.filter(offer => ids.includes(offer.id)) as ScoredOffer[];
+    }, [searchParams, savedOffers]);
 
-        setSelectedOffers(offers);
-    }, [searchParams, savedOffers, router]);
-
-    if (selectedOffers.length === 0) {
+    // Redirect if invalid selection
+    if (selectedOffers.length < 2 && typeof window !== 'undefined') {
+        router.push('/saved');
         return null;
     }
 

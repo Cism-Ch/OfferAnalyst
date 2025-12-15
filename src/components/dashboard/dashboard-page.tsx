@@ -28,7 +28,8 @@ import {
     BarChart3,
     // ExternalLink,
     Bot,
-    Sparkles
+    Sparkles,
+    Heart
 } from 'lucide-react';
 import { analyzeOffersAction } from '@/app/actions/analyze';
 import { fetchOffersAction } from '@/app/actions/fetch';
@@ -60,6 +61,7 @@ export function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [results, setResults] = useState<AnalysisResponse | null>(null);
+    const { saveOffer, isSaved } = useSavedOffers();
 
     // Input States
     const [domain, setDomain] = useState("Jobs");
@@ -312,13 +314,23 @@ export function Dashboard() {
 
                                     {results.topOffers.map((offer, i) => (
                                         <Card key={offer.id || i} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow duration-200">
-                                            <div className="absolute top-0 right-0 p-3">
+                                            <div className="absolute top-0 right-0 p-3 flex gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => saveOffer(offer)}
+                                                >
+                                                    <Heart 
+                                                        className={`h-4 w-4 ${isSaved(offer.id) ? 'fill-red-500 text-red-500' : ''}`}
+                                                    />
+                                                </Button>
                                                 <Badge className={offer.finalScore > 80 ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}>
                                                     {offer.finalScore}
                                                 </Badge>
                                             </div>
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-base truncate pr-10">{offer.rank}. {offer.title}</CardTitle>
+                                                <CardTitle className="text-base truncate pr-20">{offer.rank}. {offer.title}</CardTitle>
                                                 <CardDescription className="text-xs">{offer.location} • {offer.price && typeof offer.price === 'number' ? offer.price.toLocaleString() : offer.price}</CardDescription>
                                             </CardHeader>
                                             <CardContent className="pb-3 text-sm space-y-3">

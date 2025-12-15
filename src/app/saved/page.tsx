@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, ArrowLeft, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
