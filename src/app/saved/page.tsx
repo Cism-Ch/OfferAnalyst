@@ -5,17 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, ArrowLeft, BrainCircuit, Trash2, CalendarDays, Layers } from 'lucide-react';
+import { Loader2, ArrowLeft, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SavedOffersPage() {
+    const router = useRouter();
     const { savedOffers, removeOffer } = useSavedOffers();
     const [organizing, setOrganizing] = useState(false);
     const [organizedData, setOrganizedData] = useState<OrganizedOffers | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const handleOrganize = async () => {
         if (savedOffers.length === 0) return;
@@ -29,6 +32,29 @@ export default function SavedOffersPage() {
         } finally {
             setOrganizing(false);
         }
+    };
+
+    const toggleSelection = (id: string) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                if (newSet.size < 3) {
+                    newSet.add(id);
+                }
+            }
+            return newSet;
+        });
+    };
+
+    const handleCompare = () => {
+        if (selectedIds.size < 2) {
+            // Simply don't navigate if not enough selected
+            return;
+        }
+        const ids = Array.from(selectedIds).join(',');
+        router.push(`/compare?ids=${ids}`);
     };
 
     return (
@@ -58,15 +84,31 @@ export default function SavedOffersPage() {
                         <Badge variant="outline" className="text-base px-3 py-1">
                             {savedOffers.length} {savedOffers.length === 1 ? 'Item' : 'Items'}
                         </Badge>
+                        {selectedIds.size > 0 && (
+                            <Badge variant="secondary" className="text-base px-3 py-1">
+                                {selectedIds.size} Selected
+                            </Badge>
+                        )}
                     </div>
-                    <Button
-                        onClick={handleOrganize}
-                        disabled={savedOffers.length === 0 || organizing}
-                        className="gap-2"
-                    >
-                        {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
-                        Smart Organize
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={handleCompare}
+                            disabled={selectedIds.size < 2}
+                            variant="outline"
+                            className="gap-2"
+                        >
+                            <GitCompare className="h-4 w-4" />
+                            Compare ({selectedIds.size}/3)
+                        </Button>
+                        <Button
+                            onClick={handleOrganize}
+                            disabled={savedOffers.length === 0 || organizing}
+                            className="gap-2"
+                        >
+                            {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
+                            Smart Organize
+                        </Button>
+                    </div>
                 </div>
 
                 {savedOffers.length === 0 ? (
@@ -90,16 +132,39 @@ export default function SavedOffersPage() {
                         <TabsContent value="list" className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {savedOffers.map((offer) => (
-                                    <Card key={offer.id} className="relative group">
+                                    <Card 
+                                        key={offer.id} 
+                                        className={`relative group cursor-pointer transition-all ${
+                                            selectedIds.has(offer.id) 
+                                                ? 'border-primary border-2 shadow-lg' 
+                                                : 'border'
+                                        }`}
+                                        onClick={() => toggleSelection(offer.id)}
+                                    >
+                                        <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
+                                            <Checkbox 
+                                                checked={selectedIds.has(offer.id)}
+                                                onCheckedChange={() => toggleSelection(offer.id)}
+                                                disabled={!selectedIds.has(offer.id) && selectedIds.size >= 3}
+                                            />
+                                        </div>
                                         <Button
                                             variant="destructive"
                                             size="icon"
-                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                                            onClick={() => removeOffer(offer.id)}
+                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 z-10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeOffer(offer.id);
+                                                setSelectedIds(prev => {
+                                                    const newSet = new Set(prev);
+                                                    newSet.delete(offer.id);
+                                                    return newSet;
+                                                });
+                                            }}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
-                                        <CardHeader className="pb-2">
+                                        <CardHeader className="pb-2 pl-10">
                                             <CardTitle className="text-base truncate pr-8">{offer.title}</CardTitle>
                                             <CardDescription>{offer.location}</CardDescription>
                                         </CardHeader>

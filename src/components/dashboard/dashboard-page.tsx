@@ -58,6 +58,7 @@ export function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [results, setResults] = useState<AnalysisResponse | null>(null);
+    const { saveOffer, isSaved } = useSavedOffers();
 
     // Input States
     const [domain, setDomain] = useState("Jobs");
@@ -341,7 +342,7 @@ export function Dashboard() {
                                                 </Badge>
                                             </div>
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-base truncate pr-10">{offer.rank}. {offer.title}</CardTitle>
+                                                <CardTitle className="text-base truncate pr-20">{offer.rank}. {offer.title}</CardTitle>
                                                 <CardDescription className="text-xs">{offer.location} • {offer.price && typeof offer.price === 'number' ? offer.price.toLocaleString() : offer.price}</CardDescription>
                                             </CardHeader>
                                             <CardContent className="pb-3 text-sm space-y-3">
