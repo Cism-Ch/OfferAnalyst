@@ -4,7 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 import { Offer, UserProfile, AnalysisResponse } from "@/types";
 
 // Using gemini-2.5-flash for speed and search capabilities
-const MODEL_NAME = "gemini-2.5-flash";
+const MODEL_NAME = "gemini-3.0-pro";
 
 export async function analyzeOffersAction(
     offers: Offer[],

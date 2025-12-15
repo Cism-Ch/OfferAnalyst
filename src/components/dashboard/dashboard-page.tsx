@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSavedOffers } from '@/hooks/use-saved-offers';
+import { useSearchHistory } from '@/hooks/use-search-history';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from 'next/link';
@@ -24,11 +23,10 @@ import {
     Wallet,
     Loader2,
     CheckCircle2,
-    // AlertCircle,
     BarChart3,
-    // ExternalLink,
     Bot,
-    Sparkles
+    Sparkles,
+    Clock
 } from 'lucide-react';
 import { analyzeOffersAction } from '@/app/actions/analyze';
 import { fetchOffersAction } from '@/app/actions/fetch';
@@ -71,6 +69,10 @@ export function Dashboard() {
     const [autoFetch, setAutoFetch] = useState(false);
     const [limit, setLimit] = useState("3");
 
+    // Hooks
+    const { saveOffer, isSaved } = useSavedOffers();
+    const { addToHistory } = useSearchHistory();
+
     const handleAnalyze = async () => {
         setLoading(true);
         setResults(null);
@@ -82,10 +84,8 @@ export function Dashboard() {
             if (autoFetch) {
                 setFetching(true);
                 try {
-                    // Use AI Agent 1 to find offers
                     const fetchedOffers = await fetchOffersAction(domain, explicitCriteria + " " + implicitContext);
                     currentOffers = fetchedOffers;
-                    // Update UI with what was found
                     setOffersInput(JSON.stringify(fetchedOffers, null, 2));
                 } catch (err) {
                     console.error("Fetch failed", err);
@@ -96,7 +96,6 @@ export function Dashboard() {
                 }
                 setFetching(false);
             } else {
-                // Manual Mode: Parse JSON from input
                 try {
                     currentOffers = JSON.parse(offersInput);
                 } catch {
@@ -115,6 +114,12 @@ export function Dashboard() {
 
             const data = await analyzeOffersAction(currentOffers, profile, parseInt(limit));
             setResults(data);
+
+            // SAVE TO HISTORY
+            addToHistory(
+                { domain, criteria: explicitCriteria, context: implicitContext },
+                data
+            );
 
         } catch (error) {
             console.error(error);
@@ -137,12 +142,21 @@ export function Dashboard() {
                 </div>
 
                 <nav className="flex-1 px-4 py-4 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start gap-2 bg-slate-100 dark:bg-zinc-800 text-primary">
-                        <Home size={18} /> Dashboard
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-primary">
-                        <Briefcase size={18} /> Projects
-                    </Button>
+                    <Link href="/">
+                        <Button variant="ghost" className="w-full justify-start gap-2 bg-slate-100 dark:bg-zinc-800 text-primary">
+                            <Home size={18} /> Dashboard
+                        </Button>
+                    </Link>
+                    <Link href="/projects">
+                        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-primary">
+                            <Briefcase size={18} /> Projects
+                        </Button>
+                    </Link>
+                    <Link href="/history">
+                        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-primary">
+                            <Clock size={18} /> History
+                        </Button>
+                    </Link>
                     <Link href="/saved">
                         <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-primary">
                             <Wallet size={18} /> Saved Offers
@@ -312,7 +326,16 @@ export function Dashboard() {
 
                                     {results.topOffers.map((offer, i) => (
                                         <Card key={offer.id || i} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow duration-200">
-                                            <div className="absolute top-0 right-0 p-3">
+                                            <div className="absolute top-0 right-0 p-3 flex gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 rounded-full bg-white/80 hover:bg-white dark:bg-black/50 dark:hover:bg-black/80 backdrop-blur-sm"
+                                                    onClick={() => saveOffer(offer)}
+                                                    disabled={isSaved(offer.id)}
+                                                >
+                                                    {isSaved(offer.id) ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
+                                                </Button>
                                                 <Badge className={offer.finalScore > 80 ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}>
                                                     {offer.finalScore}
                                                 </Badge>
