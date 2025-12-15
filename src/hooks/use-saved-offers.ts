@@ -7,23 +7,31 @@ const STORAGE_KEY = "offeranalyst_saved_offers"
 
 export function useSavedOffers() {
     const [savedOffers, setSavedOffers] = useState<Offer[]>([])
+    const [isInitialized, setIsInitialized] = useState(false)
 
     // Load from local storage on mount
     useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) {
-            try {
+        if (typeof window === 'undefined') return
+
+        try {
+            const stored = window.localStorage.getItem(STORAGE_KEY)
+            if (stored) {
                 setSavedOffers(JSON.parse(stored))
-            } catch (e) {
-                console.error("Failed to parse saved offers", e)
             }
+        } catch (e) {
+            console.error("Failed to parse saved offers", e)
+        } finally {
+            setIsInitialized(true)
         }
     }, [])
 
     // Save to local storage whenever state changes
     useEffect(() => {
+        if (!isInitialized) return
+        if (typeof window === 'undefined') return
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedOffers))
-    }, [savedOffers])
+    }, [savedOffers, isInitialized])
 
     const saveOffer = (offer: Offer) => {
         setSavedOffers((prev) => {
@@ -45,5 +53,6 @@ export function useSavedOffers() {
         saveOffer,
         removeOffer,
         isSaved,
+        isInitialized // Optional: expose status if needed by UI
     }
 }

@@ -37,5 +37,17 @@ export interface SearchSource {
 export interface AnalysisResponse {
   topOffers: ScoredOffer[];
   marketSummary: string;
-  searchSources?: SearchSource[];
+  searchSources: SearchSource[];
+}
+
+export interface SearchHistoryItem {
+  id: string;
+  timestamp: number;
+  inputs: {
+    domain: string;
+    criteria: string;
+    context: string;
+  };
+  results: AnalysisResponse;
+  pinned: boolean;
 }

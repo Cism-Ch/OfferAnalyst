@@ -3,7 +3,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { Offer } from "@/types";
 
-const MODEL_NAME = "gemini-2.5-flash";
+const MODEL_NAME = "gemma-2-27b-it";
 
 export interface OrganizedOffers {
     categories: {
