@@ -58,7 +58,6 @@ export function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [results, setResults] = useState<AnalysisResponse | null>(null);
-    const { saveOffer, isSaved } = useSavedOffers();
 
     // Input States
     const [domain, setDomain] = useState("Jobs");
