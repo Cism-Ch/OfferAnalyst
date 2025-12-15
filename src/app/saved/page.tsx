@@ -141,7 +141,7 @@ export default function SavedOffersPage() {
                                         }`}
                                         onClick={() => toggleSelection(offer.id)}
                                     >
-                                        <div className="absolute top-2 left-2 z-10">
+                                        <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
                                             <Checkbox 
                                                 checked={selectedIds.has(offer.id)}
                                                 onCheckedChange={() => toggleSelection(offer.id)}

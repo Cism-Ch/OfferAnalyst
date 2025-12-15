@@ -24,7 +24,13 @@ export default function ComparePage() {
         }
 
         const ids = idsParam.split(',');
-        return savedOffers.filter(offer => ids.includes(offer.id)) as ScoredOffer[];
+        // Filter and validate that offers have the required ScoredOffer properties
+        return savedOffers.filter(offer => {
+            if (!ids.includes(offer.id)) return false;
+            // Check if offer has ScoredOffer properties
+            const scoredOffer = offer as ScoredOffer;
+            return scoredOffer.finalScore !== undefined && scoredOffer.breakdown !== undefined;
+        }) as ScoredOffer[];
     }, [searchParams, savedOffers]);
 
     // Redirect if invalid selection
@@ -176,9 +182,9 @@ export default function ComparePage() {
                     <CardContent className="text-sm">
                         <p className="text-slate-300">
                             Comparing {selectedOffers.length} offers. 
-                            {selectedOffers.some(o => o.finalScore) && (
+                            {selectedOffers.some(o => o.finalScore !== undefined) && (
                                 <> Highest score: <span className="font-semibold text-white">
-                                    {Math.max(...selectedOffers.filter(o => o.finalScore).map(o => o.finalScore))}
+                                    {Math.max(...selectedOffers.filter(o => o.finalScore !== undefined).map(o => o.finalScore))}
                                 </span>.</>
                             )}
                         </p>
