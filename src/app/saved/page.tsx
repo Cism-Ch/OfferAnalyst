@@ -50,7 +50,7 @@ export default function SavedOffersPage() {
 
     const handleCompare = () => {
         if (selectedIds.size < 2) {
-            alert("Please select at least 2 offers to compare");
+            // Simply don't navigate if not enough selected
             return;
         }
         const ids = Array.from(selectedIds).join(',');

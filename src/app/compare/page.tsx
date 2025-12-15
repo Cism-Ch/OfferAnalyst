@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,13 @@ export default function ComparePage() {
     }, [searchParams, savedOffers]);
 
     // Redirect if invalid selection
-    if (selectedOffers.length < 2 && typeof window !== 'undefined') {
-        router.push('/saved');
+    useEffect(() => {
+        if (selectedOffers.length < 2) {
+            router.push('/saved');
+        }
+    }, [selectedOffers, router]);
+
+    if (selectedOffers.length < 2) {
         return null;
     }
 
