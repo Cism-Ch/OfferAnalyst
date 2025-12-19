@@ -1,9 +1,26 @@
 'use server';
 
-import { GoogleGenAI } from "@google/genai";
+import { OpenRouter } from "@openrouter/sdk";
 import { Offer } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
+import { z } from 'zod';
 
-const MODEL_NAME = "gemma-2-27b-it";
+const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+
+const CategorySchema = z.object({
+    name: z.string(),
+    offers: z.array(z.any())
+});
+
+const TimelineSchema = z.object({
+    date: z.string(),
+    offers: z.array(z.any())
+});
+
+const OrganizedOffersSchema = z.object({
+    categories: z.array(CategorySchema),
+    timeline: z.array(TimelineSchema)
+});
 
 export interface OrganizedOffers {
     categories: {
@@ -19,55 +36,64 @@ export interface OrganizedOffers {
 export async function organizeOffersAction(
     offers: Offer[]
 ): Promise<OrganizedOffers> {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not found");
+        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const openrouter = new OpenRouter({
+        apiKey: apiKey,
+    });
 
     const systemInstruction = `
-    You are an Intelligent Offer Organizer.
+    You are an AI Librarian specializing in data organization.
     
-    GOAL:
-    Take the provided list of Offers and organize them into two views:
-    1. **Categories**: Group by logical themes (e.g., Tech Stack, Industry, Role Type, Price Tier). Limit to 4-5 major clusters.
-    2. **Timeline**: Group by date. If no date is present in the offer description, estimate "Recent" or "Older", or use "Undated".
+    TASK: Organize the provided offers into logical categories and a chronological timeline.
+    
+    PROCESS:
+    1. Group offers by logical themes (e.g., Job Type, Sector, etc.).
+    2. Group offers by approximate date or relevance period.
+    3. Preserve the original offer objects entirely.
+    
+    OUTPUT REQUIREMENTS:
+    - Return ONLY a valid JSON object.
+    - DO NOT include summary text or "thinking" tags in the final JSON.
 
-    INPUT:
-    ${JSON.stringify(offers)}
-
-    OUTPUT FORMAT:
-    Strict JSON object matching this schema:
+    JSON SCHEMA:
     {
-        "categories": [
-            { "name": "string (Category Title)", "offers": [ ...full offer objects... ] }
-        ],
-        "timeline": [
-            { "date": "string (Month Year or 'Recent')", "offers": [ ...full offer objects... ] }
-        ]
+      "categories": [{"name": "Category Name", "offers": [...]}],
+      "timeline": [{"date": "Recent/Older/etc", "offers": [...]}]
     }
-    
-    Do not modify the inner Offer objects, just regroup them.
   `;
 
-    try {
-        const response = await ai.models.generateContent({
+    const operation = async () => {
+        const response = await openrouter.chat.send({
             model: MODEL_NAME,
-            contents: "Organize these offers.",
-            config: {
-                systemInstruction: systemInstruction,
-                responseMimeType: "application/json"
-            },
+            messages: [
+                { role: "system", content: systemInstruction },
+                { role: "user", content: `Organize these ${offers.length} offers: ${JSON.stringify(offers)}` }
+            ],
+            responseFormat: { type: "json_object" }
         });
 
-        const text = response.text;
-        if (!text) throw new Error("No response from AI");
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new AgentError("No response text from OpenRouter", 'NO_RESPONSE');
+        }
 
-        return JSON.parse(text) as OrganizedOffers;
+        const text = typeof content === 'string' ? content : '';
+        console.log(`Organize (DeepSeek): AI response received (${text.length} chars)`);
 
-    } catch (error) {
-        console.error("Organize Offers Error:", error);
-        throw new Error("Failed to organize offers.");
-    }
+        const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+
+        const parsedData = parseJSONFromText(cleanedText, 'organize response');
+
+        const validatedResponse = validateWithZod(parsedData, OrganizedOffersSchema, 'organize response');
+
+        console.log(`Organize: Successfully organized into ${validatedResponse.categories.length} categories`);
+
+        return validatedResponse as OrganizedOffers;
+    };
+
+    return retryWithBackoff(operation, 2, 'organize offers');
 }

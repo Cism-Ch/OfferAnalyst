@@ -1,118 +1,128 @@
 'use server';
 
-import { GoogleGenAI } from "@google/genai";
+import { OpenRouter } from "@openrouter/sdk";
 import { Offer, UserProfile, AnalysisResponse } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, detectAPIError } from "./shared/agent-utils";
+import { z } from 'zod';
 
-// Using gemini-2.5-flash for speed and search capabilities
-const MODEL_NAME = "gemini-3.0-pro";
+const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+
+const ScoredOfferSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    price: z.union([z.string(), z.number()]),
+    location: z.string(),
+    category: z.string(),
+    finalScore: z.number(),
+    rank: z.number(),
+    justification: z.string(),
+    webInsights: z.array(z.string()),
+    breakdown: z.object({
+        relevance: z.number(),
+        quality: z.number(),
+        trend: z.number()
+    })
+});
+
+const AnalysisResponseSchema = z.object({
+    topOffers: z.array(ScoredOfferSchema),
+    marketSummary: z.string()
+});
 
 export async function analyzeOffersAction(
     offers: Offer[],
     profile: UserProfile,
     limit: number = 3
-): Promise<AnalysisResponse> {
-    const apiKey = process.env.GEMINI_API_KEY;
+): Promise<AnalysisResponse & { searchSources: { title: string; uri: string }[] }> {
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not found in environment variables");
+        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    // Schema description for the prompt since we cannot use responseSchema with tools
-    const schemaDescription = {
-        topOffers: [
-            {
-                id: "string",
-                title: "string",
-                description: "string",
-                price: "string",
-                location: "string",
-                category: "string",
-                finalScore: "number (0-100)",
-                rank: "number",
-                justification: "string (one line explanation)",
-                webInsights: ["string (specific fact found via search)"],
-                breakdown: {
-                    relevance: "number",
-                    quality: "number",
-                    trend: "number"
-                }
-            }
-        ],
-        marketSummary: "string (2-sentence overview)"
-    };
+    const openrouter = new OpenRouter({
+        apiKey: apiKey,
+    });
 
     const systemInstruction = `
-    You are a high-performance Offer Analyst and Contextual Recommendation Engine.
+    You are an expert Market Analyst AI.
     
-    YOUR GOAL:
-    Rank the provided list of offers based on a User Profile using a 3-Phase algorithm.
-    RETURN ONLY THE TOP ${limit} OFFERS after ranking.
-
-    1. **Internal Analysis**: Match specific criteria (Price, Location, Specs) against the User Profile.
-    2. **Web Enrichment**: You MUST use the 'googleSearch' tool to find real-time context.
-       - Check reputation (reviews, neighborhood safety, company rating).
-       - Check market trends (is the price competitive locally?).
-    3. **Weighted Ranking**: Calculate a Final Score (0-100) based on:
-       - Relevance (50%): Adherence to filters + Intuitiveness (tolerance for slight deviations if quality is high).
-       - Quality (30%): Value for money, rarity, uniqueness.
-       - Context/Trend (20%): Derived from Web Search (reputation, market alignment).
-
-    INPUT DATA:
-    - User Profile: ${JSON.stringify(profile)}
-    - Domain: ${profile.domain}
-    - Offers List: (Provided in user prompt)
-
-    OUTPUT FORMAT:
-    Return a strict JSON object adhering to the structure below. 
-    ${JSON.stringify(schemaDescription, null, 2)}
+    TASK: Rank the provided offers and return the top ${limit} based on the user profile and current market context.
     
-    Do not use Markdown formatting (no \`\`\`json blocks). Return raw JSON only.
+    PROCESS:
+    1. Analyze the provided offers against the User Profile.
+    2. Use your reasoning and internal market data (and simulated web search if available) to provide context.
+    3. Calculate scores for each offer based on Relevance (50%), Quality (30%), and Trend (20%).
+    
+    OUTPUT REQUIREMENTS:
+    - Return ONLY a valid JSON object.
+    - DO NOT include summary text or "thinking" tags in the final JSON.
+
+    JSON SCHEMA:
+    {
+      "topOffers": [
+        {
+          "id": "string (original id)",
+          "title": "string",
+          "description": "string",
+          "price": "string or number",
+          "location": "string",
+          "category": "string",
+          "finalScore": number (0-100),
+          "rank": number (1 to ${limit}),
+          "justification": "Detailed explanation of the rank",
+          "webInsights": ["specific market insight", "another insight"],
+          "breakdown": {
+            "relevance": number (0-100),
+            "quality": number (0-100),
+            "trend": number (0-100)
+          }
+        }
+      ],
+      "marketSummary": "2-sentence overview of the current market context"
+    }
+
+    USER PROFILE: ${JSON.stringify(profile)}
+    DOMAIN: ${profile.domain}
+    LIMIT: Top ${limit} offers
   `;
 
-    try {
-        const response = await ai.models.generateContent({
+    const operation = async () => {
+        const response = await openrouter.chat.send({
             model: MODEL_NAME,
-            contents: JSON.stringify(offers),
-            config: {
-                systemInstruction: systemInstruction,
-                tools: [{ googleSearch: {} }], // Enable Google Search for Phase 2
-            },
+            messages: [
+                { role: "system", content: systemInstruction },
+                { role: "user", content: `Analyze these ${offers.length} offers and rank top ${limit}: ${JSON.stringify(offers)}` }
+            ],
+            responseFormat: { type: "json_object" }
         });
 
-        const text = response.text;
-        if (!text) {
-            throw new Error("No response text generated");
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new AgentError("No response text from OpenRouter", 'NO_RESPONSE');
         }
 
-        // Clean potential markdown just in case the model is chatty
-        const cleanedText = text.replace(/```json\n?|\n?```/g, "").trim();
+        const text = typeof content === 'string' ? content : '';
+        console.log(`Analyze (DeepSeek): AI response received (${text.length} chars)`);
 
-        let data: AnalysisResponse;
-        try {
-            data = JSON.parse(cleanedText);
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-            throw new Error("Failed to parse AI response. The model might have returned invalid JSON: " + cleanedText.substring(0, 100));
-        }
+        // Clean thinking tags
+        const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 
-        // Extract Grounding Metadata (Sources)
-        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const searchSources = groundingChunks
-            ?.map((chunk: any) => ({
-                title: chunk.web?.title || "Source",
-                uri: chunk.web?.uri
-            }))
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((s: any) => s.uri) || [];
+        const parsedData = parseJSONFromText(cleanedText, 'analyze response');
+
+        // Validation avec Zod
+        const validatedResponse = validateWithZod(parsedData, AnalysisResponseSchema, 'analyze response');
+
+        // OpenRouter doesn't provide grounding sources directly like Gemini.
+        const searchSources: { title: string; uri: string }[] = [];
+
+        console.log(`Analyze: Successfully analyzed ${validatedResponse.topOffers.length} offers`);
 
         return {
-            ...data,
+            ...validatedResponse,
             searchSources
         };
-    } catch (error) {
-        console.error("Analysis failed:", error);
-        throw error;
-    }
+    };
+
+    return retryWithBackoff(operation, 3, 'analyze offers');
 }

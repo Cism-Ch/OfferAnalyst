@@ -51,3 +51,21 @@ export interface SearchHistoryItem {
   results: AnalysisResponse;
   pinned: boolean;
 }
+
+// Zod schemas for validation
+import { z } from 'zod';
+
+export const OfferSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  price: z.union([z.string(), z.number()]),
+  location: z.string(),
+  category: z.string(),
+  url: z.string().optional(),
+});
+
+export const OfferArraySchema = z.array(OfferSchema);
+
+// Type inference from Zod schema
+export type ValidatedOffer = z.infer<typeof OfferSchema>;

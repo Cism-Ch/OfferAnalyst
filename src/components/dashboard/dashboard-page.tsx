@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter, CardAction } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,29 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from 'next/link';
+
+// Client-only wrapper for Select to prevent hydration issues
+function ClientOnlySelect({ value, onValueChange, children }: {
+    value: string;
+    onValueChange: (value: string) => void;
+    children: React.ReactNode;
+}) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <div className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm">
+                <span className="text-muted-foreground">Select limit</span>
+            </div>
+        );
+    }
+
+    return <>{children}</>;
+}
 import {
     Briefcase,
     Home,
@@ -231,16 +254,18 @@ export function Dashboard() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Recommendation Limit</Label>
-                                            <Select value={limit} onValueChange={setLimit}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select limit" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="3">Top 3</SelectItem>
-                                                    <SelectItem value="5">Top 5</SelectItem>
-                                                    <SelectItem value="10">Top 10</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+<ClientOnlySelect value={limit} onValueChange={setLimit}>
+                                                <Select value={limit} onValueChange={setLimit}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select limit" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="3">Top 3</SelectItem>
+                                                        <SelectItem value="5">Top 5</SelectItem>
+                                                        <SelectItem value="10">Top 10</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </ClientOnlySelect>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -292,14 +317,17 @@ export function Dashboard() {
                             </Card>
 
                             {/* Visualization / Chart Area - Only show if results exist */}
-                            {results && (
+{results?.topOffers && results.topOffers.length > 0 && (
                                 <Card className="border-none shadow-sm">
                                     <CardHeader>
                                         <CardTitle>Score Distribution</CardTitle>
                                     </CardHeader>
                                     <CardContent className="h-[200px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={results.topOffers}>
+<ResponsiveContainer width="100%" height={200}>
+                                            <BarChart 
+                                                data={results.topOffers} 
+                                                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                            >
                                                 <XAxis dataKey="title" fontSize={12} tickLine={false} axisLine={false} />
                                                 <YAxis fontSize={12} tickLine={false} axisLine={false} />
                                                 <Tooltip
@@ -326,23 +354,39 @@ export function Dashboard() {
 
                                     {results.topOffers.map((offer, i) => (
                                         <Card key={offer.id || i} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow duration-200">
-                                            <div className="absolute top-0 right-0 p-3 flex gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-6 w-6 rounded-full bg-white/80 hover:bg-white dark:bg-black/50 dark:hover:bg-black/80 backdrop-blur-sm"
-                                                    onClick={() => saveOffer(offer)}
-                                                    disabled={isSaved(offer.id)}
-                                                >
-                                                    {isSaved(offer.id) ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
-                                                </Button>
-                                                <Badge className={offer.finalScore > 80 ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}>
-                                                    {offer.finalScore}
-                                                </Badge>
-                                            </div>
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-base truncate pr-20">{offer.rank}. {offer.title}</CardTitle>
-                                                <CardDescription className="text-xs">{offer.location} • {offer.price && typeof offer.price === 'number' ? offer.price.toLocaleString() : offer.price}</CardDescription>
+                                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <CardTitle className="text-base sm:text-lg leading-tight sm:leading-normal">{offer.rank}. {offer.title}</CardTitle>
+                                                        <CardDescription className="text-xs mt-1">{offer.location} • {offer.price && typeof offer.price === 'number' ? offer.price.toLocaleString() : offer.price}</CardDescription>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <Badge className={offer.finalScore > 80 ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}>
+                                                            {offer.finalScore}
+                                                        </Badge>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => saveOffer(offer)}
+                                                            disabled={isSaved(offer.id)}
+                                                            aria-label={isSaved(offer.id) ? "Offre déjà sauvegardée" : "Sauvegarder cette offre"}
+                                                            className="hidden sm:flex"
+                                                        >
+                                                            {isSaved(offer.id) ? <CheckCircle2 className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
+                                                            {isSaved(offer.id) ? "Sauvegardé" : "Sauvegarder"}
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => saveOffer(offer)}
+                                                            disabled={isSaved(offer.id)}
+                                                            aria-label={isSaved(offer.id) ? "Offre déjà sauvegardée" : "Sauvegarder cette offre"}
+                                                            className="sm:hidden h-8 w-8"
+                                                        >
+                                                            {isSaved(offer.id) ? <CheckCircle2 className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             </CardHeader>
                                             <CardContent className="pb-3 text-sm space-y-3">
                                                 <p className="text-muted-foreground line-clamp-2">{offer.justification}</p>

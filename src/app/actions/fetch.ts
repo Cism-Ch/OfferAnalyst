@@ -1,74 +1,110 @@
 'use server';
 
-import { GoogleGenAI } from "@google/genai";
+import { OpenRouter } from "@openrouter/sdk";
 import { Offer } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
+import { z } from 'zod';
 
-const MODEL_NAME = "gemini-3.0-pro";
+const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+
+// Schéma Zod pour valider une offre
+const OfferSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    price: z.union([z.string(), z.number()]),
+    location: z.string(),
+    category: z.string(),
+    url: z.string().optional().default("")
+});
+
+const FetchResponseSchema = z.array(OfferSchema);
 
 export async function fetchOffersAction(
     domain: string,
     context: string
 ): Promise<Offer[]> {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not found");
+        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const openrouter = new OpenRouter({
+        apiKey: apiKey,
+    });
 
     const systemInstruction = `
-    You are an AI Retrieval Agent.
+    You are a professional AI Retrieval Agent specializing in market data.
     
-    GOAL:
-    Find real-world offers (jobs, products, real estate, etc.) based on the User's Domain and Context.
-    You MUST use the 'googleSearch' tool to find actual, current listings.
+    GOAL: Find real-world current offers (jobs, products, real estate, etc.) based on the provided Domain and Context.
     
-    OUTPUT:
-    Return a strictly valid JSON array of objects matching this schema:
-    [{
-      "id": "string (unique)",
-      "title": "string",
-      "description": "string (key details)",
-      "price": "string or number",
-      "location": "string",
-      "category": "string",
-      "url": "string (source link if available)"
-    }]
+    PROCESS:
+    1. Reason about the best sources for "${domain}" in the context of "${context}".
+    2. Retrieve or generate a list of at least 5-10 realistic, current listings.
+    3. Ensure each listing includes a title, price, location, and a valid source URL if possible.
+    
+    OUTPUT REQUIREMENTS:
+    - You MUST return ONLY a valid JSON array.
+    - DO NOT include any introductory text, summary, or "thinking" tags in the final JSON output.
+    - If you use research, ensure the data is as up-to-date as possible.
 
-    REQUIREMENTS:
-    - Find at least 10 relevant items.
-    - EXTRACT real data from search results.
-    - Do NOT markdown format the output. Return RAW JSON.
-    - If price is hidden, estimate or put "Contact for price".
+    JSON SCHEMA:
+    [
+      {
+        "id": "unique_string",
+        "title": "string",
+        "description": "key details",
+        "price": "string or number",
+        "location": "string",
+        "category": "string",
+        "url": "full_source_url"
+      }
+    ]
+
+    DOMAIN: ${domain}
+    CONTEXT: ${context}
   `;
 
-    const prompt = `Domain: ${domain}\nContext: ${context}\nFind offers now.`;
-
-    try {
-        const response = await ai.models.generateContent({
+    const operation = async () => {
+        const response = await openrouter.chat.send({
             model: MODEL_NAME,
-            contents: prompt,
-            config: {
-                systemInstruction: systemInstruction,
-                tools: [{ googleSearch: {} }],
-                // responseMimeType: "application/json" // Can sometimes conflict with tools, using text parsing instead
-            },
+            messages: [
+                { role: "system", content: systemInstruction },
+                { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return as JSON array.` }
+            ],
+            responseFormat: { type: "json_object" }
         });
 
-        const text = response.text;
-        if (!text) throw new Error("No response from AI");
-
-        const cleanedText = text.replace(/```json\n?|\n?```/g, "").trim();
-        const offers = JSON.parse(cleanedText);
-
-        if (!Array.isArray(offers)) {
-            throw new Error("AI did not return an array");
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new AgentError("No response text from OpenRouter", 'NO_RESPONSE');
         }
 
-        return offers;
+        const text = typeof content === 'string' ? content : '';
+        console.log(`Fetch (DeepSeek): AI response received (${text.length} chars)`);
 
-    } catch (error) {
-        console.error("Fetch Offers Error:", error);
-        throw new Error("Failed to fetch offers. " + error);
-    }
+        // Extraire le JSON (DeepSeek-R1 inclut souvent des balises <think>)
+        const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+
+        // On utilise l'utilitaire de parsing robuste
+        const parsedData = parseJSONFromText(cleanedText, 'fetch response');
+
+        // Si l'AI a wrappé le tableau dans un objet (parce qu'on a demandé json_object), on récupère le tableau
+        let dataToValidate = parsedData;
+        if (typeof parsedData === 'object' && parsedData !== null && !Array.isArray(parsedData)) {
+            const values = Object.values(parsedData);
+            const arrayValue = values.find(v => Array.isArray(v));
+            if (arrayValue) {
+                dataToValidate = arrayValue;
+            }
+        }
+
+        // Validation avec Zod
+        const validatedOffers = validateWithZod(dataToValidate, FetchResponseSchema, 'fetch response');
+
+        console.log(`Fetch: Successfully retrieved ${validatedOffers.length} offers`);
+        return validatedOffers;
+    };
+
+    return retryWithBackoff(operation, 3, 'fetch offers');
 }

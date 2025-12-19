@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ import { ScoredOffer } from '@/types';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ComparePage() {
+function ComparePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { savedOffers } = useSavedOffers();
@@ -192,5 +192,17 @@ export default function ComparePage() {
                 </Card>
             </main>
         </div>
+);
+}
+
+export default function ComparePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100 flex items-center justify-center">
+                <div className="text-muted-foreground">Loading comparison...</div>
+            </div>
+        }>
+            <ComparePageContent />
+        </Suspense>
     );
 }
