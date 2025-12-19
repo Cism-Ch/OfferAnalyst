@@ -7,20 +7,20 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Search, Settings } from 'lucide-react';
 
 /**
- * DashboardHeader Component
+ * Header Component
  * 
- * Top navigation bar for the dashboard that includes:
+ * Top navigation bar that includes:
  * - Page title
  * - Search functionality
  * - Theme toggle
  * - Settings access
  * 
  * This component provides consistent navigation and controls
- * across the dashboard interface.
+ * across the application interface.
  * 
- * @returns {JSX.Element} The dashboard header
+ * @returns {JSX.Element} The header
  */
-export function DashboardHeader() {
+export function Header() {
     return (
         <header className="h-16 border-b bg-white dark:bg-zinc-900 flex items-center px-6 justify-between">
             {/* Page Title */}

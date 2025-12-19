@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ClientOnlySelect } from '../utils/ClientOnlySelect';
+import { ClientOnlySelect } from '@/components/ClientOnlySelect';
 import { Loader2, Sparkles, Bot } from 'lucide-react';
 
 /**

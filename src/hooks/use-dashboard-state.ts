@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnalysisResponse } from '@/types';
-import { DUMMY_OFFERS } from '../constants/dummy-offers';
+import { DUMMY_OFFERS } from '@/lib/data/dummy-offers';
 
 /**
  * Custom hook for managing dashboard state
