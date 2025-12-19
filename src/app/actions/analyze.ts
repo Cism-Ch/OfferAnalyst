@@ -2,7 +2,7 @@
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, UserProfile, AnalysisResponse } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, detectAPIError } from "./shared/agent-utils";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
 import { z } from 'zod';
 
 const MODEL_NAME = "deepseek/deepseek-r1-0528:free";

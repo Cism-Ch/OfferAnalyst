@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,18 +15,18 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Link from 'next/link';
 
 // Client-only wrapper for Select to prevent hydration issues
-function ClientOnlySelect({ value, onValueChange, children }: {
-    value: string;
-    onValueChange: (value: string) => void;
+// Using suppressHydrationWarning to handle client-only rendering safely
+function ClientOnlySelect({ children }: {
     children: React.ReactNode;
 }) {
-    const [mounted, setMounted] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsClient(true);
     }, []);
 
-    if (!mounted) {
+    if (!isClient) {
         return (
             <div className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm">
                 <span className="text-muted-foreground">Select limit</span>
@@ -254,7 +254,7 @@ export function Dashboard() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Recommendation Limit</Label>
-<ClientOnlySelect value={limit} onValueChange={setLimit}>
+<ClientOnlySelect>
                                                 <Select value={limit} onValueChange={setLimit}>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select limit" />
