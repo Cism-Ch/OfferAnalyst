@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 
 /**
- * DashboardSidebar Component
+ * Sidebar Component
  * 
- * Navigation sidebar for the dashboard that provides quick access to
- * different sections of the application. Includes user profile information
+ * Navigation sidebar for the application that provides quick access to
+ * different sections. Includes user profile information
  * and application branding.
  * 
  * Features:
@@ -26,9 +26,9 @@ import {
  * - User profile display
  * - Responsive design (hidden on mobile)
  * 
- * @returns {JSX.Element} The dashboard sidebar
+ * @returns {JSX.Element} The sidebar
  */
-export function DashboardSidebar() {
+export function Sidebar() {
     return (
         <aside className="w-64 border-r bg-white dark:bg-zinc-900 hidden md:flex flex-col">
             {/* Logo and Brand */}
