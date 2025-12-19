@@ -7,23 +7,34 @@ const HISTORY_KEY = "offeranalyst_search_history"
 const MAX_HISTORY = 5
 
 export function useSearchHistory() {
-    const [history, setHistory] = useState<SearchHistoryItem[]>([])
-
-    // Load from local storage on mount
-    useEffect(() => {
-        if (typeof window === 'undefined') return
-
+    // Use lazy initialization to load from localStorage without useEffect setState
+    const [history, setHistory] = useState<SearchHistoryItem[]>(() => {
+        if (typeof window === 'undefined') return [];
+        
         try {
-            const stored = window.localStorage.getItem(HISTORY_KEY)
+            const stored = window.localStorage.getItem(HISTORY_KEY);
             if (stored) {
-                const parsed = JSON.parse(stored)
-                console.log("[useSearchHistory] Loaded:", parsed.length, "items")
-                setHistory(parsed)
+                const parsed = JSON.parse(stored);
+                console.log("[useSearchHistory] Loaded:", parsed.length, "items");
+                return parsed;
             }
         } catch (e) {
-            console.error("[useSearchHistory] Failed to load history", e)
+            console.error("[useSearchHistory] Failed to load history", e);
         }
-    }, [])
+        
+        return [];
+    });
+
+    // Save to localStorage whenever history changes
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        try {
+            window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        } catch (e) {
+            console.error("[useSearchHistory] Failed to save history", e);
+        }
+    }, [history]);
 
 
 

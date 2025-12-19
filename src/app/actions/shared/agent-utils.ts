@@ -123,7 +123,7 @@ export function detectAPIError(text: string): AgentError | null {
           'API_ERROR'
         );
       }
-    } catch (_e) {
+    } catch {
       // Pas une erreur JSON, continuer
     }
   }

@@ -11,17 +11,15 @@ import Link from 'next/link';
 import {
     Clock,
     Pin,
-    PinOff,
     Trash2,
     ArrowLeft,
-    Search,
     Calendar,
     ArrowRight
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function HistoryPage() {
-    const { history, togglePin, deleteItem, clearHistory } = useSearchHistory();
+    const { history, togglePin, deleteItem } = useSearchHistory();
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">

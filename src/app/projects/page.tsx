@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useProjects } from '@/hooks/use-projects';
 import { useSearchHistory } from '@/hooks/use-search-history';
-import { Offer, SearchHistoryItem } from '@/types';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -16,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from 'next/link';
 import {
-    Briefcase,
     Plus,
     ArrowLeft,
     Sparkles,
