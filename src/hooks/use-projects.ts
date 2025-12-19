@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { SearchHistoryItem } from "@/types"
 
 const PROJECTS_KEY = "offeranalyst_projects"
@@ -16,32 +16,43 @@ export interface Project {
 }
 
 export function useProjects() {
-    const [projects, setProjects] = useState<Project[]>([])
-    const [isInitialized, setIsInitialized] = useState(false)
+    // Track if this is the first render to avoid saving initial loaded state
+    const isFirstRender = useRef(true);
 
-    // Load from local storage
-    useEffect(() => {
-        if (typeof window === 'undefined') return
+    // Use lazy initialization to load from localStorage without useEffect setState
+    const [projects, setProjects] = useState<Project[]>(() => {
+        if (typeof window === 'undefined') return [];
 
         try {
-            const stored = window.localStorage.getItem(PROJECTS_KEY)
+            const stored = window.localStorage.getItem(PROJECTS_KEY);
             if (stored) {
-                setProjects(JSON.parse(stored))
+                const parsed = JSON.parse(stored);
+                console.log("[useProjects] Loaded:", parsed.length, "projects");
+                return parsed;
             }
         } catch (e) {
-            console.error("Failed to parse projects", e)
-        } finally {
-            setIsInitialized(true)
+            console.error("[useProjects] Failed to load projects", e);
         }
-    }, [])
 
-    // Save to local storage
+        return [];
+    });
+
+    // Save to localStorage whenever projects changes (skip first render)
     useEffect(() => {
-        if (!isInitialized) return
-        if (typeof window === 'undefined') return
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
 
-        localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
-    }, [projects, isInitialized])
+        if (typeof window === 'undefined') return;
+
+        try {
+            window.localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+            console.log("[useProjects] Saved:", projects.length, "projects");
+        } catch (e) {
+            console.error("[useProjects] Failed to save projects", e);
+        }
+    }, [projects]);
 
     const createProject = (name: string, description: string, sources: SearchHistoryItem[]) => {
         const newProject: Project = {
@@ -63,7 +74,6 @@ export function useProjects() {
     return {
         projects,
         createProject,
-        deleteProject,
-        isInitialized
+        deleteProject
     }
 }

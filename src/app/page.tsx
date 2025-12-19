@@ -26,6 +26,7 @@ import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { useOfferAnalysis } from '@/hooks/use-offer-analysis';
+import { useRestoreSearch } from '@/hooks/use-restore-search';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { ConfigurationCard } from '@/components/offers/ConfigurationCard';
@@ -45,6 +46,15 @@ export default function Home() {
     const dashboardState = useDashboardState();
     const { saveOffer, isSaved } = useSavedOffers();
     const { addToHistory } = useSearchHistory();
+
+    // Restore search from history if requested
+    useRestoreSearch({
+        setDomain: dashboardState.setDomain,
+        setExplicitCriteria: dashboardState.setExplicitCriteria,
+        setImplicitContext: dashboardState.setImplicitContext,
+        setOffersInput: dashboardState.setOffersInput,
+        setResults: dashboardState.setResults
+    });
 
     // Custom hook for business logic
     const { handleAnalyze } = useOfferAnalysis({

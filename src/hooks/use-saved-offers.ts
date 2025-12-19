@@ -1,37 +1,48 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Offer } from "@/types"
 
 const STORAGE_KEY = "offeranalyst_saved_offers"
 
 export function useSavedOffers() {
-    const [savedOffers, setSavedOffers] = useState<Offer[]>([])
-    const [isInitialized, setIsInitialized] = useState(false)
+    // Track if this is the first render to avoid saving initial loaded state
+    const isFirstRender = useRef(true);
 
-    // Load from local storage on mount
-    useEffect(() => {
-        if (typeof window === 'undefined') return
+    // Use lazy initialization to load from localStorage without useEffect setState
+    const [savedOffers, setSavedOffers] = useState<Offer[]>(() => {
+        if (typeof window === 'undefined') return [];
 
         try {
-            const stored = window.localStorage.getItem(STORAGE_KEY)
+            const stored = window.localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                setSavedOffers(JSON.parse(stored))
+                const parsed = JSON.parse(stored);
+                console.log("[useSavedOffers] Loaded:", parsed.length, "saved offers");
+                return parsed;
             }
         } catch (e) {
-            console.error("Failed to parse saved offers", e)
-        } finally {
-            setIsInitialized(true)
+            console.error("[useSavedOffers] Failed to load saved offers", e);
         }
-    }, [])
 
-    // Save to local storage whenever state changes
+        return [];
+    });
+
+    // Save to localStorage whenever savedOffers changes (skip first render)
     useEffect(() => {
-        if (!isInitialized) return
-        if (typeof window === 'undefined') return
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedOffers))
-    }, [savedOffers, isInitialized])
+        if (typeof window === 'undefined') return;
+
+        try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedOffers));
+            console.log("[useSavedOffers] Saved:", savedOffers.length, "offers");
+        } catch (e) {
+            console.error("[useSavedOffers] Failed to save offers", e);
+        }
+    }, [savedOffers]);
 
     const saveOffer = (offer: Offer) => {
         setSavedOffers((prev) => {
@@ -52,7 +63,6 @@ export function useSavedOffers() {
         savedOffers,
         saveOffer,
         removeOffer,
-        isSaved,
-        isInitialized // Optional: expose status if needed by UI
+        isSaved
     }
 }
