@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { SearchHistoryItem, AnalysisResponse } from "@/types"
 
 const HISTORY_KEY = "offeranalyst_search_history"
 const MAX_HISTORY = 5
 
 export function useSearchHistory() {
+    // Track if this is the first render to avoid saving initial loaded state
+    const isFirstRender = useRef(true);
+    
     // Use lazy initialization to load from localStorage without useEffect setState
     const [history, setHistory] = useState<SearchHistoryItem[]>(() => {
         if (typeof window === 'undefined') return [];
@@ -25,8 +28,13 @@ export function useSearchHistory() {
         return [];
     });
 
-    // Save to localStorage whenever history changes
+    // Save to localStorage whenever history changes (skip first render)
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        
         if (typeof window === 'undefined') return;
         
         try {
