@@ -27,7 +27,7 @@ These errors violate React best practices and can cause performance issues or un
 **Severity:** ERROR ❌
 
 **Issue Description:**
-```javascript
+```typescript
 useEffect(() => {
     setMounted(true);  // ❌ Calling setState directly within an effect
 }, []);
@@ -47,7 +47,7 @@ Calling `setState` synchronously within an effect can trigger cascading renders 
 3. Consider using the `useState` initialization function or conditional rendering at component level
 
 **Code Context:**
-```javascript
+```typescript
 // Current (problematic) code:
 function ClientOnlySelect({ value, onValueChange, children }: {
     value: string;
@@ -82,7 +82,7 @@ function ClientOnlySelect({ value, onValueChange, children }: {
 **Severity:** ERROR ❌
 
 **Issue Description:**
-```javascript
+```typescript
 useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -113,7 +113,7 @@ Loading state from localStorage and immediately calling setState in an effect ca
 3. Ensure proper handling of SSR vs client-side rendering
 
 **Code Context:**
-```javascript
+```typescript
 // Current (problematic) code:
 export function useSearchHistory() {
     const [history, setHistory] = useState<SearchHistoryItem[]>([])
@@ -151,7 +151,7 @@ These warnings indicate code that is imported or defined but never used. While t
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, detectAPIError } from "./shared/agent-utils";
 //                                                                           ^^^^^^^^^^^^^^ Never used
 ```
@@ -168,7 +168,7 @@ import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, detec
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 } catch (_e) {
 //      ^^ Defined but never used
     // Pas une erreur JSON, continuer
@@ -189,7 +189,7 @@ import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, detec
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 import {
     Clock,
     Pin,
@@ -214,7 +214,7 @@ import {
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 const { history, togglePin, deleteItem, clearHistory } = useSearchHistory();
 //                                       ^^^^^^^^^^^^ Assigned but never used
 ```
@@ -231,7 +231,7 @@ const { history, togglePin, deleteItem, clearHistory } = useSearchHistory();
 **Severity:** WARNING ⚠️
 
 **Issues:**
-```javascript
+```typescript
 // Line 6
 import { Offer, SearchHistoryItem } from '@/types';
 //       ^^^^^  ^^^^^^^^^^^^^^^^^ Both never used
@@ -257,7 +257,7 @@ import {
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter, CardAction } from "@/components/ui/card";
 //                                                                                ^^^^^^^^^^^ Never used
 ```
@@ -274,7 +274,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter, 
 **Severity:** WARNING ⚠️
 
 **Issue:**
-```javascript
+```typescript
 function ClientOnlySelect({ value, onValueChange, children }: {
 //                          ^^^^^  ^^^^^^^^^^^^^ Both defined but never used
     value: string;
