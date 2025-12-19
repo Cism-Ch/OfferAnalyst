@@ -40,7 +40,7 @@ export function useRestoreSearch(setters: {
                 settersRef.current.setImplicitContext(item.inputs.context);
                 
                 // Restore results if available
-                if (item.results) {
+                if (item.results && item.results.topOffers) {
                     settersRef.current.setResults(item.results);
                     
                     // Also set the offers input from the results

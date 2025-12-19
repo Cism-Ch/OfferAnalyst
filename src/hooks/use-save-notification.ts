@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
  */
 export function useSaveNotification() {
     const [showNotification, setShowNotification] = useState(false);
-    const [notificationTimeout, setNotificationTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [notificationTimeout, setNotificationTimeout] = useState<number | null>(null);
 
     const triggerNotification = () => {
         // Clear any existing timeout
@@ -26,7 +26,7 @@ export function useSaveNotification() {
             setShowNotification(false);
         }, 2000);
         
-        setNotificationTimeout(timeout);
+        setNotificationTimeout(timeout as unknown as number);
     };
 
     // Cleanup on unmount

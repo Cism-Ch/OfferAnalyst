@@ -49,9 +49,9 @@ export default function HistoryPage() {
             item.inputs.domain.toLowerCase().includes(query) ||
             item.inputs.criteria.toLowerCase().includes(query) ||
             item.inputs.context.toLowerCase().includes(query) ||
-            item.results.topOffers.some(offer => 
+            (item.results?.topOffers && item.results.topOffers.some(offer => 
                 offer.title.toLowerCase().includes(query)
-            )
+            ))
         );
     }, [history, searchQuery]);
     
