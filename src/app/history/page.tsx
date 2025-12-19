@@ -1,25 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     Clock,
     Pin,
     Trash2,
     ArrowLeft,
     Calendar,
-    ArrowRight
+    ArrowRight,
+    Search,
+    Eraser,
+    RotateCcw
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { SearchHistoryItem } from '@/types';
 
 export default function HistoryPage() {
-    const { history, togglePin, deleteItem } = useSearchHistory();
+    const { history, togglePin, deleteItem, clearHistory } = useSearchHistory();
+    const router = useRouter();
+    
+    // Search and filter state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showClearDialog, setShowClearDialog] = useState(false);
+    
+    // Filter history based on search query
+    const filteredHistory = useMemo(() => {
+        if (!searchQuery.trim()) return history;
+        
+        const query = searchQuery.toLowerCase();
+        return history.filter(item => 
+            item.inputs.domain.toLowerCase().includes(query) ||
+            item.inputs.criteria.toLowerCase().includes(query) ||
+            item.inputs.context.toLowerCase().includes(query) ||
+            item.results.topOffers.some(offer => 
+                offer.title.toLowerCase().includes(query)
+            )
+        );
+    }, [history, searchQuery]);
+    
+    // Count pinned and unpinned items
+    const pinnedCount = history.filter(item => item.pinned).length;
+    const unpinnedCount = history.length - pinnedCount;
+    
+    // Handle restore search - navigate to home page with query params
+    const handleRestoreSearch = (item: SearchHistoryItem) => {
+        // Store the item to be restored in sessionStorage
+        sessionStorage.setItem('restore_search', JSON.stringify(item));
+        router.push('/');
+    };
+    
+    // Handle clear all unpinned
+    const handleClearUnpinned = () => {
+        clearHistory();
+        setShowClearDialog(false);
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">
@@ -32,7 +83,10 @@ export default function HistoryPage() {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold">Search History</h1>
-                        <p className="text-muted-foreground">Recent analysis and pinned research</p>
+                        <p className="text-muted-foreground">
+                            {pinnedCount > 0 && `${pinnedCount} pinned • `}
+                            {unpinnedCount} recent searches
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -40,11 +94,42 @@ export default function HistoryPage() {
                 </div>
             </header>
 
-
+            {/* Search and Actions Bar */}
+            {history.length > 0 && (
+                <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search by domain, criteria, or results..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowClearDialog(true)}
+                        disabled={unpinnedCount === 0}
+                        className="gap-2"
+                    >
+                        <Eraser className="h-4 w-4" />
+                        Clear Unpinned
+                    </Button>
+                </div>
+            )}
 
             <main className="max-w-6xl mx-auto space-y-8">
 
-                {history.length === 0 ? (
+                {filteredHistory.length === 0 && history.length > 0 ? (
+                    <div className="text-center py-20 text-muted-foreground">
+                        <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No results found</p>
+                        <p className="mb-4">Try adjusting your search query.</p>
+                        <Button variant="outline" onClick={() => setSearchQuery('')}>
+                            Clear Search
+                        </Button>
+                    </div>
+                ) : history.length === 0 ? (
                     <div className="text-center py-20 text-muted-foreground">
                         <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium">No history yet</p>
@@ -55,7 +140,7 @@ export default function HistoryPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {history.map((item) => (
+                        {filteredHistory.map((item) => (
                             <Card key={item.id} className={`flex flex-col relative transition-all duration-200 border-none shadow-sm hover:shadow-md ${item.pinned ? 'ring-2 ring-primary/20 bg-amber-50/50 dark:bg-amber-900/10' : 'bg-white dark:bg-zinc-900'}`}>
                                 <div className="absolute top-3 right-3 flex gap-1">
                                     <Button
@@ -110,8 +195,16 @@ export default function HistoryPage() {
                                 </CardContent>
 
                                 <CardFooter className="pt-2">
-                                    <Button variant="ghost" className="w-full justify-between text-xs group" disabled>
-                                        View Details <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <Button 
+                                        variant="ghost" 
+                                        className="w-full justify-between text-xs group"
+                                        onClick={() => handleRestoreSearch(item)}
+                                    >
+                                        <span className="flex items-center gap-1">
+                                            <RotateCcw className="h-3 w-3" />
+                                            Restore Search
+                                        </span>
+                                        <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -119,6 +212,28 @@ export default function HistoryPage() {
                     </div>
                 )}
             </main>
+
+            {/* Clear Confirmation Dialog */}
+            <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Clear Unpinned History?</DialogTitle>
+                        <DialogDescription>
+                            This will remove all {unpinnedCount} unpinned search{unpinnedCount !== 1 ? 'es' : ''} from your history. 
+                            Pinned items will be preserved. This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowClearDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleClearUnpinned}>
+                            <Eraser className="h-4 w-4 mr-2" />
+                            Clear {unpinnedCount} Item{unpinnedCount !== 1 ? 's' : ''}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
