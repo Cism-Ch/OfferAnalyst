@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ClientOnlySelect } from '@/components/ClientOnlySelect';
+import { ClientOnlySwitch } from '@/components/ClientOnlySwitch';
 import { Loader2, Sparkles, Bot } from 'lucide-react';
 
 /**
@@ -154,7 +155,7 @@ export function ConfigurationCard({
                     />
                 </div>
 
-                {/* Auto-Fetch Toggle */}
+{/* Auto-Fetch Toggle */}
                 <div className="flex items-center justify-between rounded-lg border p-3 bg-slate-50 dark:bg-zinc-900">
                     <div className="space-y-0.5">
                         <Label className="text-base">Auto-Fetch Offers</Label>
@@ -162,10 +163,12 @@ export function ConfigurationCard({
                             AI will search the web for live offers
                         </p>
                     </div>
-                    <Switch
-                        checked={autoFetch}
-                        onCheckedChange={setAutoFetch}
-                    />
+                    <ClientOnlySwitch>
+                        <Switch
+                            checked={autoFetch}
+                            onCheckedChange={setAutoFetch}
+                        />
+                    </ClientOnlySwitch>
                 </div>
 
 {/* Offers JSON Input */}
