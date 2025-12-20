@@ -59,7 +59,7 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                     </div>
                     
                     {/* Score and Save Buttons */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                         {/* Score Badge */}
                         <Badge 
                             className={offer.finalScore > 80 

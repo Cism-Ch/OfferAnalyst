@@ -42,7 +42,7 @@ export function ScoreChart({ offers }: ScoreChartProps) {
             <CardHeader>
                 <CardTitle>Score Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="h-[200px]">
+            <CardContent className="h-50">
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart 
                         data={offers} 

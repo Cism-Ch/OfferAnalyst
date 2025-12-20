@@ -5,7 +5,7 @@ import { Offer } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
 import { z } from 'zod';
 
-const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
 
 // Schéma Zod pour valider une offre
 const OfferSchema = z.object({

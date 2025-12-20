@@ -5,7 +5,7 @@ import { Offer } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
 import { z } from 'zod';
 
-const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
 
 const CategorySchema = z.object({
     name: z.string(),
@@ -45,6 +45,19 @@ export async function organizeOffersAction(
         apiKey: apiKey,
     });
 
+    // Optimize payload: Simplify offers to reduce token usage
+    const simplifiedOffers = offers.map(offer => ({
+        id: offer.id,
+        title: offer.title,
+        price: offer.price,
+        location: offer.location,
+        category: offer.category,
+        // Truncate description to avoid token overflow while keeping context
+        description: offer.description.length > 500 
+            ? offer.description.substring(0, 500) + "..." 
+            : offer.description
+    }));
+
     const systemInstruction = `
     You are an AI Librarian specializing in data organization.
     
@@ -61,17 +74,27 @@ export async function organizeOffersAction(
 
     JSON SCHEMA:
     {
-      "categories": [{"name": "Category Name", "offers": [...]}],
-      "timeline": [{"date": "Recent/Older/etc", "offers": [...]}]
+      "categories": [
+        {
+          "name": "Category Name",
+          "offers": [ ...original offer objects... ]
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Date or Period",
+          "offers": [ ...original offer objects... ]
+        }
+      ]
     }
-  `;
+    `;
 
     const operation = async () => {
         const response = await openrouter.chat.send({
             model: MODEL_NAME,
             messages: [
                 { role: "system", content: systemInstruction },
-                { role: "user", content: `Organize these ${offers.length} offers: ${JSON.stringify(offers)}` }
+                { role: "user", content: `Organize these ${simplifiedOffers.length} offers: ${JSON.stringify(simplifiedOffers)}` }
             ],
             responseFormat: { type: "json_object" }
         });
@@ -82,7 +105,7 @@ export async function organizeOffersAction(
         }
 
         const text = typeof content === 'string' ? content : '';
-        console.log(`Organize (DeepSeek): AI response received (${text.length} chars)`);
+        console.log(`Organize (Gemini): AI response received (${text.length} chars)`);
 
         const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 
@@ -90,9 +113,31 @@ export async function organizeOffersAction(
 
         const validatedResponse = validateWithZod(parsedData, OrganizedOffersSchema, 'organize response');
 
-        console.log(`Organize: Successfully organized into ${validatedResponse.categories.length} categories`);
+        // Re-hydrate offers with full data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rehydrateOffers = (items: any[]) => {
+            return items.map(item => {
+                const original = offers.find(o => o.id === item.id);
+                return original || item;
+            });
+        };
 
-        return validatedResponse as OrganizedOffers;
+        const hydratedCategories = validatedResponse.categories.map(cat => ({
+            ...cat,
+            offers: rehydrateOffers(cat.offers)
+        }));
+
+        const hydratedTimeline = validatedResponse.timeline.map(t => ({
+            ...t,
+            offers: rehydrateOffers(t.offers)
+        }));
+
+        console.log(`Organize: Successfully organized into ${hydratedCategories.length} categories`);
+
+        return {
+            categories: hydratedCategories,
+            timeline: hydratedTimeline
+        } as OrganizedOffers;
     };
 
     return retryWithBackoff(operation, 2, 'organize offers');

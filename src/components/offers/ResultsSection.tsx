@@ -14,7 +14,7 @@ interface ResultsSectionProps {
     /** Analysis results to display, or null if no results yet */
     results: AnalysisResponse | null;
     /** Function to save an offer */
-    onSaveOffer: (offer: any) => void;
+    onSaveOffer: (offer: unknown) => void;
     /** Function to check if an offer is saved */
     isOfferSaved: (offerId: string) => boolean;
 }

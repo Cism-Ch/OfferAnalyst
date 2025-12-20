@@ -5,7 +5,7 @@ import { Offer, UserProfile, AnalysisResponse } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
 import { z } from 'zod';
 
-const MODEL_NAME = "deepseek/deepseek-r1-0528:free";
+const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -43,6 +43,19 @@ export async function analyzeOffersAction(
     const openrouter = new OpenRouter({
         apiKey: apiKey,
     });
+
+    // Optimize payload: Simplify offers to reduce token usage
+    const simplifiedOffers = offers.map(offer => ({
+        id: offer.id,
+        title: offer.title,
+        price: offer.price,
+        location: offer.location,
+        category: offer.category,
+        // Truncate description to avoid token overflow while keeping context
+        description: offer.description.length > 500 
+            ? offer.description.substring(0, 500) + "..." 
+            : offer.description
+    }));
 
     const systemInstruction = `
     You are an expert Market Analyst AI.
@@ -92,7 +105,7 @@ export async function analyzeOffersAction(
             model: MODEL_NAME,
             messages: [
                 { role: "system", content: systemInstruction },
-                { role: "user", content: `Analyze these ${offers.length} offers and rank top ${limit}: ${JSON.stringify(offers)}` }
+                { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}: ${JSON.stringify(simplifiedOffers)}` }
             ],
             responseFormat: { type: "json_object" }
         });
@@ -103,7 +116,7 @@ export async function analyzeOffersAction(
         }
 
         const text = typeof content === 'string' ? content : '';
-        console.log(`Analyze (DeepSeek): AI response received (${text.length} chars)`);
+        console.log(`Analyze (Gemini): AI response received (${text.length} chars)`);
 
         // Clean thinking tags
         const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
@@ -113,13 +126,26 @@ export async function analyzeOffersAction(
         // Validation avec Zod
         const validatedResponse = validateWithZod(parsedData, AnalysisResponseSchema, 'analyze response');
 
+        // Merge back with original offers to ensure no data loss (like full description or extra fields)
+        const mergedTopOffers = validatedResponse.topOffers.map(scoredOffer => {
+            const originalOffer = offers.find(o => o.id === scoredOffer.id);
+            if (!originalOffer) return scoredOffer;
+            
+            return {
+                ...originalOffer, // Keep original data (full description, url, etc.)
+                ...scoredOffer,   // Apply scores and analysis
+                description: originalOffer.description // Ensure full description is kept
+            };
+        });
+
         // OpenRouter doesn't provide grounding sources directly like Gemini.
         const searchSources: { title: string; uri: string }[] = [];
 
-        console.log(`Analyze: Successfully analyzed ${validatedResponse.topOffers.length} offers`);
+        console.log(`Analyze: Successfully analyzed ${mergedTopOffers.length} offers`);
 
         return {
-            ...validatedResponse,
+            topOffers: mergedTopOffers,
+            marketSummary: validatedResponse.marketSummary,
             searchSources
         };
     };
