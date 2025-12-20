@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ClientOnlySelect } from '@/components/ClientOnlySelect';
+import { ClientOnlySwitch } from '@/components/ClientOnlySwitch';
 import { Loader2, Sparkles, Bot } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 /**
  * ConfigurationCard Component Props
@@ -84,11 +84,6 @@ export function ConfigurationCard({
     fetching,
     onAnalyze
 }: ConfigurationCardProps) {
-    const [isClient, setIsClient] = useState(false);
-    
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
     return (
         <Card className="border-none shadow-sm drop-shadow-sm">
             {/* Card Header */}
@@ -168,20 +163,18 @@ export function ConfigurationCard({
                             AI will search the web for live offers
                         </p>
                     </div>
-                    {isClient ? (
+                    <ClientOnlySwitch>
                         <Switch
                             checked={autoFetch}
                             onCheckedChange={setAutoFetch}
                         />
-                    ) : (
-                        <div className="w-12 h-6 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    )}
+                    </ClientOnlySwitch>
                 </div>
 
 {/* Offers JSON Input */}
                 <div className="space-y-2">
                     <Label>
-                        Offers (JSON) {isClient && autoFetch && (
+                        Offers (JSON) {autoFetch && (
                             <span className="text-xs text-muted-foreground">
                                 (Will be overwritten by Auto-Fetch)
                             </span>
@@ -192,7 +185,7 @@ export function ConfigurationCard({
                         onChange={(e) => setOffersInput(e.target.value)}
                         className="font-mono text-xs h-32"
                         placeholder="Paste JSON array of offers here, or enable Auto-Fetch"
-                        disabled={isClient && autoFetch}
+                        disabled={autoFetch}
                     />
                 </div>
             </CardContent>
