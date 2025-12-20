@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, CheckCircle2 } from 'lucide-react';
-import { AnalysisResponse } from '@/types';
+import { AnalysisResponse, ScoredOffer } from '@/types';
 import { OfferCard } from './OfferCard';
 
 /**
@@ -13,8 +13,8 @@ import { OfferCard } from './OfferCard';
 interface ResultsSectionProps {
     /** Analysis results to display, or null if no results yet */
     results: AnalysisResponse | null;
-    /** Function to save an offer */
-    onSaveOffer: (offer: unknown) => void;
+/** Function to save an offer */
+    onSaveOffer: (offer: ScoredOffer) => void;
     /** Function to check if an offer is saved */
     isOfferSaved: (offerId: string) => boolean;
 }
@@ -39,10 +39,10 @@ interface ResultsSectionProps {
  * @param {ResultsSectionProps} props - Component props
  * @returns {JSX.Element} The results section
  */
-export function ResultsSection({ 
-    results, 
-    onSaveOffer, 
-    isOfferSaved 
+export function ResultsSection({
+    results,
+    onSaveOffer,
+    isOfferSaved
 }: ResultsSectionProps) {
     // Show empty state if no results
     if (!results) {

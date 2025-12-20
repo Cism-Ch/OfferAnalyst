@@ -167,7 +167,7 @@ export default function HistoryPage() {
                                         <span>{formatDistanceToNow(item.timestamp, { addSuffix: true })}</span>
                                     </div>
                                     <CardTitle className="text-lg line-clamp-1 pr-16">{item.inputs.domain}</CardTitle>
-                                    <CardDescription className="line-clamp-2 min-h-[40px]">
+                                    <CardDescription className="line-clamp-2 min-h-10">
                                         {item.inputs.criteria}
                                     </CardDescription>
                                 </CardHeader>

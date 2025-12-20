@@ -172,7 +172,7 @@ function ComparePageContent() {
                 </div>
 
                 {/* Summary Section */}
-                <Card className="mt-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none">
+                <Card className="mt-6 bg-linear-to-br from-slate-900 to-slate-800 text-white border-none">
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
