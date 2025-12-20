@@ -40,6 +40,34 @@ export interface AnalysisResponse {
   searchSources: SearchSource[];
 }
 
+export type AgentErrorCode =
+  | 'API_KEY_MISSING'
+  | 'NO_RESPONSE'
+  | 'INVALID_JSON'
+  | 'VALIDATION_FAILED'
+  | 'SEARCH_FAILED'
+  | 'API_ERROR'
+  | 'OPENROUTER_ERROR';
+
+export interface AgentActionError {
+  message: string;
+  code: AgentErrorCode | string;
+  context?: string;
+  raw?: string;
+}
+
+export type AgentActionResult<T> =
+  | { success: true; data: T; meta?: { model: string; latencyMs?: number } }
+  | { success: false; error: AgentActionError };
+
+export type ProviderErrorPhase = 'fetch' | 'analyze';
+
+export interface ProviderErrorState extends AgentActionError {
+  phase: ProviderErrorPhase;
+  timestamp: number;
+  model?: string;
+}
+
 export interface SearchHistoryItem {
   id: string;
   timestamp: number;

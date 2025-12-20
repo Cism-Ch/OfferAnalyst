@@ -32,6 +32,7 @@ import { Header } from '@/components/layout/Header';
 import { ConfigurationCard } from '@/components/offers/ConfigurationCard';
 import { ScoreChart } from '@/components/offers/ScoreChart';
 import { ResultsSection } from '@/components/offers/ResultsSection';
+import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 
 /**
  * Main Home Page Component
@@ -62,7 +63,9 @@ export default function Home() {
         setFetching: dashboardState.setFetching,
         setResults: dashboardState.setResults,
         setOffersInput: dashboardState.setOffersInput,
-        addToHistory
+        addToHistory,
+        selectedModel: dashboardState.model,
+        setProviderError: dashboardState.setProviderError
     });
 
     /**
@@ -88,46 +91,57 @@ export default function Home() {
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col">
                 {/* Header */}
-                <Header />
+                <Header
+                    selectedModel={dashboardState.model}
+                    onModelChange={(modelId) => dashboardState.setModel(modelId)}
+                />
 
                 {/* Dashboard Content */}
                 <div className="flex-1 p-6 overflow-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="space-y-4">
+                        <ProviderErrorPanel
+                            error={dashboardState.providerError}
+                            onDismiss={() => dashboardState.setProviderError(null)}
+                            onRetry={onAnalyze}
+                            activeModelId={dashboardState.model}
+                        />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        {/* Left Column - Configuration and Visualization */}
-                        <div className="lg:col-span-2 space-y-6">
-                            {/* Configuration Card */}
-                            <ConfigurationCard
-                                domain={dashboardState.domain}
-                                setDomain={dashboardState.setDomain}
-                                explicitCriteria={dashboardState.explicitCriteria}
-                                setExplicitCriteria={dashboardState.setExplicitCriteria}
-                                implicitContext={dashboardState.implicitContext}
-                                setImplicitContext={dashboardState.setImplicitContext}
-                                offersInput={dashboardState.offersInput}
-                                setOffersInput={dashboardState.setOffersInput}
-                                autoFetch={dashboardState.autoFetch}
-                                setAutoFetch={dashboardState.setAutoFetch}
-                                limit={dashboardState.limit}
-                                setLimit={dashboardState.setLimit}
-                                loading={dashboardState.loading}
-                                fetching={dashboardState.fetching}
-                                onAnalyze={onAnalyze}
-                            />
+                            {/* Left Column - Configuration and Visualization */}
+                            <div className="lg:col-span-2 space-y-6">
+                                {/* Configuration Card */}
+                                <ConfigurationCard
+                                    domain={dashboardState.domain}
+                                    setDomain={dashboardState.setDomain}
+                                    explicitCriteria={dashboardState.explicitCriteria}
+                                    setExplicitCriteria={dashboardState.setExplicitCriteria}
+                                    implicitContext={dashboardState.implicitContext}
+                                    setImplicitContext={dashboardState.setImplicitContext}
+                                    offersInput={dashboardState.offersInput}
+                                    setOffersInput={dashboardState.setOffersInput}
+                                    autoFetch={dashboardState.autoFetch}
+                                    setAutoFetch={dashboardState.setAutoFetch}
+                                    limit={dashboardState.limit}
+                                    setLimit={dashboardState.setLimit}
+                                    loading={dashboardState.loading}
+                                    fetching={dashboardState.fetching}
+                                    onAnalyze={onAnalyze}
+                                />
 
-                            {/* Score Distribution Chart */}
-                            {dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0 && (
-                                <ScoreChart offers={dashboardState.results.topOffers} />
-                            )}
-                        </div>
+                                {/* Score Distribution Chart */}
+                                {dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0 && (
+                                    <ScoreChart offers={dashboardState.results.topOffers} />
+                                )}
+                            </div>
 
-                        {/* Right Column - Results */}
-                        <div className="space-y-6">
-                            <ResultsSection
-                                results={dashboardState.results}
-                                onSaveOffer={saveOffer}
-                                isOfferSaved={isSaved}
-                            />
+                            {/* Right Column - Results */}
+                            <div className="space-y-6">
+                                <ResultsSection
+                                    results={dashboardState.results}
+                                    onSaveOffer={saveOffer}
+                                    isOfferSaved={isSaved}
+                                />
+                            </div>
                         </div>
 
                     </div>

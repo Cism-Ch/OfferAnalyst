@@ -1,11 +1,10 @@
 'use server';
 
 import { OpenRouter } from "@openrouter/sdk";
-import { Offer, UserProfile, AnalysisResponse } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
+import { Offer, UserProfile, AnalysisResponse, AgentActionResult } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
-
-const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -33,11 +32,16 @@ const AnalysisResponseSchema = z.object({
 export async function analyzeOffersAction(
     offers: Offer[],
     profile: UserProfile,
-    limit: number = 3
-): Promise<AnalysisResponse & { searchSources: { title: string; uri: string }[] }> {
+    limit: number = 3,
+    modelName: string = DEFAULT_MODEL_ID
+): Promise<AgentActionResult<AnalysisResponse>> {
+    const startedAt = Date.now();
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
+        return {
+            success: false,
+            error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'analyze offers')
+        };
     }
 
     const openrouter = new OpenRouter({
@@ -102,7 +106,7 @@ export async function analyzeOffersAction(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: MODEL_NAME,
+            model: modelName,
             messages: [
                 { role: "system", content: systemInstruction },
                 { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}: ${JSON.stringify(simplifiedOffers)}` }
@@ -149,6 +153,22 @@ export async function analyzeOffersAction(
             searchSources
         };
     };
+    try {
+        const data = await retryWithBackoff(operation, 3, 'analyze offers');
 
-    return retryWithBackoff(operation, 3, 'analyze offers');
+        return {
+            success: true,
+            data,
+            meta: {
+                model: modelName,
+                latencyMs: Date.now() - startedAt
+            }
+        };
+    } catch (error) {
+        console.error('Analyze offers failed', error);
+        return {
+            success: false,
+            error: toAgentActionError(error, 'analyze offers')
+        };
+    }
 }
