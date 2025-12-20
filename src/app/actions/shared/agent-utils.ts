@@ -1,11 +1,12 @@
 // Utilitaires partagés pour les agents AI
 import { z } from 'zod';
+import { AgentActionError, AgentErrorCode } from '@/types';
 
 // Types d'erreurs standardisés
 export class AgentError extends Error {
   constructor(
     message: string,
-    public code: 'API_KEY_MISSING' | 'NO_RESPONSE' | 'INVALID_JSON' | 'VALIDATION_FAILED' | 'SEARCH_FAILED' | 'API_ERROR' | 'OPENROUTER_ERROR'
+    public code: AgentErrorCode
   ) {
     super(message);
     this.name = 'AgentError';
@@ -128,4 +129,34 @@ export function detectAPIError(text: string): AgentError | null {
     }
   }
   return null;
+}
+
+export function toAgentActionError(
+  error: unknown,
+  context: string,
+  fallbackCode: AgentErrorCode = 'OPENROUTER_ERROR'
+): AgentActionError {
+  if (error instanceof AgentError) {
+    return {
+      message: error.message,
+      code: error.code,
+      context
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      code: fallbackCode,
+      context,
+      raw: error.stack
+    };
+  }
+
+  return {
+    message: 'Unknown error occurred',
+    code: fallbackCode,
+    context,
+    raw: typeof error === 'string' ? error : JSON.stringify(error)
+  };
 }

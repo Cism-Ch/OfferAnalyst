@@ -1,11 +1,10 @@
 'use server';
 
 import { OpenRouter } from "@openrouter/sdk";
-import { Offer } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
+import { Offer, AgentActionResult } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
-
-const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 
 // Schéma Zod pour valider une offre
 const OfferSchema = z.object({
@@ -22,11 +21,15 @@ const FetchResponseSchema = z.array(OfferSchema);
 
 export async function fetchOffersAction(
     domain: string,
-    context: string
-): Promise<Offer[]> {
+    context: string,
+    modelName: string = DEFAULT_MODEL_ID
+): Promise<AgentActionResult<Offer[]>> {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
+        return {
+            success: false,
+            error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'fetch offers')
+        };
     }
 
     const openrouter = new OpenRouter({
@@ -67,7 +70,7 @@ export async function fetchOffersAction(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: MODEL_NAME,
+            model: modelName,
             messages: [
                 { role: "system", content: systemInstruction },
                 { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return as JSON array.` }
@@ -106,5 +109,20 @@ export async function fetchOffersAction(
         return validatedOffers;
     };
 
-    return retryWithBackoff(operation, 3, 'fetch offers');
+    try {
+        const offers = await retryWithBackoff(operation, 3, 'fetch offers');
+        return {
+            success: true,
+            data: offers,
+            meta: {
+                model: modelName
+            }
+        };
+    } catch (error) {
+        console.error('Fetch offers failed', error);
+        return {
+            success: false,
+            error: toAgentActionError(error, 'fetch offers')
+        };
+    }
 }

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react';
-import { AnalysisResponse } from '@/types';
+import { AnalysisResponse, ProviderErrorState } from '@/types';
 import { DUMMY_OFFERS } from '@/lib/data/dummy-offers';
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 
 const DASHBOARD_STATE_KEY = "offeranalyst_dashboard_state";
 
@@ -13,6 +14,7 @@ interface PersistedDashboardState {
     offersInput: string;
     autoFetch: boolean;
     limit: string;
+    model: string;
 }
 
 const DEFAULT_STATE: PersistedDashboardState = {
@@ -21,7 +23,8 @@ const DEFAULT_STATE: PersistedDashboardState = {
     implicitContext: "Looking for good work-life balance, startup culture",
     offersInput: JSON.stringify(DUMMY_OFFERS, null, 2),
     autoFetch: false,
-    limit: "3"
+    limit: "3",
+    model: DEFAULT_MODEL_ID
 };
 
 /**
@@ -127,6 +130,22 @@ export function useDashboardState() {
         return DEFAULT_STATE.limit;
     });
 
+    const [model, setModel] = useState(() => {
+        if (typeof window === 'undefined') return DEFAULT_STATE.model;
+        try {
+            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
+            if (stored) {
+                const parsed: PersistedDashboardState = JSON.parse(stored);
+                return parsed.model || DEFAULT_STATE.model;
+            }
+        } catch (e) {
+            console.error("[useDashboardState] Failed to load model", e);
+        }
+        return DEFAULT_STATE.model;
+    });
+
+    const [providerError, setProviderError] = useState<ProviderErrorState | null>(null);
+
     // Save all persisted state to localStorage whenever any value changes (skip first render)
     useEffect(() => {
         if (isFirstRender.current) {
@@ -143,14 +162,15 @@ export function useDashboardState() {
                 implicitContext,
                 offersInput,
                 autoFetch,
-                limit
+                limit,
+                model
             };
             window.localStorage.setItem(DASHBOARD_STATE_KEY, JSON.stringify(state));
             console.log("[useDashboardState] State saved to localStorage");
         } catch (e) {
             console.error("[useDashboardState] Failed to save state", e);
         }
-    }, [domain, explicitCriteria, implicitContext, offersInput, autoFetch, limit]);
+    }, [domain, explicitCriteria, implicitContext, offersInput, autoFetch, limit, model]);
 
     return {
         // Loading states
@@ -175,6 +195,10 @@ export function useDashboardState() {
         autoFetch,
         setAutoFetch,
         limit,
-        setLimit
+        setLimit,
+        model,
+        setModel,
+        providerError,
+        setProviderError
     };
 }

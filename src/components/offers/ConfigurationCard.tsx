@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { ClientOnlySelect } from '@/components/ClientOnlySelect';
 import { Loader2, Sparkles, Bot } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 /**
  * ConfigurationCard Component Props
@@ -84,11 +83,6 @@ export function ConfigurationCard({
     fetching,
     onAnalyze
 }: ConfigurationCardProps) {
-    const [isClient, setIsClient] = useState(false);
-    
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
     return (
         <Card className="border-none shadow-sm drop-shadow-sm">
             {/* Card Header */}
@@ -177,7 +171,7 @@ export function ConfigurationCard({
 {/* Offers JSON Input */}
                 <div className="space-y-2">
                     <Label>
-                        Offers (JSON) {isClient && autoFetch && (
+                        Offers (JSON) {autoFetch && (
                             <span className="text-xs text-muted-foreground">
                                 (Will be overwritten by Auto-Fetch)
                             </span>

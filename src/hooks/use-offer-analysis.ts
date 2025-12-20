@@ -1,6 +1,6 @@
 import { analyzeOffersAction } from '@/app/actions/analyze';
 import { fetchOffersAction } from '@/app/actions/fetch';
-import { Offer, UserProfile } from '@/types';
+import { AnalysisResponse, Offer, ProviderErrorState, UserProfile } from '@/types';
 
 /**
  * Custom hook for handling offer analysis workflow
@@ -21,13 +21,17 @@ export function useOfferAnalysis({
     setFetching,
     setResults,
     setOffersInput,
-    addToHistory
+    addToHistory,
+    selectedModel,
+    setProviderError
 }: {
     setLoading: (loading: boolean) => void;
     setFetching: (fetching: boolean) => void;
-    setResults: (results: any) => void;
+    setResults: (results: AnalysisResponse | null) => void;
     setOffersInput: (input: string) => void;
-    addToHistory: (inputs: any, results: any) => void;
+    addToHistory: (inputs: { domain: string; criteria: string; context: string }, results: AnalysisResponse) => void;
+    selectedModel: string;
+    setProviderError: (error: ProviderErrorState | null) => void;
 }) {
     /**
      * Handles the complete offer analysis workflow
@@ -61,6 +65,7 @@ export function useOfferAnalysis({
     }) => {
         setLoading(true);
         setResults(null);
+        setProviderError(null);
 
         try {
             let currentOffers: Offer[] = [];
@@ -69,12 +74,29 @@ export function useOfferAnalysis({
             if (autoFetch) {
                 setFetching(true);
                 try {
-                    const fetchedOffers = await fetchOffersAction(domain, explicitCriteria + " " + implicitContext);
-                    currentOffers = fetchedOffers;
-                    setOffersInput(JSON.stringify(fetchedOffers, null, 2));
+                    const fetchResult = await fetchOffersAction(domain, explicitCriteria + " " + implicitContext, selectedModel);
+                    if (!fetchResult.success) {
+                        setProviderError({
+                            ...fetchResult.error,
+                            phase: 'fetch',
+                            timestamp: Date.now(),
+                            model: selectedModel
+                        });
+                        setLoading(false);
+                        setFetching(false);
+                        return;
+                    }
+                    currentOffers = fetchResult.data;
+                    setOffersInput(JSON.stringify(fetchResult.data, null, 2));
                 } catch (err) {
                     console.error("Fetch failed", err);
-                    alert("Auto-fetch failed. Please check offers input.");
+                    setProviderError({
+                        message: err instanceof Error ? err.message : 'Auto-fetch failed',
+                        code: 'API_ERROR',
+                        phase: 'fetch',
+                        timestamp: Date.now(),
+                        model: selectedModel
+                    });
                     setLoading(false);
                     setFetching(false);
                     return;
@@ -97,18 +119,36 @@ export function useOfferAnalysis({
                 implicitContext
             };
 
-            const data = await analyzeOffersAction(currentOffers, profile, parseInt(limit));
-            setResults(data);
+            const analysisResult = await analyzeOffersAction(currentOffers, profile, parseInt(limit), selectedModel);
+            if (!analysisResult.success) {
+                setProviderError({
+                    ...analysisResult.error,
+                    phase: 'analyze',
+                    timestamp: Date.now(),
+                    model: selectedModel
+                });
+                setLoading(false);
+                return;
+            }
+
+            setResults(analysisResult.data);
+            setProviderError(null);
 
             // Save to history
             addToHistory(
                 { domain, criteria: explicitCriteria, context: implicitContext },
-                data
+                analysisResult.data
             );
 
         } catch (error) {
             console.error(error);
-            alert("Analysis failed. See console.");
+            setProviderError({
+                message: error instanceof Error ? error.message : 'Analysis failed',
+                code: 'API_ERROR',
+                phase: 'analyze',
+                timestamp: Date.now(),
+                model: selectedModel
+            });
         } finally {
             setLoading(false);
             setFetching(false);
