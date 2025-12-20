@@ -33,4 +33,11 @@
 - Prefer updating these docs (and this playbook) whenever you adjust agent prompts, schema contracts, or storage conventions.
 
 
-##
+## Typescript Guidelines
+- Follow strict typing conventions; avoid using `any` or `unknown` without proper type guards.
+- Leverage existing types in [src/types/index.ts](../src/types/index.ts) to maintain consistency across the codebase.
+- When defining new types or interfaces, ensure they are well-documented and follow the existing naming conventions.
+- Use Zod schemas for runtime validation of data structures, especially for AI responses and external data.
+- Ensure all functions and methods have explicit return types for better readability and maintainability.
+- avoid deeply nested types; consider breaking them down into smaller, reusable types or interfaces.
+- avoid using `any` type; prefer `unknown` with proper type narrowing.
