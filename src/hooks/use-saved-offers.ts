@@ -6,31 +6,38 @@ import { Offer } from "@/types"
 const STORAGE_KEY = "offeranalyst_saved_offers"
 
 export function useSavedOffers() {
-    // Track if this is the first render to avoid saving initial loaded state
-    const isFirstRender = useRef(true);
+    // Track if localStorage has been loaded to avoid saving during initial load
+    const isInitialLoad = useRef(true);
 
-    // Use lazy initialization to load from localStorage without useEffect setState
-    const [savedOffers, setSavedOffers] = useState<Offer[]>(() => {
-        if (typeof window === 'undefined') return [];
+    // Initialize with empty array to ensure server/client consistency
+    const [savedOffers, setSavedOffers] = useState<Offer[]>([]);
+
+    // Load from localStorage after mount (client-side only) to avoid hydration mismatch
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
 
         try {
             const stored = window.localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                /* eslint-disable react-hooks/set-state-in-effect */
+                // This is intentional to prevent hydration errors - we load from localStorage after mount
+                setSavedOffers(parsed);
+                /* eslint-enable react-hooks/set-state-in-effect */
                 console.log("[useSavedOffers] Loaded:", parsed.length, "saved offers");
-                return parsed;
             }
         } catch (e) {
             console.error("[useSavedOffers] Failed to load saved offers", e);
         }
 
-        return [];
-    });
+        // Mark initial load as complete
+        isInitialLoad.current = false;
+    }, []);
 
-    // Save to localStorage whenever savedOffers changes (skip first render)
+    // Save to localStorage whenever savedOffers changes (skip initial load)
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
+        // Don't save during the initial load phase
+        if (isInitialLoad.current) {
             return;
         }
 
