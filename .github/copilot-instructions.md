@@ -41,3 +41,4 @@
 - Ensure all functions and methods have explicit return types for better readability and maintainability.
 - avoid deeply nested types; consider breaking them down into smaller, reusable types or interfaces.
 - avoid using `any` type; prefer `unknown` with proper type narrowing.
+- ensure all asynchronous functions return a Promise with a defined type.
