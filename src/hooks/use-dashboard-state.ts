@@ -37,119 +37,58 @@ const DEFAULT_STATE: PersistedDashboardState = {
  * @returns {Object} Dashboard state and state setters
  */
 export function useDashboardState() {
-    // Track if this is the first render to avoid saving initial loaded state
-    const isFirstRender = useRef(true);
+    // Track if localStorage has been loaded to avoid saving during initial load
+    const isInitialLoad = useRef(true);
 
     // Loading states (not persisted)
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [results, setResults] = useState<AnalysisResponse | null>(null);
 
-    // Input states with lazy initialization from localStorage
-    const [domain, setDomain] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.domain;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.domain || DEFAULT_STATE.domain;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load domain", e);
-        }
-        return DEFAULT_STATE.domain;
-    });
-
-    const [explicitCriteria, setExplicitCriteria] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.explicitCriteria;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.explicitCriteria || DEFAULT_STATE.explicitCriteria;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load explicitCriteria", e);
-        }
-        return DEFAULT_STATE.explicitCriteria;
-    });
-
-    const [implicitContext, setImplicitContext] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.implicitContext;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.implicitContext || DEFAULT_STATE.implicitContext;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load implicitContext", e);
-        }
-        return DEFAULT_STATE.implicitContext;
-    });
-
-    const [offersInput, setOffersInput] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.offersInput;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.offersInput || DEFAULT_STATE.offersInput;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load offersInput", e);
-        }
-        return DEFAULT_STATE.offersInput;
-    });
-
-    const [autoFetch, setAutoFetch] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.autoFetch;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.autoFetch ?? DEFAULT_STATE.autoFetch;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load autoFetch", e);
-        }
-        return DEFAULT_STATE.autoFetch;
-    });
-
-    const [limit, setLimit] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.limit;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.limit || DEFAULT_STATE.limit;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load limit", e);
-        }
-        return DEFAULT_STATE.limit;
-    });
-
-    const [model, setModel] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_STATE.model;
-        try {
-            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
-            if (stored) {
-                const parsed: PersistedDashboardState = JSON.parse(stored);
-                return parsed.model || DEFAULT_STATE.model;
-            }
-        } catch (e) {
-            console.error("[useDashboardState] Failed to load model", e);
-        }
-        return DEFAULT_STATE.model;
-    });
+    // Input states - initialize with default values to ensure server/client consistency
+    const [domain, setDomain] = useState(DEFAULT_STATE.domain);
+    const [explicitCriteria, setExplicitCriteria] = useState(DEFAULT_STATE.explicitCriteria);
+    const [implicitContext, setImplicitContext] = useState(DEFAULT_STATE.implicitContext);
+    const [offersInput, setOffersInput] = useState(DEFAULT_STATE.offersInput);
+    const [autoFetch, setAutoFetch] = useState(DEFAULT_STATE.autoFetch);
+    const [limit, setLimit] = useState(DEFAULT_STATE.limit);
+    const [model, setModel] = useState(DEFAULT_STATE.model);
 
     const [providerError, setProviderError] = useState<ProviderErrorState | null>(null);
 
-    // Save all persisted state to localStorage whenever any value changes (skip first render)
+    // Load state from localStorage after mount (client-side only) to avoid hydration mismatch
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
+        if (typeof window === 'undefined') return;
+        
+        try {
+            const stored = window.localStorage.getItem(DASHBOARD_STATE_KEY);
+            if (stored) {
+                const parsed: PersistedDashboardState = JSON.parse(stored);
+                
+                // Update states with stored values
+                if (parsed.domain) setDomain(parsed.domain);
+                if (parsed.explicitCriteria) setExplicitCriteria(parsed.explicitCriteria);
+                if (parsed.implicitContext) setImplicitContext(parsed.implicitContext);
+                if (parsed.offersInput) setOffersInput(parsed.offersInput);
+                if (parsed.autoFetch !== undefined) setAutoFetch(parsed.autoFetch);
+                if (parsed.limit) setLimit(parsed.limit);
+                if (parsed.model) setModel(parsed.model);
+                
+                console.log("[useDashboardState] State loaded from localStorage");
+            }
+        } catch (e) {
+            console.error("[useDashboardState] Failed to load state from localStorage", e);
+        }
+        
+        // Mark initial load as complete
+        isInitialLoad.current = false;
+    }, []); // Run only once on mount
+
+    // Save all persisted state to localStorage whenever any value changes
+    // Skip saving during initial load from localStorage
+    useEffect(() => {
+        // Don't save during the initial load phase
+        if (isInitialLoad.current) {
             return;
         }
 
