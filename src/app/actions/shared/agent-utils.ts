@@ -61,7 +61,7 @@ export function parseJSONFromText(text: string, context: string = 'AI response')
 // Utilitaire de retry avec exponential backoff
 export async function retryWithBackoff<T>(
   operation: () => Promise<T>,
-  maxRetries: number = 3,
+  maxRetries: number = 5,
   context: string = 'operation'
 ): Promise<T> {
   let lastError: Error | null = null;
