@@ -66,6 +66,8 @@ export function useDashboardState() {
                 const parsed: PersistedDashboardState = JSON.parse(stored);
                 
                 // Update states with stored values
+                /* eslint-disable react-hooks/set-state-in-effect */
+                // This is intentional to prevent hydration errors - we load from localStorage after mount
                 if (parsed.domain) setDomain(parsed.domain);
                 if (parsed.explicitCriteria) setExplicitCriteria(parsed.explicitCriteria);
                 if (parsed.implicitContext) setImplicitContext(parsed.implicitContext);
@@ -73,6 +75,7 @@ export function useDashboardState() {
                 if (parsed.autoFetch !== undefined) setAutoFetch(parsed.autoFetch);
                 if (parsed.limit) setLimit(parsed.limit);
                 if (parsed.model) setModel(parsed.model);
+                /* eslint-enable react-hooks/set-state-in-effect */
                 
                 console.log("[useDashboardState] State loaded from localStorage");
             }

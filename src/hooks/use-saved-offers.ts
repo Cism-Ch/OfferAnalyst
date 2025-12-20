@@ -20,7 +20,10 @@ export function useSavedOffers() {
             const stored = window.localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                /* eslint-disable react-hooks/set-state-in-effect */
+                // This is intentional to prevent hydration errors - we load from localStorage after mount
                 setSavedOffers(parsed);
+                /* eslint-enable react-hooks/set-state-in-effect */
                 console.log("[useSavedOffers] Loaded:", parsed.length, "saved offers");
             }
         } catch (e) {

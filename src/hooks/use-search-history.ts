@@ -21,7 +21,10 @@ export function useSearchHistory() {
             const stored = window.localStorage.getItem(HISTORY_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                /* eslint-disable react-hooks/set-state-in-effect */
+                // This is intentional to prevent hydration errors - we load from localStorage after mount
                 setHistory(parsed);
+                /* eslint-enable react-hooks/set-state-in-effect */
                 console.log("[useSearchHistory] Loaded:", parsed.length, "items");
             }
         } catch (e) {

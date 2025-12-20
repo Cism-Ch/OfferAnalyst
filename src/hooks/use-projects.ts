@@ -30,7 +30,10 @@ export function useProjects() {
             const stored = window.localStorage.getItem(PROJECTS_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                /* eslint-disable react-hooks/set-state-in-effect */
+                // This is intentional to prevent hydration errors - we load from localStorage after mount
                 setProjects(parsed);
+                /* eslint-enable react-hooks/set-state-in-effect */
                 console.log("[useProjects] Loaded:", parsed.length, "projects");
             }
         } catch (e) {
