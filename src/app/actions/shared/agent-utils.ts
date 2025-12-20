@@ -62,7 +62,7 @@ export function parseJSONFromText(text: string, context: string = 'AI response')
 // Utilitaire de retry avec exponential backoff
 export async function retryWithBackoff<T>(
   operation: () => Promise<T>,
-  maxRetries: number = 5,
+  maxRetries: number = 3,
   context: string = 'operation'
 ): Promise<T> {
   let lastError: Error | null = null;
@@ -85,7 +85,7 @@ export async function retryWithBackoff<T>(
 
       // Attendre avant de retry
       if (attempt < maxRetries) {
-        const delay = Math.pow(2, attempt - 1) * 1000;
+        const delay = Math.pow(2, attempt - 1) * 2000;
         console.log(`${context} - Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }

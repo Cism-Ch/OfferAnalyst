@@ -10,11 +10,22 @@ export interface AIModelOption {
   highlights: string[];
 }
 
-export const DEFAULT_MODEL_ID = 'google/gemini-2.0-flash-exp:free';
+export const DEFAULT_MODEL_ID = 'google/gemini-2.5-flash-preview-09-2025';
 
 export const AI_MODEL_OPTIONS: AIModelOption[] = [
   {
     id: DEFAULT_MODEL_ID,
+    label: 'Gemini 2.5 Flash Preview (Free)',
+    provider: 'Google via OpenRouter',
+    tier: 'free',
+    latency: 'fast',
+    contextWindow: '~1M tokens',
+    price: '$0 / request',
+    description: 'Balanced reasoning, great for structured JSON outputs.',
+    highlights: ['Deterministic JSON mode', 'Low latency', 'Great for dashboards']
+  },
+  {
+    id: 'google/gemini-2.0-flash-exp:free',
     label: 'Gemini 2.0 Flash (Free)',
     provider: 'Google via OpenRouter',
     tier: 'free',
