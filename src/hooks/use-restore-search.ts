@@ -34,13 +34,20 @@ export function useRestoreSearch(setters: {
             if (restoreData) {
                 const item: SearchHistoryItem = JSON.parse(restoreData);
                 
+                // Validate item structure
+                if (!item.inputs || !item.inputs.domain || !item.inputs.criteria || !item.inputs.context) {
+                    console.error('[useRestoreSearch] Invalid search item structure');
+                    sessionStorage.removeItem('restore_search');
+                    return;
+                }
+                
                 // Restore all inputs
                 settersRef.current.setDomain(item.inputs.domain);
                 settersRef.current.setExplicitCriteria(item.inputs.criteria);
                 settersRef.current.setImplicitContext(item.inputs.context);
                 
-                // Restore results if available
-                if (item.results && item.results.topOffers) {
+                // Restore results if available and valid
+                if (item.results && item.results.topOffers && item.results.topOffers.length > 0) {
                     settersRef.current.setResults(item.results);
                     
                     // Also set the offers input from the results
@@ -58,7 +65,7 @@ export function useRestoreSearch(setters: {
                 // Clear the restore flag so it doesn't keep restoring
                 sessionStorage.removeItem('restore_search');
                 
-                console.log('[useRestoreSearch] Search restored from history');
+                console.log('[useRestoreSearch] Search restored successfully');
             }
         } catch (e) {
             console.error('[useRestoreSearch] Failed to restore search', e);

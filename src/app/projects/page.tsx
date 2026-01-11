@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProjects } from '@/hooks/use-projects';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,15 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 
 export default function ProjectsPage() {
-    const { projects, createProject, deleteProject } = useProjects();
-    const { history } = useSearchHistory();
+    const { projects, createProject, deleteProject, syncProjectSources } = useProjects();
+    const { history, isLoading: historyLoading } = useSearchHistory();
+    
+    // Sync project sources with latest history when history loads
+    useEffect(() => {
+        if (!historyLoading && history.length > 0) {
+            syncProjectSources(history);
+        }
+    }, [history, historyLoading, syncProjectSources]);
 
     // Wizard State
     const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -135,8 +142,13 @@ export default function ProjectsPage() {
                                         <Label>Combine Research from History</Label>
                                         <p className="text-xs text-muted-foreground mb-2">Select past analysis to include in this project context.</p>
                                         <ScrollArea className="h-[200px] border rounded-md p-3">
-                                            {history.length === 0 ? (
-                                                <p className="text-sm text-center py-8 text-muted-foreground">No history available.</p>
+                                            {historyLoading ? (
+                                                <p className="text-sm text-center py-8 text-muted-foreground">Loading history...</p>
+                                            ) : history.length === 0 ? (
+                                                <div className="text-sm text-center py-8 text-muted-foreground">
+                                                    <p className="mb-2">No history available yet.</p>
+                                                    <p className="text-xs">Run an analysis from the Dashboard first to create search history.</p>
+                                                </div>
                                             ) : (
                                                 <div className="space-y-3">
                                                     {history.map(item => (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { SearchHistoryItem } from "@/types"
 
 const PROJECTS_KEY = "offeranalyst_projects"
@@ -62,6 +62,11 @@ export function useProjects() {
     }, [projects]);
 
     const createProject = (name: string, description: string, sources: SearchHistoryItem[]) => {
+        if (!name.trim()) {
+            console.error("[useProjects] Cannot create project without name");
+            return;
+        }
+        
         const newProject: Project = {
             id: crypto.randomUUID(),
             name,
@@ -72,15 +77,32 @@ export function useProjects() {
             status: "active"
         }
         setProjects(prev => [newProject, ...prev])
+        console.log("[useProjects] Created project:", name);
     }
 
     const deleteProject = (id: string) => {
         setProjects(prev => prev.filter(p => p.id !== id))
+        console.log("[useProjects] Deleted project:", id);
     }
+    
+    const syncProjectSources = useCallback((history: SearchHistoryItem[]) => {
+        // Update project sources with latest history data
+        setProjects(prev => prev.map(project => {
+            const updatedSources = project.sourceIds
+                .map(id => history.find(h => h.id === id))
+                .filter((h): h is SearchHistoryItem => h !== undefined);
+            
+            return {
+                ...project,
+                sources: updatedSources
+            };
+        }));
+    }, []);
 
     return {
         projects,
         createProject,
-        deleteProject
+        deleteProject,
+        syncProjectSources
     }
 }
