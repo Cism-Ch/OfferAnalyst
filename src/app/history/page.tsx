@@ -33,7 +33,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { SearchHistoryItem } from '@/types';
 
 export default function HistoryPage() {
-    const { history, togglePin, deleteItem, clearHistory } = useSearchHistory();
+    const { history, togglePin, deleteItem, clearHistory, isLoading } = useSearchHistory();
     const router = useRouter();
     
     // Search and filter state
@@ -120,7 +120,12 @@ export default function HistoryPage() {
 
             <main className="max-w-6xl mx-auto space-y-8">
 
-                {filteredHistory.length === 0 && history.length > 0 ? (
+                {isLoading ? (
+                    <div className="text-center py-20 text-muted-foreground">
+                        <Clock className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
+                        <p className="text-lg font-medium">Loading history...</p>
+                    </div>
+                ) : filteredHistory.length === 0 && history.length > 0 ? (
                     <div className="text-center py-20 text-muted-foreground">
                         <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium">No results found</p>

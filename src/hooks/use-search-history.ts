@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from "react"
 import { SearchHistoryItem, AnalysisResponse } from "@/types"
 
 const HISTORY_KEY = "offeranalyst_search_history"
-const MAX_HISTORY = 5
+const MAX_HISTORY = 50 // Increased from 5 to allow more search history
 
 export function useSearchHistory() {
     // Track if localStorage has been loaded to avoid saving during initial load
     const isInitialLoad = useRef(true);
+    const [isLoading, setIsLoading] = useState(true);
     
     // Initialize with empty array to ensure server/client consistency
     const [history, setHistory] = useState<SearchHistoryItem[]>([]);
@@ -21,14 +22,14 @@ export function useSearchHistory() {
             const stored = window.localStorage.getItem(HISTORY_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                /* eslint-disable react-hooks/set-state-in-effect */
                 // This is intentional to prevent hydration errors - we load from localStorage after mount
                 setHistory(parsed);
-                /* eslint-enable react-hooks/set-state-in-effect */
                 console.log("[useSearchHistory] Loaded:", parsed.length, "items");
             }
         } catch (e) {
             console.error("[useSearchHistory] Failed to load history", e);
+        } finally {
+            setIsLoading(false);
         }
         
         // Mark initial load as complete
@@ -106,5 +107,6 @@ export function useSearchHistory() {
         togglePin,
         deleteItem,
         clearHistory,
+        isLoading,
     }
 }
