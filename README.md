@@ -109,6 +109,135 @@ src/
 
 ---
 
+## 📚 Features Guide
+
+### 🏠 Dashboard
+The main interface where you configure your search criteria and analyze offers:
+- **Domain Configuration**: Specify the market domain (Jobs, Real Estate, Products, etc.)
+- **Explicit Criteria**: Define hard requirements (budget, location, salary range)
+- **Implicit Context**: Describe subjective preferences (work-life balance, company culture)
+- **Auto-Fetch**: Enable AI to automatically search the web for live offers
+- **Manual Input**: Paste JSON array of offers for analysis
+- **AI Model Selection**: Choose from various AI models (DeepSeek R1, GPT-4, Claude, Gemini)
+
+### 💾 Saved Offers
+Manage your collection of interesting offers:
+- **List View**: Browse all saved offers in a card grid
+- **Categories View**: AI-organized offers by category (requires Smart Organize)
+- **Timeline View**: Chronological organization of offers
+- **Comparison**: Select 2-3 offers for side-by-side comparison
+- **Smart Organize**: AI-powered categorization and timeline generation
+
+### 📜 Search History
+Track and restore previous analyses:
+- **Search Tracking**: Automatically saves all analysis sessions
+- **Pin Important Searches**: Keep frequently-used searches at the top
+- **Quick Restore**: One-click to restore previous search context
+- **Search Filter**: Find past searches by domain, criteria, or results
+- **Selective Cleanup**: Clear unpinned history while preserving important items
+
+### 📁 Projects
+Combine multiple research contexts into organized projects:
+- **Multi-Source Projects**: Combine insights from different searches
+- **Project Wizard**: 3-step setup (Define → Source → Review)
+- **Context Aggregation**: Query across combined data sources
+- **Status Tracking**: Track active and archived projects
+
+### 🔄 Comparison
+Detailed side-by-side comparison of offers:
+- **Score Breakdown**: View individual relevance, quality, and trend scores
+- **Visual Progress Bars**: Easy-to-understand score visualization
+- **AI Justification**: Understand why each offer was ranked
+- **Web Insights**: See market context and additional research
+
+---
+
+## 🎯 Usage Example
+
+1. **Configure Your Search**:
+   - Domain: "Jobs"
+   - Explicit Criteria: "Salary > 100k, Remote"
+   - Implicit Context: "Seeking work-life balance, startup culture"
+
+2. **Choose Analysis Method**:
+   - Enable "Auto-Fetch" for AI to find offers, OR
+   - Paste your own JSON offer data
+
+3. **Start Analysis**:
+   - Click "Start Workflow"
+   - AI analyzes and ranks offers based on your context
+   - View results with scores, justifications, and market summary
+
+4. **Save Interesting Offers**:
+   - Click bookmark icon on top offers
+   - Access saved offers from the "Saved Offers" page
+
+5. **Compare Options**:
+   - Select 2-3 saved offers
+   - Click "Compare" for detailed side-by-side analysis
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `OPENROUTER_API_KEY` | Yes | Your OpenRouter API key for AI model access |
+
+### Available AI Models
+
+The application supports multiple AI models through OpenRouter:
+- **DeepSeek R1** (Recommended) - Advanced reasoning capabilities
+- **GPT-4 Turbo** - OpenAI's flagship model
+- **Claude 3.5 Sonnet** - Anthropic's advanced model
+- **Gemini 2.5 Flash** - Google's fast model
+
+Select your preferred model from the header dropdown.
+
+---
+
+## 🚢 Deployment
+
+### Build for Production
+
+```bash
+npm run build
+# or
+pnpm build
+```
+
+### Start Production Server
+
+```bash
+npm start
+# or
+pnpm start
+```
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Cism-Ch/OfferAnalyst)
+
+1. Click the button above
+2. Add your `OPENROUTER_API_KEY` in environment variables
+3. Deploy!
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+---
+
 <div align="center">
 Made with ❤️ using Next.js & OpenRouter AI
 </div>
