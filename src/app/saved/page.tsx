@@ -207,7 +207,7 @@ export default function SavedOffersPage() {
                             <div className="relative border-l border-muted ml-4 space-y-8 py-4">
                                 {organizedData?.timeline.map((item, i) => (
                                     <div key={i} className="pl-6 relative">
-                                        <div className="absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                                        <div className="absolute -left-1.25 top-1 h-2.5 w-2.5 rounded-full bg-primary" />
                                         <h3 className="text-lg font-semibold mb-2">{item.date}</h3>
                                         <div className="grid grid-cols-1 gap-3">
                                             {item.offers.map(offer => (
