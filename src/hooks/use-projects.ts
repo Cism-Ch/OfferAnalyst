@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { SearchHistoryItem } from "@/types"
 
 const PROJECTS_KEY = "offeranalyst_projects"
@@ -85,7 +85,7 @@ export function useProjects() {
         console.log("[useProjects] Deleted project:", id);
     }
     
-    const syncProjectSources = (history: SearchHistoryItem[]) => {
+    const syncProjectSources = useCallback((history: SearchHistoryItem[]) => {
         // Update project sources with latest history data
         setProjects(prev => prev.map(project => {
             const updatedSources = project.sourceIds
@@ -97,7 +97,7 @@ export function useProjects() {
                 sources: updatedSources
             };
         }));
-    }
+    }, []);
 
     return {
         projects,

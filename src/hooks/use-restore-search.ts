@@ -46,7 +46,7 @@ export function useRestoreSearch(setters: {
                 settersRef.current.setExplicitCriteria(item.inputs.criteria);
                 settersRef.current.setImplicitContext(item.inputs.context);
                 
-                // Restore results if available
+                // Restore results if available and valid
                 if (item.results && item.results.topOffers && item.results.topOffers.length > 0) {
                     settersRef.current.setResults(item.results);
                     
@@ -70,11 +70,7 @@ export function useRestoreSearch(setters: {
         } catch (e) {
             console.error('[useRestoreSearch] Failed to restore search', e);
             // Clean up corrupted data
-            try {
-                sessionStorage.removeItem('restore_search');
-            } catch (cleanupError) {
-                console.error('[useRestoreSearch] Failed to clean up corrupted data', cleanupError);
-            }
+            sessionStorage.removeItem('restore_search');
         }
     }, []); // Empty deps - only run once on mount
 }
