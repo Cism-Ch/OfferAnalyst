@@ -38,6 +38,8 @@
   ],
   "exclude": [
     "node_modules",
-    "legacy_backup"
+    "legacy_backup",
+    ".agent",
+    "debug-db.ts"
   ]
 }

@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
+import * as React from "react";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function DropdownMenu({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
 function DropdownMenuPortal({
@@ -16,7 +17,7 @@ function DropdownMenuPortal({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return (
     <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
-  )
+  );
 }
 
 function DropdownMenuTrigger({
@@ -27,7 +28,7 @@ function DropdownMenuTrigger({
       data-slot="dropdown-menu-trigger"
       {...props}
     />
-  )
+  );
 }
 
 function DropdownMenuContent({
@@ -40,14 +41,22 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
-        className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-32 origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md",
-          className
-        )}
+        asChild
         {...props}
-      />
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.1 }}
+          className={cn(
+            "max-h-(--radix-dropdown-menu-content-available-height) origin-(--radix-dropdown-menu-content-transform-origin) z-50 min-w-32 overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+            className,
+          )}
+        />
+      </DropdownMenuPrimitive.Content>
     </DropdownMenuPrimitive.Portal>
-  )
+  );
 }
 
 function DropdownMenuGroup({
@@ -55,7 +64,7 @@ function DropdownMenuGroup({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {
   return (
     <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
-  )
+  );
 }
 
 function DropdownMenuRadioGroup({
@@ -66,7 +75,7 @@ function DropdownMenuRadioGroup({
       data-slot="dropdown-menu-radio-group"
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -76,4 +85,4 @@ export {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuRadioGroup,
-}
+};
