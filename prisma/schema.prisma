@@ -1,0 +1,231 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  name          String?
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  profile        Profile?
+  apiKeys        APIKey[]
+  searchHistory  SearchHistory[]
+  savedOffers    SavedOffer[]
+  projects       Project[]
+  accounts       Account[]
+  sessions       Session[]
+  subscriptions  Subscription[]
+  credits        Credit[]
+
+  @@index([createdAt])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// OAuth accounts
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// Session management
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// Email verification tokens
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// User profile extended information
+model Profile {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  bio             String?
+  company         String?
+  location        String?
+  website         String?
+  avatar          String?
+  theme           String   @default("light")
+  language        String   @default("en")
+  notifications   Boolean  @default(true)
+  useCase         String?  // Real Estate, Jobs, Startups, etc.
+  onboardingStep  Int      @default(0)
+  onboardingComplete Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+// API Keys for BYOK (Bring Your Own Key)
+model APIKey {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  name        String
+  provider    String   // openrouter, google, anthropic, etc.
+  keyHash     String   // Hashed key for security
+  keyPreview  String   // Last 4 chars for display
+  permissions String[] @default(["READ", "WRITE"])
+  lastUsed    DateTime?
+  usageCount  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([provider])
+  @@map("api_keys")
+}
+
+// Subscription model (for future use)
+model Subscription {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  plan      String   @default("FREE")
+  status    String   @default("ACTIVE")
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// Search history from localStorage migration
+model SearchHistory {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  domain           String
+  criteria         String   @db.String
+  implicitContext  String?  @db.String
+  model            String
+  timestamp        DateTime @default(now())
+  resultCount      Int      @default(0)
+  isPinned         Boolean  @default(false)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([isPinned])
+  @@map("search_history")
+}
+
+// Saved offers from localStorage migration
+model SavedOffer {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  offerId     String   // Original offer ID
+  title       String
+  description String   @db.String
+  url         String?
+  score       Float
+  category    String?
+  data        String   @db.String // JSON stringified offer data
+  savedAt     DateTime @default(now())
+  tags        String[] @default([])
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([savedAt])
+  @@index([score])
+  @@map("saved_offers")
+}
+
+// Project workspaces for multi-source research
+model Project {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  name        String
+  description String?  @db.String
+  sources     String[] @default([])
+  data        String   @db.String // JSON stringified project data
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+// Credits tracking (for API usage monitoring)
+model Credit {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  action    String   // FETCH, ANALYZE, ORGANIZE
+  model     String?
+  amount    Int      @default(1)
+  metadata  String?  @db.String // JSON for additional info
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("credits")
+}
