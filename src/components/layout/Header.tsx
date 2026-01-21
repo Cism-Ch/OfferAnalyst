@@ -60,11 +60,11 @@ export function Header({ selectedModel, onModelChange }: HeaderProps) {
   const [search, setSearch] = useState("");
 
   return (
-    <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-white/80 px-8 backdrop-blur-xl dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-background/80 px-8 backdrop-blur-xl">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-neon" />
-          <h1 className="to-foreground/70 bg-gradient-to-r from-foreground bg-clip-text text-xl font-bold tracking-tight">
+          <Activity className="size-5 text-neon" />
+          <h1 className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-xl font-bold">
             Dashboard
           </h1>
         </div>
@@ -74,13 +74,13 @@ export function Header({ selectedModel, onModelChange }: HeaderProps) {
 
       <div className="flex items-center gap-5">
         <div className="group relative hidden lg:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-neon" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-neon" />
           <Input
             type="search"
             placeholder="Neural Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="focus:ring-neon/20 h-10 w-72 rounded-xl border-none bg-zinc-100 pl-10 transition-all focus:bg-white focus:ring-2 dark:bg-zinc-900 dark:focus:bg-zinc-800"
+            className="h-10 w-72 border-none bg-muted pl-10 transition-all focus:bg-card focus:ring-2 focus:ring-neon/20"
           />
         </div>
 
@@ -92,9 +92,9 @@ export function Header({ selectedModel, onModelChange }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 p-0 dark:border-zinc-800"
+                className="relative size-10 overflow-hidden rounded-lg border p-0"
               >
-                <Avatar className="h-full w-full rounded-none">
+                <Avatar className="size-full rounded-none">
                   <AvatarImage
                     src={
                       session.user.image ||

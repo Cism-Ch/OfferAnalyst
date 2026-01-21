@@ -34,20 +34,20 @@ const neonRgbValues: Record<NeonColor, string> = {
  * - CSS custom properties for dynamic theming
  */
 export function NeonProvider({ children }: { children: React.ReactNode }) {
-  const [neonColor, setNeonColorState] = useState<NeonColor>('yellow');
+  // Initialize state from localStorage on mount
+  const [neonColor, setNeonColorState] = useState<NeonColor>(() => {
+    if (typeof window === 'undefined') return 'yellow';
+    const savedColor = localStorage.getItem('neonColor') as NeonColor;
+    if (savedColor && ['yellow', 'green', 'cyan', 'purple'].includes(savedColor)) {
+      return savedColor;
+    }
+    return 'yellow';
+  });
 
   const setNeonColor = (color: NeonColor) => {
     setNeonColorState(color);
     localStorage.setItem('neonColor', color);
   };
-
-  useEffect(() => {
-    // Load saved color from localStorage
-    const savedColor = localStorage.getItem('neonColor') as NeonColor;
-    if (savedColor && ['yellow', 'green', 'cyan', 'purple'].includes(savedColor)) {
-      setNeonColorState(savedColor);
-    }
-  }, []);
 
   useEffect(() => {
     // Update CSS custom properties when neon color changes

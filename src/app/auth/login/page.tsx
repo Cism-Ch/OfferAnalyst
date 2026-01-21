@@ -115,7 +115,7 @@ export default function AuthPage() {
           <h1 className="text-3xl font-black tracking-tighter text-foreground">
             OFFER ANALYST
           </h1>
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Intelligence Protocol v2.0
           </p>
         </div>
