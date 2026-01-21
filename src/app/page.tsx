@@ -27,8 +27,7 @@ import { useSearchHistory } from '@/hooks/use-search-history';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { useOfferAnalysis } from '@/hooks/use-offer-analysis';
 import { useRestoreSearch } from '@/hooks/use-restore-search';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { Header } from '@/components/layout/Header';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ConfigurationCard } from '@/components/offers/ConfigurationCard';
 import { ScoreChart } from '@/components/offers/ScoreChart';
 import { ResultsSection } from '@/components/offers/ResultsSection';
@@ -84,69 +83,56 @@ export default function Home() {
     };
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-neutral-900">
-            {/* Sidebar Navigation */}
-            <Sidebar />
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col">
-                {/* Header */}
-                <Header
-                    selectedModel={dashboardState.model}
-                    onModelChange={(modelId) => dashboardState.setModel(modelId)}
+        <ModernLayout
+            selectedModel={dashboardState.model}
+            onModelChange={(modelId) => dashboardState.setModel(modelId)}
+        >
+            <div className="space-y-6">
+                <ProviderErrorPanel
+                    error={dashboardState.providerError}
+                    onDismiss={() => dashboardState.setProviderError(null)}
+                    onRetry={onAnalyze}
+                    activeModelId={dashboardState.model}
                 />
-
-                {/* Dashboard Content */}
-                <div className="flex-1 p-6 overflow-auto">
-                    <div className="space-y-4">
-                        <ProviderErrorPanel
-                            error={dashboardState.providerError}
-                            onDismiss={() => dashboardState.setProviderError(null)}
-                            onRetry={onAnalyze}
-                            activeModelId={dashboardState.model}
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column - Configuration and Visualization */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Configuration Card */}
+                        <ConfigurationCard
+                            domain={dashboardState.domain}
+                            setDomain={dashboardState.setDomain}
+                            explicitCriteria={dashboardState.explicitCriteria}
+                            setExplicitCriteria={dashboardState.setExplicitCriteria}
+                            implicitContext={dashboardState.implicitContext}
+                            setImplicitContext={dashboardState.setImplicitContext}
+                            offersInput={dashboardState.offersInput}
+                            setOffersInput={dashboardState.setOffersInput}
+                            autoFetch={dashboardState.autoFetch}
+                            setAutoFetch={dashboardState.setAutoFetch}
+                            limit={dashboardState.limit}
+                            setLimit={dashboardState.setLimit}
+                            loading={dashboardState.loading}
+                            fetching={dashboardState.fetching}
+                            onAnalyze={onAnalyze}
                         />
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                            {/* Left Column - Configuration and Visualization */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Configuration Card */}
-                                <ConfigurationCard
-                                    domain={dashboardState.domain}
-                                    setDomain={dashboardState.setDomain}
-                                    explicitCriteria={dashboardState.explicitCriteria}
-                                    setExplicitCriteria={dashboardState.setExplicitCriteria}
-                                    implicitContext={dashboardState.implicitContext}
-                                    setImplicitContext={dashboardState.setImplicitContext}
-                                    offersInput={dashboardState.offersInput}
-                                    setOffersInput={dashboardState.setOffersInput}
-                                    autoFetch={dashboardState.autoFetch}
-                                    setAutoFetch={dashboardState.setAutoFetch}
-                                    limit={dashboardState.limit}
-                                    setLimit={dashboardState.setLimit}
-                                    loading={dashboardState.loading}
-                                    fetching={dashboardState.fetching}
-                                    onAnalyze={onAnalyze}
-                                />
+                        {/* Score Distribution Chart */}
+                        {dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0 && (
+                            <ScoreChart offers={dashboardState.results.topOffers} />
+                        )}
+                    </div>
 
-                                {/* Score Distribution Chart */}
-                                {dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0 && (
-                                    <ScoreChart offers={dashboardState.results.topOffers} />
-                                )}
-                            </div>
-
-                            {/* Right Column - Results */}
-                            <div className="space-y-6">
-                                <ResultsSection
-                                    results={dashboardState.results}
-                                    onSaveOffer={saveOffer}
-                                    isOfferSaved={isSaved}
-                                />
-                            </div>
-                        </div>
-
+                    {/* Right Column - Results */}
+                    <div className="space-y-6">
+                        <ResultsSection
+                            results={dashboardState.results}
+                            onSaveOffer={saveOffer}
+                            isOfferSaved={isSaved}
+                        />
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </ModernLayout>
     );
 }
