@@ -83,58 +83,6 @@
   .ring-neon {
     --tw-ring-color: var(--neon);
   }
-
-  .focus\:ring-neon\/20:focus {
-    --tw-ring-color: rgba(var(--neon-rgb), 0.2);
-  }
-
-  .hover\:bg-neon\/5:hover {
-    background-color: rgba(var(--neon-rgb), 0.05);
-  }
-
-  .hover\:bg-neon\/10:hover {
-    background-color: rgba(var(--neon-rgb), 0.1);
-  }
-
-  .hover\:bg-neon\/90:hover {
-    background-color: rgba(var(--neon-rgb), 0.9);
-  }
-
-  .hover\:border-neon:hover {
-    border-color: var(--neon);
-  }
-
-  .hover\:border-neon\/30:hover {
-    border-color: rgba(var(--neon-rgb), 0.3);
-  }
-
-  .hover\:border-neon\/50:hover {
-    border-color: rgba(var(--neon-rgb), 0.5);
-  }
-
-  .hover\:text-neon:hover {
-    color: var(--neon);
-  }
-
-  .hover\:text-neon-foreground:hover {
-    color: hsl(var(--background));
-  }
-
-  .data-\[state\=checked\]\:bg-neon[data-state="checked"] {
-    background-color: var(--neon);
-  }
-
-  .data-\[state\=checked\]\:text-neon-foreground[data-state="checked"] {
-    color: hsl(var(--background));
-  }
-
-  .data-\[state\=active\]\:bg-neon[data-state="active"] {
-    background-color: var(--neon);
-  }
-
-  .data-\[state\=active\]\:text-neon-foreground[data-state="active"] {
-    color: hsl(var(--background));
-  }
 }
 
 /* Aurora background animation */

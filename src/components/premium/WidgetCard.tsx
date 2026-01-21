@@ -1,20 +1,37 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { fadeInUp, smoothEase } from "@/lib/animations";
 
 interface WidgetCardProps extends React.ComponentProps<typeof Card> {
+  /** Enable neon border on hover */
   neonHover?: boolean;
+  /** Enable permanent neon effect */
   neonEffect?: boolean;
+  /** Enable glassmorphism effect */
   glass?: boolean;
+  /** Animation delay in seconds */
   delay?: number;
+  /** Custom animation variants */
+  variants?: Variants;
 }
 
 /**
- * Premium WidgetCard.
- * Incorporates Framer Motion animations, glassmorphism, and neon highlights.
+ * Premium WidgetCard Component
+ *
+ * A card component with built-in Framer Motion animations, optional glassmorphism,
+ * and neon highlight effects. Provides a consistent animated card experience
+ * across the application.
+ *
+ * @example
+ * ```tsx
+ * <WidgetCard glass neonHover delay={0.2}>
+ *   <CardHeader>...</CardHeader>
+ * </WidgetCard>
+ * ```
  */
 export function WidgetCard({
   className,
@@ -22,6 +39,7 @@ export function WidgetCard({
   neonEffect = false,
   glass = true,
   delay = 0,
+  variants = fadeInUp,
   children,
   ...props
 }: WidgetCardProps) {
@@ -29,27 +47,29 @@ export function WidgetCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={variants}
       transition={{
         duration: 0.5,
         delay,
-        ease: [0.23, 1, 0.32, 1],
+        ease: smoothEase,
       }}
       className="h-full"
     >
       <Card
         className={cn(
           "relative h-full overflow-hidden transition-all duration-300",
-          glass && "glass",
-          showNeon && "hover:border-neon hover:shadow-neon",
+          glass &&
+            "backdrop-blur-sm bg-card/95 dark:bg-card/80 border-border/50",
+          showNeon &&
+            "hover:border-neon/50 hover:shadow-[0_0_15px_rgba(212,255,0,0.2)]",
+          neonEffect && "border-neon/30 shadow-[0_0_10px_rgba(212,255,0,0.1)]",
           className,
         )}
         {...props}
       >
-        {/* Subtle Glow Overlay */}
-        <div className="from-neon/5 pointer-events-none absolute -inset-px bg-gradient-to-br to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
         {children}
       </Card>
     </motion.div>
