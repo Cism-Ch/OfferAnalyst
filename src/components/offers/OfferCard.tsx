@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ScoredOffer } from "@/types";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { WidgetCard } from "@/components/premium/WidgetCard";
 import { fadeInUp } from "@/lib/animations";
@@ -180,21 +180,19 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
       <CardContent className="flex flex-grow flex-col space-y-4">
         {/* AI Justification - Collapsible */}
         <div className="relative border-l-2 border-border pl-4 transition-colors group-hover:border-neon/30">
-          <AnimatePresence initial={false}>
-            <motion.div
-              initial={false}
-              animate={{ height: isExpanded ? "auto" : "3.5rem" }}
-              transition={{ duration: 0.3 }}
-              className="relative overflow-hidden"
-            >
-              <p className="text-sm italic leading-relaxed text-muted-foreground">
-                &quot;{offer.justification}&quot;
-              </p>
-              {!isExpanded && (
-                <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-card to-transparent" />
-              )}
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            initial={false}
+            animate={{ height: isExpanded ? "auto" : "3.5rem" }}
+            transition={{ duration: 0.3 }}
+            className="relative overflow-hidden"
+          >
+            <p className="text-sm italic leading-relaxed text-muted-foreground">
+              &quot;{offer.justification}&quot;
+            </p>
+            {!isExpanded && (
+              <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-card to-transparent" />
+            )}
+          </motion.div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="mt-2 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-neon transition-opacity hover:opacity-70"
