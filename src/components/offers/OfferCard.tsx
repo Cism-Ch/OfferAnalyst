@@ -20,9 +20,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ScoredOffer } from "@/types";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { WidgetCard } from "@/components/premium/WidgetCard";
+import { fadeInUp } from "@/lib/animations";
 
 /**
  * OfferCard Component Props
@@ -83,30 +84,31 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
 
   return (
     <WidgetCard
-      className="group flex flex-col overflow-hidden rounded-3xl border-zinc-200/50 hover:bg-zinc-50/50 dark:border-zinc-800/50 dark:hover:bg-zinc-900/50"
+      className="group flex flex-col overflow-hidden hover:bg-accent/30"
       neonHover
       delay={0.1 * index}
+      variants={fadeInUp}
     >
       {/* Card Header with Title and Score */}
-      <CardHeader className="flex-shrink-0 px-6 pb-4 pt-6">
+      <CardHeader className="flex-shrink-0 space-y-3">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex items-center gap-2">
               <Badge
                 variant="outline"
-                className="rounded-full border-zinc-700/50 bg-zinc-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-300 shadow-sm hover:bg-zinc-900"
+                className="rounded-full border-muted bg-muted/50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
               >
                 Rank #{offer.rank}
               </Badge>
             </div>
-            <CardTitle className="line-clamp-2 text-lg font-bold leading-tight tracking-tight transition-colors group-hover:text-neon sm:text-xl">
+            <CardTitle className="line-clamp-2 text-lg font-bold leading-tight transition-colors group-hover:text-neon sm:text-xl">
               {offer.title}
             </CardTitle>
-            <CardDescription className="text-muted-foreground/80 mt-1 flex items-center gap-2 text-sm font-medium">
+            <CardDescription className="mt-2 flex items-center gap-2 text-sm font-medium">
               <span>{offer.location}</span>
               <span>•</span>
-              <span className="flex items-center gap-1 font-bold text-foreground">
-                <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="flex items-center gap-1 font-semibold text-foreground">
+                <Wallet className="size-3.5 text-muted-foreground" />
                 {offer.price && typeof offer.price === "number"
                   ? offer.price.toLocaleString()
                   : offer.price}
@@ -116,11 +118,11 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
 
           {/* Score and Save Buttons */}
           <div className="flex shrink-0 items-center gap-3">
-            {/* Score Circular Badge - Dark Mode Style forced */}
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 shadow-inner">
-              <svg className="h-full w-full -rotate-90 p-1">
+            {/* Score Circular Badge */}
+            <div className="relative flex size-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-sm">
+              <svg className="size-full -rotate-90 p-1">
                 <circle
-                  className="text-zinc-800"
+                  className="text-muted"
                   strokeWidth="3"
                   stroke="currentColor"
                   fill="transparent"
@@ -146,7 +148,7 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                   style={{ filter: `drop-shadow(0 0 2px ${scoreColorHex})` }}
                 />
               </svg>
-              <span className={cn("absolute text-sm font-black", scoreColor)}>
+              <span className={cn("absolute text-sm font-bold", scoreColor)}>
                 {offer.finalScore}
               </span>
             </div>
@@ -158,16 +160,16 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
               onClick={handleSave}
               disabled={isSaved}
               className={cn(
-                "h-11 w-11 rounded-xl transition-all duration-300",
+                "size-11 transition-all",
                 isSaved
-                  ? "bg-neon/10 border-neon/30 text-neon"
-                  : "hover:bg-neon/5 border-zinc-200 hover:border-neon hover:text-neon dark:border-zinc-800",
+                  ? "border-neon/30 bg-neon/10 text-neon"
+                  : "hover:border-neon/50 hover:bg-neon/5 hover:text-neon",
               )}
             >
               {isSaved ? (
-                <CheckCircle2 className="h-5 w-5" />
+                <CheckCircle2 className="size-5" />
               ) : (
-                <Bookmark className="h-5 w-5" />
+                <Bookmark className="size-5" />
               )}
             </Button>
           </div>
@@ -175,60 +177,60 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
       </CardHeader>
 
       {/* Card Content with Justification and Breakdown */}
-      <CardContent className="flex flex-grow flex-col space-y-5 px-6 pb-6">
+      <CardContent className="flex flex-grow flex-col space-y-4">
         {/* AI Justification - Collapsible */}
-        <div className="group-hover:border-neon/50 relative border-l-2 border-zinc-200 pl-5 transition-colors dark:border-zinc-800">
-          <motion.div
-            initial={false}
-            animate={{ height: isExpanded ? "auto" : "3.5rem" }}
-            className="relative overflow-hidden"
-          >
-            <p className="text-sm italic leading-relaxed text-muted-foreground">
-              &quot;{offer.justification}&quot;
-            </p>
-            {!isExpanded && (
-              <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-background to-transparent" />
-            )}
-          </motion.div>
+        <div className="relative border-l-2 border-border pl-4 transition-colors group-hover:border-neon/30">
+          <AnimatePresence initial={false}>
+            <motion.div
+              initial={false}
+              animate={{ height: isExpanded ? "auto" : "3.5rem" }}
+              transition={{ duration: 0.3 }}
+              className="relative overflow-hidden"
+            >
+              <p className="text-sm italic leading-relaxed text-muted-foreground">
+                &quot;{offer.justification}&quot;
+              </p>
+              {!isExpanded && (
+                <div className="absolute bottom-0 left-0 h-8 w-full bg-gradient-to-t from-card to-transparent" />
+              )}
+            </motion.div>
+          </AnimatePresence>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-neon hover:underline"
+            className="mt-2 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-neon transition-opacity hover:opacity-70"
           >
             {isExpanded ? (
               <>
-                <ChevronUp size={10} /> Less
+                <ChevronUp className="size-3" /> Less
               </>
             ) : (
               <>
-                <ChevronDown size={10} /> Read reasoning
+                <ChevronDown className="size-3" /> Read reasoning
               </>
             )}
           </button>
         </div>
 
-        <div className="mt-auto space-y-4">
+        <div className="mt-auto space-y-3">
           {/* Relevance Score Breakdown */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* Simplified for cleaner look, expanded implementation can go here later */}
-            <div className="space-y-1">
-              <div className="text-muted-foreground/60 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
-                <span>Relevance Match</span>
-                <span>{offer.breakdown.relevance}%</span>
-              </div>
-              <Progress value={offer.breakdown.relevance} className="h-1.5" />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <span>Relevance Match</span>
+              <span>{offer.breakdown.relevance}%</span>
             </div>
+            <Progress value={offer.breakdown.relevance} className="h-1.5" />
           </div>
 
-          {/* Web Insights - Dark Container */}
+          {/* Web Insights */}
           {offer.webInsights && offer.webInsights.length > 0 && (
-            <div className="group/insight relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-950 p-4">
-              <div className="absolute right-0 top-0 p-2 opacity-10 transition-opacity group-hover/insight:opacity-20">
-                <Search className="h-12 w-12 text-white" />
+            <div className="group/insight relative overflow-hidden rounded-lg border bg-card/50 p-4 backdrop-blur-sm">
+              <div className="absolute right-2 top-2 opacity-5 transition-opacity group-hover/insight:opacity-10">
+                <Search className="size-10" />
               </div>
-              <span className="relative z-10 mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neon">
-                <Search size={12} /> Intelligence Insight
+              <span className="relative z-10 mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neon">
+                <Search className="size-3" /> Intelligence Insight
               </span>
-              <p className="relative z-10 text-xs font-medium leading-relaxed text-zinc-300">
+              <p className="relative z-10 text-xs leading-relaxed text-muted-foreground">
                 {offer.webInsights[0]}
               </p>
             </div>

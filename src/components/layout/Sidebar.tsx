@@ -44,22 +44,22 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r bg-zinc-50 md:flex dark:bg-zinc-950/50">
+    <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r bg-background md:flex">
       {/* Logo and Brand */}
       <div className="flex items-center gap-3 p-8">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neon shadow-neon">
-          <Sparkles className="text-neon-foreground" size={22} />
+        <div className="flex size-10 items-center justify-center rounded-lg bg-neon shadow-neon">
+          <Sparkles className="text-neon-foreground" size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold tracking-tighter">OfferAnalyst</h2>
-          <p className="text-[10px] font-bold uppercase leading-none tracking-widest text-muted-foreground">
+          <h2 className="text-xl font-bold">OfferAnalyst</h2>
+          <p className="text-[10px] font-semibold uppercase leading-none tracking-wide text-muted-foreground">
             Intelligence Engine
           </p>
         </div>
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 space-y-1.5 px-4 py-6">
+      <nav className="flex-1 space-y-1 px-4 py-6">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -67,20 +67,20 @@ export function Sidebar() {
               <Button
                 variant="ghost"
                 className={cn(
-                  "group relative h-12 w-full justify-start gap-4 overflow-hidden rounded-2xl transition-all duration-300",
+                  "group relative h-12 w-full justify-start gap-3 overflow-hidden transition-all",
                   isActive
-                    ? "bg-neon/10 dark:bg-neon/5 text-neon"
-                    : "text-muted-foreground hover:bg-zinc-100 hover:text-foreground dark:hover:bg-zinc-900",
+                    ? "bg-neon/10 text-neon dark:bg-neon/5"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 <item.icon
-                  size={20}
+                  size={18}
                   className={cn(
                     "transition-colors",
                     isActive ? "text-neon" : "group-hover:text-foreground",
                   )}
                 />
-                <span className="text-sm font-semibold tracking-tight">
+                <span className="text-sm font-semibold">
                   {item.label}
                 </span>
 

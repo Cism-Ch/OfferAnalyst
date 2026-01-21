@@ -51,19 +51,19 @@ export function ResultsSection({
     return (
       <WidgetCard
         glass
-        className="border-2 border-dashed border-zinc-200 bg-transparent dark:border-zinc-800"
+        className="border-2 border-dashed"
         delay={0.2}
       >
-        <CardContent className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
-          <div className="mb-6 rounded-full bg-zinc-100 p-4 dark:bg-zinc-900">
-            <BarChart3 className="h-10 w-10 opacity-50" />
+        <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+          <div className="mb-6 rounded-full bg-muted p-4">
+            <BarChart3 className="size-10 text-muted-foreground/50" />
           </div>
-          <p className="text-xl font-bold text-foreground">Awaiting Input</p>
-          <p className="mt-2 max-w-[200px] text-sm">
+          <p className="text-xl font-bold">Awaiting Input</p>
+          <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
             Configure your context and execute analysis to see rankings.
           </p>
-          <div className="mt-8 flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider dark:bg-zinc-900">
-            <CheckCircle2 size={12} className="text-neon" />
+          <div className="mt-8 flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide">
+            <CheckCircle2 className="size-3 text-neon" />
             <span>Intelligence Engine Ready</span>
           </div>
         </CardContent>
@@ -76,8 +76,8 @@ export function ResultsSection({
     <div className="space-y-6">
       {/* Section Header */}
       <div className="flex items-center justify-between px-2">
-        <h3 className="text-xl font-bold tracking-tight">Intelligence Feed</h3>
-        <Badge className="hover:bg-neon/90 bg-neon px-3 font-bold text-neon-foreground">
+        <h3 className="text-xl font-bold">Intelligence Feed</h3>
+        <Badge className="bg-neon px-3 font-bold text-neon-foreground hover:bg-neon/90">
           {results.topOffers.length} Verified
         </Badge>
       </div>

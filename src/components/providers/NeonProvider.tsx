@@ -43,10 +43,19 @@ export function NeonProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Load saved color from localStorage
-    const savedColor = localStorage.getItem('neonColor') as NeonColor;
-    if (savedColor && ['yellow', 'green', 'cyan', 'purple'].includes(savedColor)) {
-      setNeonColorState(savedColor);
+    const loadSavedColor = () => {
+      const savedColor = localStorage.getItem('neonColor') as NeonColor;
+      if (savedColor && ['yellow', 'green', 'cyan', 'purple'].includes(savedColor)) {
+        return savedColor;
+      }
+      return 'yellow';
+    };
+
+    const initialColor = loadSavedColor();
+    if (initialColor !== neonColor) {
+      setNeonColorState(initialColor);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
