@@ -29,7 +29,10 @@ import {
     Sparkles,
     BarChart3,
     Menu,
-    X
+    X,
+    Search,
+    Database,
+    LineChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -42,12 +45,15 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
     { label: 'Dashboard', href: '/', icon: Home },
-    { label: 'Projects', href: '/projects', icon: Briefcase },
-    { label: 'History', href: '/history', icon: Clock },
-    { label: 'Saved Offers', href: '/saved', icon: Bookmark },
+    { label: 'Search Context', href: '/search-context', icon: Search },
+    { label: 'Data Source', href: '/data-source', icon: Database },
+    { label: 'Analysis', href: '/analysis', icon: LineChart },
 ];
 
 const secondaryNavItems: NavItem[] = [
+    { label: 'Projects', href: '/projects', icon: Briefcase },
+    { label: 'History', href: '/history', icon: Clock },
+    { label: 'Saved Offers', href: '/saved', icon: Bookmark },
     { label: 'Analytics', href: '/analytics', icon: BarChart3, badge: 'Soon' },
     { label: 'Settings', href: '/settings', icon: Settings },
 ];
@@ -227,7 +233,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <motion.aside
                 animate={{ width: isCollapsed ? 80 : 256 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="hidden md:flex flex-col relative border-r bg-background h-screen sticky top-0"
+                className="hidden md:flex flex-col relative border-r bg-background min-h-screen sticky top-0"
             >
                 <SidebarContent />
             </motion.aside>

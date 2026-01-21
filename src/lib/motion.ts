@@ -310,6 +310,37 @@ export const fadeInUpProps = {
 };
 
 /**
+ * Stagger Container Props
+ */
+export const staggerContainerProps = {
+  initial: 'hidden',
+  animate: 'visible',
+  variants: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  },
+};
+
+/**
+ * Stagger Item Props
+ */
+export const staggerItemProps = {
+  variants: {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: transitions.smooth,
+    },
+  },
+};
+
+/**
  * Scale On Hover Preset (for buttons)
  */
 export const scaleOnHoverProps = {
