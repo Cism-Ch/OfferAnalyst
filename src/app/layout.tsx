@@ -26,7 +26,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <NeonProvider>
-              <div className="aurora-bg" />
+              <div className="fixed inset-0 -z-10 animate-aurora bg-gradient-to-br from-[hsla(var(--neon-hsl),0.1)] via-transparent to-[hsla(var(--neon-hsl),0.05)] bg-[size:200%_200%] opacity-40" />
               {children}
               <Toaster />
             </NeonProvider>

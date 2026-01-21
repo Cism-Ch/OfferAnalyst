@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
@@ -36,19 +36,12 @@ function DialogOverlay({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
-    <DialogPrimitive.Overlay
-      data-slot="dialog-overlay"
-      asChild
-      {...props}
-    >
+    <DialogPrimitive.Overlay data-slot="dialog-overlay" asChild {...props}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className={cn(
-          "fixed inset-0 z-50 bg-black/50",
-          className,
-        )}
+        className={cn("fixed inset-0 z-50 bg-black/50", className)}
       />
     </DialogPrimitive.Overlay>
   );
@@ -65,11 +58,7 @@ function DialogContent({
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
-      <DialogPrimitive.Content
-        data-slot="dialog-content"
-        asChild
-        {...props}
-      >
+      <DialogPrimitive.Content data-slot="dialog-content" asChild {...props}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

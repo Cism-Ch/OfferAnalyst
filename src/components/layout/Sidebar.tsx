@@ -44,10 +44,10 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r bg-zinc-50 md:flex dark:bg-zinc-950/50">
+    <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r bg-zinc-50 dark:bg-zinc-950/50 md:flex">
       {/* Logo and Brand */}
       <div className="flex items-center gap-3 p-8">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neon shadow-neon">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-neon shadow-neon">
           <Sparkles className="text-neon-foreground" size={22} />
         </div>
         <div>
@@ -147,7 +147,7 @@ export function Sidebar() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-zinc-100 bg-neon dark:border-zinc-900">
-                  <div className="h-1.5 w-1.5 rounded-full bg-neon-foreground" />
+                  <div className="bg-neon-foreground h-1.5 w-1.5 rounded-full" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
@@ -170,7 +170,7 @@ export function Sidebar() {
           </motion.div>
         ) : (
           <Link href="/auth/login" className="block">
-            <Button className="h-12 w-full rounded-xl bg-neon text-[10px] font-bold uppercase tracking-widest text-neon-foreground shadow-neon">
+            <Button className="text-neon-foreground h-12 w-full rounded-xl bg-neon text-[10px] font-bold uppercase tracking-widest shadow-neon">
               Authenticate Identity
             </Button>
           </Link>
