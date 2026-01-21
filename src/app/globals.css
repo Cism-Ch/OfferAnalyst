@@ -128,6 +128,146 @@
   --chart-3: #c5a028;
 }
 
+/* Premium Theme: Ocean Blue */
+.ocean {
+  --background: #f0f9ff;
+  --foreground: #0c4a6e;
+  --card: #ffffff;
+  --card-foreground: #0c4a6e;
+  --popover: #ffffff;
+  --popover-foreground: #0c4a6e;
+  --primary: #0284c7;
+  --primary-foreground: #f0f9ff;
+  --secondary: #e0f2fe;
+  --secondary-foreground: #075985;
+  --muted: #e0f2fe;
+  --muted-foreground: #0369a1;
+  --accent: #7dd3fc;
+  --accent-foreground: #0c4a6e;
+  --destructive: #dc2626;
+  --border: #bae6fd;
+  --input: #bae6fd;
+  --ring: #0ea5e9;
+  --sidebar: #f0f9ff;
+  --sidebar-foreground: #0c4a6e;
+  --sidebar-primary: #0284c7;
+  --sidebar-primary-foreground: #f0f9ff;
+  --sidebar-accent: #e0f2fe;
+  --sidebar-accent-foreground: #075985;
+  --sidebar-border: #bae6fd;
+  --sidebar-ring: #0ea5e9;
+  --chart-1: #0284c7;
+  --chart-2: #0ea5e9;
+  --chart-3: #38bdf8;
+  --chart-4: #7dd3fc;
+  --chart-5: #0369a1;
+}
+
+/* Premium Theme: Forest Green */
+.forest {
+  --background: #f0fdf4;
+  --foreground: #14532d;
+  --card: #ffffff;
+  --card-foreground: #14532d;
+  --popover: #ffffff;
+  --popover-foreground: #14532d;
+  --primary: #16a34a;
+  --primary-foreground: #f0fdf4;
+  --secondary: #dcfce7;
+  --secondary-foreground: #166534;
+  --muted: #dcfce7;
+  --muted-foreground: #15803d;
+  --accent: #86efac;
+  --accent-foreground: #14532d;
+  --destructive: #dc2626;
+  --border: #bbf7d0;
+  --input: #bbf7d0;
+  --ring: #22c55e;
+  --sidebar: #f0fdf4;
+  --sidebar-foreground: #14532d;
+  --sidebar-primary: #16a34a;
+  --sidebar-primary-foreground: #f0fdf4;
+  --sidebar-accent: #dcfce7;
+  --sidebar-accent-foreground: #166534;
+  --sidebar-border: #bbf7d0;
+  --sidebar-ring: #22c55e;
+  --chart-1: #16a34a;
+  --chart-2: #22c55e;
+  --chart-3: #4ade80;
+  --chart-4: #86efac;
+  --chart-5: #15803d;
+}
+
+/* Premium Theme: Silver Luxury */
+.silver {
+  --background: #fafafa;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #71717a;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #e4e4e7;
+  --accent-foreground: #18181b;
+  --destructive: #dc2626;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a1a1aa;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #18181b;
+  --sidebar-primary: #71717a;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #a1a1aa;
+  --chart-1: #71717a;
+  --chart-2: #a1a1aa;
+  --chart-3: #52525b;
+  --chart-4: #d4d4d8;
+  --chart-5: #3f3f46;
+}
+
+/* Premium Theme: Neon Dark */
+.neon {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #0f0f0f;
+  --card-foreground: #fafafa;
+  --popover: #0f0f0f;
+  --popover-foreground: #fafafa;
+  --primary: #a855f7;
+  --primary-foreground: #fafafa;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #fafafa;
+  --muted: #1f1f1f;
+  --muted-foreground: #a1a1aa;
+  --accent: #ec4899;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #a855f7;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #a855f7;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #1f1f1f;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #a855f7;
+  --chart-1: #a855f7;
+  --chart-2: #ec4899;
+  --chart-3: #06b6d4;
+  --chart-4: #f59e0b;
+  --chart-5: #10b981;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -135,5 +275,104 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Premium Gradients */
+@layer utilities {
+  .gradient-gold {
+    background: linear-gradient(135deg, #d4af37 0%, #eec14d 100%);
+  }
+
+  .gradient-luxury {
+    background: linear-gradient(135deg, #d4af37 0%, #c5a028 50%, #eec14d 100%);
+  }
+
+  .gradient-ocean {
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+  }
+
+  .gradient-forest {
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
+  }
+
+  .gradient-neon {
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
+  }
+
+  .gradient-silver {
+    background: linear-gradient(135deg, #71717a 0%, #a1a1aa 50%, #d4d4d8 100%);
+  }
+
+  /* Animated gradient backgrounds */
+  .gradient-animated {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Glow effects */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+  }
+
+  .glow-ocean {
+    box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
+  }
+
+  .glow-forest {
+    box-shadow: 0 0 20px rgba(22, 163, 74, 0.4);
+  }
+
+  .glow-neon {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Premium card styles */
+  .card-premium {
+    border-radius: 0.75rem;
+    border-width: 1px;
+    background-color: var(--card);
+    color: var(--card-foreground);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-premium:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 }
