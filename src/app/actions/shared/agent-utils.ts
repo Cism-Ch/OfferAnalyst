@@ -1,15 +1,15 @@
 // Utilitaires partagés pour les agents AI
-import { z } from "zod";
-import { AgentActionError, AgentErrorCode } from "@/types";
+import { z } from 'zod';
+import { AgentActionError, AgentErrorCode } from '@/types';
 
 // Types d'erreurs standardisés
 export class AgentError extends Error {
   constructor(
     message: string,
-    public code: AgentErrorCode,
+    public code: AgentErrorCode
   ) {
     super(message);
-    this.name = "AgentError";
+    this.name = 'AgentError';
   }
 }
 
@@ -20,43 +20,34 @@ export interface AIResponse {
 }
 
 // Utilitaire de parsing JSON robuste
-export function parseJSONFromText(
-  text: string,
-  context: string = "AI response",
-): unknown {
+export function parseJSONFromText(text: string, context: string = 'AI response'): unknown {
   console.log(`Parsing JSON from ${context} (${text.length} chars)`);
 
   let cleanedText = text.replace(/```json\n?|\n?```/g, "").trim();
 
   // Trouver le premier délimiteur JSON valide ({ ou [)
-  const firstBrace = cleanedText.indexOf("{");
-  const firstBracket = cleanedText.indexOf("[");
+  const firstBrace = cleanedText.indexOf('{');
+  const firstBracket = cleanedText.indexOf('[');
 
   let startIndex = -1;
-  let endChar = "";
+  let endChar = '';
 
   if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
     startIndex = firstBrace;
-    endChar = "}";
+    endChar = '}';
   } else if (firstBracket !== -1) {
     startIndex = firstBracket;
-    endChar = "]";
+    endChar = ']';
   }
 
   if (startIndex === -1) {
-    throw new AgentError(
-      `No valid JSON object or array found in ${context}`,
-      "INVALID_JSON",
-    );
+    throw new AgentError(`No valid JSON object or array found in ${context}`, 'INVALID_JSON');
   }
 
   const lastIndex = cleanedText.lastIndexOf(endChar);
 
   if (lastIndex === -1 || lastIndex <= startIndex) {
-    throw new AgentError(
-      `Incomplete JSON structure found in ${context}`,
-      "INVALID_JSON",
-    );
+    throw new AgentError(`Incomplete JSON structure found in ${context}`, 'INVALID_JSON');
   }
 
   cleanedText = cleanedText.substring(startIndex, lastIndex + 1);
@@ -64,10 +55,7 @@ export function parseJSONFromText(
   try {
     return JSON.parse(cleanedText);
   } catch (error) {
-    throw new AgentError(
-      `Failed to parse JSON from ${context}: ${error}`,
-      "INVALID_JSON",
-    );
+    throw new AgentError(`Failed to parse JSON from ${context}: ${error}`, 'INVALID_JSON');
   }
 }
 
@@ -75,7 +63,7 @@ export function parseJSONFromText(
 export async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  context: string = "operation",
+  context: string = 'operation'
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -90,12 +78,8 @@ export async function retryWithBackoff<T>(
       console.error(`${context} - Attempt ${attempt} failed:`, error);
 
       // Ne pas retry sur certaines erreurs
-      if (
-        error instanceof AgentError &&
-        (error.code === "VALIDATION_FAILED" ||
-          error.code === "API_KEY_MISSING" ||
-          error.code === "API_ERROR")
-      ) {
+      if (error instanceof AgentError &&
+        (error.code === 'VALIDATION_FAILED' || error.code === 'API_KEY_MISSING' || error.code === 'API_ERROR')) {
         break;
       }
 
@@ -103,33 +87,26 @@ export async function retryWithBackoff<T>(
       if (attempt < maxRetries) {
         const delay = Math.pow(2, attempt - 1) * 2000;
         console.log(`${context} - Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
 
   throw new AgentError(
-    `${context} failed after ${maxRetries} attempts: ${lastError?.message || "Unknown error"}`,
-    "SEARCH_FAILED",
+    `${context} failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`,
+    'SEARCH_FAILED'
   );
 }
 
 // Validation avec Zod
-export function validateWithZod<T>(
-  data: unknown,
-  schema: z.ZodSchema<T>,
-  context: string,
-): T {
+export function validateWithZod<T>(data: unknown, schema: z.ZodSchema<T>, context: string): T {
   const validationResult = schema.safeParse(data);
 
   if (!validationResult.success) {
-    console.error(
-      `Schema validation failed for ${context}:`,
-      validationResult.error,
-    );
+    console.error(`Schema validation failed for ${context}:`, validationResult.error);
     throw new AgentError(
-      `Validation failed for ${context}: ${validationResult.error.issues.map((i) => i.path.join(".")).join(", ")}`,
-      "VALIDATION_FAILED",
+      `Validation failed for ${context}: ${validationResult.error.issues.map(i => i.path.join('.')).join(', ')}`,
+      'VALIDATION_FAILED'
     );
   }
 
@@ -143,8 +120,8 @@ export function detectAPIError(text: string): AgentError | null {
       const errorData = JSON.parse(text);
       if (errorData.error) {
         return new AgentError(
-          `API Error: ${errorData.error.message || "Unknown API error"} (Code: ${errorData.error.code})`,
-          "API_ERROR",
+          `API Error: ${errorData.error.message || 'Unknown API error'} (Code: ${errorData.error.code})`,
+          'API_ERROR'
         );
       }
     } catch {
@@ -157,13 +134,13 @@ export function detectAPIError(text: string): AgentError | null {
 export function toAgentActionError(
   error: unknown,
   context: string,
-  fallbackCode: AgentErrorCode = "OPENROUTER_ERROR",
+  fallbackCode: AgentErrorCode = 'OPENROUTER_ERROR'
 ): AgentActionError {
   if (error instanceof AgentError) {
     return {
       message: error.message,
       code: error.code,
-      context,
+      context
     };
   }
 
@@ -172,14 +149,14 @@ export function toAgentActionError(
       message: error.message,
       code: fallbackCode,
       context,
-      raw: error.stack,
+      raw: error.stack
     };
   }
 
   return {
-    message: "Unknown error occurred",
+    message: 'Unknown error occurred',
     code: fallbackCode,
     context,
-    raw: typeof error === "string" ? error : JSON.stringify(error),
+    raw: typeof error === 'string' ? error : JSON.stringify(error)
   };
 }
