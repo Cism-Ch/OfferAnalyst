@@ -1,99 +1,115 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, CheckCircle2 } from 'lucide-react';
-import { AnalysisResponse, ScoredOffer } from '@/types';
-import { OfferCard } from './OfferCard';
+import { BarChart3, CheckCircle2 } from "lucide-react";
+import { AnalysisResponse, ScoredOffer } from "@/types";
+import { OfferCard } from "./OfferCard";
 
 /**
  * ResultsSection Component Props
  */
 interface ResultsSectionProps {
-    /** Analysis results to display, or null if no results yet */
-    results: AnalysisResponse | null;
-/** Function to save an offer */
-    onSaveOffer: (offer: ScoredOffer) => void;
-    /** Function to check if an offer is saved */
-    isOfferSaved: (offerId: string) => boolean;
+  /** Analysis results to display, or null if no results yet */
+  results: AnalysisResponse | null;
+  /** Function to save an offer */
+  onSaveOffer: (offer: ScoredOffer) => void;
+  /** Function to check if an offer is saved */
+  isOfferSaved: (offerId: string) => boolean;
 }
 
 /**
  * ResultsSection Component
- * 
+ *
  * Displays the results of the offer analysis, including:
  * - Top recommended offers with scores
  * - Market summary
  * - Empty state when no analysis has been performed
- * 
+ *
  * This component adapts its display based on whether results are available,
  * showing either the analysis results or a helpful empty state.
- * 
+ *
  * Features:
  * - Dynamic rendering based on results state
  * - List of top offers with individual cards
  * - Market summary card
  * - Encouraging empty state for new users
- * 
+ *
  * @param {ResultsSectionProps} props - Component props
  * @returns {JSX.Element} The results section
  */
+import { WidgetCard } from "@/components/premium/WidgetCard";
+
 export function ResultsSection({
-    results,
-    onSaveOffer,
-    isOfferSaved
+  results,
+  onSaveOffer,
+  isOfferSaved,
 }: ResultsSectionProps) {
-    // Show empty state if no results
-    if (!results) {
-        return (
-            <Card className="border-dashed border-2 shadow-none bg-transparent">
-                <CardContent className="flex flex-col items-center justify-center p-12 text-muted-foreground text-center">
-                    <BarChart3 className="h-12 w-12 mb-4 opacity-50" />
-                    <p className="font-medium">No Analysis Yet</p>
-                    <p className="text-sm">
-                        Contextualize your search to see ranked offers here.
-                    </p>
-                    <div className="flex items-center gap-2 mt-4 text-xs bg-muted p-2 rounded">
-                        <CheckCircle2 size={14} className="text-green-500" />
-                        <span>AI Fetch Ready</span>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    // Show results
+  // Show empty state if no results
+  if (!results) {
     return (
-        <div className="space-y-4">
-            {/* Section Header */}
-            <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg">Top Recommendations</h3>
-                <Badge variant="secondary">
-                    {results.topOffers.length} Recommended
-                </Badge>
-            </div>
-
-            {/* Offer Cards */}
-            {results.topOffers.map((offer, i) => (
-                <OfferCard
-                    key={offer.id || i}
-                    offer={offer}
-                    index={i}
-                    onSave={onSaveOffer}
-                    isSaved={isOfferSaved(offer.id)}
-                />
-            ))}
-
-            {/* Market Summary Card */}
-            <Card className="bg-slate-900 text-white border-none">
-                <CardHeader>
-                    <CardTitle className="text-sm">Market Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-slate-300">
-                    {results.marketSummary}
-                </CardContent>
-            </Card>
-        </div>
+      <WidgetCard
+        glass
+        className="border-2 border-dashed"
+        delay={0.2}
+      >
+        <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+          <div className="mb-6 rounded-full bg-muted p-4">
+            <BarChart3 className="size-10 text-muted-foreground/50" />
+          </div>
+          <p className="text-xl font-bold">Awaiting Input</p>
+          <p className="mt-2 max-w-[200px] text-sm text-muted-foreground">
+            Configure your context and execute analysis to see rankings.
+          </p>
+          <div className="mt-8 flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide">
+            <CheckCircle2 className="size-3 text-neon" />
+            <span>Intelligence Engine Ready</span>
+          </div>
+        </CardContent>
+      </WidgetCard>
     );
+  }
+
+  // Show results
+  return (
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="flex items-center justify-between px-2">
+        <h3 className="text-xl font-bold">Intelligence Feed</h3>
+        <Badge className="bg-neon px-3 font-bold text-neon-foreground hover:bg-neon/90">
+          {results.topOffers.length} Verified
+        </Badge>
+      </div>
+
+      {/* Offer Cards */}
+      <div className="space-y-4">
+        {results.topOffers.map((offer, i) => (
+          <OfferCard
+            key={offer.id || i}
+            offer={offer}
+            index={i}
+            onSave={onSaveOffer}
+            isSaved={isOfferSaved(offer.id)}
+          />
+        ))}
+      </div>
+
+      {/* Market Summary Card */}
+      <WidgetCard
+        glass
+        className="border-zinc-800 bg-zinc-900 text-white"
+        neonHover
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-neon">
+            Market Intelligence Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm font-medium leading-relaxed text-zinc-400">
+          {results.marketSummary}
+        </CardContent>
+      </WidgetCard>
+    </div>
+  );
 }

@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  offers        Offer[]
+  searchHistory SearchHistory[]
+  projects      Project[]
+  dashboardState DashboardState?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  accountId             String
+  providerId            String
+  userId                String    @db.ObjectId
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Offer {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  originalId  String   // The ID from the scraper/AI
+  title       String
+  description String
+  price       String?
+  location    String?
+  category    String?
+  link        String?
+  savedAt     DateTime @default(now())
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId   String?  @db.ObjectId
+
+  @@map("offers")
+}
+
+model SearchHistory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  domain    String
+  criteria  String?
+  context   String?
+  inputs    Json     // Store raw inputs as JSON for flexibility
+  results   Json?    // Optional: store light summary of results
+  timestamp DateTime @default(now())
+  pinned    Boolean  @default(false)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("history")
+}
+
+model Project {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  searchIds   String[]
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+model DashboardState {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  domain          String?
+  explicitCriteria String?
+  implicitContext String?
+  offersInput     String?
+  autoFetch       Boolean?
+  limit           String?
+  model           String?
+  updatedAt       DateTime @updatedAt
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("dashboard_state")
+}

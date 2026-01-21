@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 /**
  * Home Page - Main Dashboard Interface
- * 
+ *
  * Main dashboard interface for the OfferAnalyst application.
  * Provides a comprehensive interface for analyzing offers using AI-powered
  * contextual analysis and web scraping capabilities.
- * 
+ *
  * Features:
  * - User input for domain, criteria, and preferences
  * - Auto-fetch functionality for web scraping
@@ -14,35 +14,33 @@
  * - Interactive visualizations of results
  * - Save functionality for interesting offers
  * - Search history tracking
- * 
+ *
  * Architecture:
  * - Modular component structure for maintainability
  * - Custom hooks for state and business logic separation
  * - Reusable UI components for consistency
  */
 
-import React from 'react';
-import { useSavedOffers } from '@/hooks/use-saved-offers';
-import { useSearchHistory } from '@/hooks/use-search-history';
-import { useDashboardState } from '@/hooks/use-dashboard-state';
-import { useOfferAnalysis } from '@/hooks/use-offer-analysis';
-import { useRestoreSearch } from '@/hooks/use-restore-search';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { Header } from '@/components/layout/Header';
-import { ConfigurationCard } from '@/components/offers/ConfigurationCard';
-import { ScoreChart } from '@/components/offers/ScoreChart';
-import { ResultsSection } from '@/components/offers/ResultsSection';
-import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
+import React, { Suspense } from "react";
+import { motion } from "framer-motion";
+import { useSavedOffers } from "@/hooks/use-saved-offers";
+import { useSearchHistory } from "@/hooks/use-search-history";
+import { useDashboardState } from "@/hooks/use-dashboard-state";
+import { useOfferAnalysis } from "@/hooks/use-offer-analysis";
+import { useRestoreSearch } from "@/hooks/use-restore-search";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
+import { ConfigurationCard } from "@/components/offers/ConfigurationCard";
+import { ScoreChart } from "@/components/offers/ScoreChart";
+import { ResultsSection } from "@/components/offers/ResultsSection";
+import { ProviderErrorPanel } from "@/components/offers/ProviderErrorPanel";
 
 /**
- * Main Home Page Component
- * 
- * Orchestrates the entire dashboard interface by composing
- * smaller, focused components and managing the application state.
- * 
- * @returns {JSX.Element} The complete dashboard interface
+ * Main Home Page Content
+ *
+ * Separated to allow for Suspense boundary when using search params
  */
-export default function Home() {
+function HomeContent() {
     // Custom hooks for state management
     const dashboardState = useDashboardState();
     const { saveOffer, isSaved } = useSavedOffers();
@@ -54,7 +52,7 @@ export default function Home() {
         setExplicitCriteria: dashboardState.setExplicitCriteria,
         setImplicitContext: dashboardState.setImplicitContext,
         setOffersInput: dashboardState.setOffersInput,
-        setResults: dashboardState.setResults
+        setResults: dashboardState.setResults,
     });
 
     // Custom hook for business logic
@@ -65,7 +63,7 @@ export default function Home() {
         setOffersInput: dashboardState.setOffersInput,
         addToHistory,
         selectedModel: dashboardState.model,
-        setProviderError: dashboardState.setProviderError
+        setProviderError: dashboardState.setProviderError,
     });
 
     /**
@@ -79,17 +77,17 @@ export default function Home() {
             domain: dashboardState.domain,
             explicitCriteria: dashboardState.explicitCriteria,
             implicitContext: dashboardState.implicitContext,
-            limit: dashboardState.limit
+            limit: dashboardState.limit,
         });
     };
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans text-neutral-900">
+        <div className="flex min-h-screen overflow-hidden bg-zinc-50 font-sans text-neutral-900 dark:bg-zinc-950">
             {/* Sidebar Navigation */}
             <Sidebar />
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col">
+            <main className="flex h-screen flex-1 flex-col overflow-hidden">
                 {/* Header */}
                 <Header
                     selectedModel={dashboardState.model}
@@ -97,19 +95,20 @@ export default function Home() {
                 />
 
                 {/* Dashboard Content */}
-                <div className="flex-1 p-6 overflow-auto">
-                    <div className="space-y-4">
+                <div className="custom-scrollbar flex-1 overflow-y-auto p-8">
+                    <div className="mx-auto max-w-[1600px] space-y-8">
+                        {/* Alert / Progress Panel */}
                         <ProviderErrorPanel
                             error={dashboardState.providerError}
                             onDismiss={() => dashboardState.setProviderError(null)}
                             onRetry={onAnalyze}
                             activeModelId={dashboardState.model}
                         />
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                            {/* Left Column - Configuration and Visualization */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Configuration Card */}
+                        {/* Interactive Grid Layout */}
+                        <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-12">
+                            {/* Main Analysis Column */}
+                            <div className="space-y-8 xl:col-span-8">
                                 <ConfigurationCard
                                     domain={dashboardState.domain}
                                     setDomain={dashboardState.setDomain}
@@ -128,14 +127,21 @@ export default function Home() {
                                     onAnalyze={onAnalyze}
                                 />
 
-                                {/* Score Distribution Chart */}
-                                {dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0 && (
-                                    <ScoreChart offers={dashboardState.results.topOffers} />
-                                )}
+                                {/* Intelligence Visualization */}
+                                {dashboardState.results?.topOffers &&
+                                    dashboardState.results.topOffers.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3, duration: 0.7 }}
+                                        >
+                                            <ScoreChart offers={dashboardState.results.topOffers} />
+                                        </motion.div>
+                                    )}
                             </div>
 
-                            {/* Right Column - Results */}
-                            <div className="space-y-6">
+                            {/* Intelligence Feed Column */}
+                            <div className="sticky top-0 xl:col-span-4">
                                 <ResultsSection
                                     results={dashboardState.results}
                                     onSaveOffer={saveOffer}
@@ -143,10 +149,33 @@ export default function Home() {
                                 />
                             </div>
                         </div>
-
                     </div>
                 </div>
             </main>
         </div>
+    );
+}
+
+/**
+ * Main Home Page Component
+ *
+ * Orchestrates the entire dashboard interface by composing
+ * smaller, focused components and managing the application state.
+ *
+ * @returns {JSX.Element} The complete dashboard interface
+ */
+export default function Home() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-zinc-950">
+                    <div className="animate-pulse text-muted-foreground">
+                        Loading dashboard...
+                    </div>
+                </div>
+            }
+        >
+            <HomeContent />
+        </Suspense>
     );
 }

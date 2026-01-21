@@ -41,13 +41,13 @@ export interface AnalysisResponse {
 }
 
 export type AgentErrorCode =
-  | 'API_KEY_MISSING'
-  | 'NO_RESPONSE'
-  | 'INVALID_JSON'
-  | 'VALIDATION_FAILED'
-  | 'SEARCH_FAILED'
-  | 'API_ERROR'
-  | 'OPENROUTER_ERROR';
+  | "API_KEY_MISSING"
+  | "NO_RESPONSE"
+  | "INVALID_JSON"
+  | "VALIDATION_FAILED"
+  | "SEARCH_FAILED"
+  | "API_ERROR"
+  | "OPENROUTER_ERROR";
 
 export interface AgentActionError {
   message: string;
@@ -60,7 +60,7 @@ export type AgentActionResult<T> =
   | { success: true; data: T; meta?: { model: string; latencyMs?: number } }
   | { success: false; error: AgentActionError };
 
-export type ProviderErrorPhase = 'fetch' | 'analyze';
+export type ProviderErrorPhase = "fetch" | "analyze";
 
 export interface ProviderErrorState extends AgentActionError {
   phase: ProviderErrorPhase;
@@ -81,7 +81,7 @@ export interface SearchHistoryItem {
 }
 
 // Zod schemas for validation
-import { z } from 'zod';
+import { z } from "zod";
 
 export const OfferSchema = z.object({
   id: z.string(),
