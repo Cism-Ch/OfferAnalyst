@@ -102,7 +102,7 @@ export function ResultsSection({
         neonHover
       >
         <CardHeader className="pb-2">
-          <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-neon">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-neon">
             Market Intelligence Summary
           </CardTitle>
         </CardHeader>
