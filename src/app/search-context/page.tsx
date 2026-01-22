@@ -38,7 +38,7 @@ export default function SearchContextPage() {
                             <div className="space-y-1">
                                 <p className="text-sm font-medium">Define your search context</p>
                                 <p className="text-xs text-muted-foreground">
-                                    These parameters will guide the AI to understand what you're looking for
+                                    These parameters will guide the AI to understand what you&apos;re looking for
                                     and how to rank the offers based on your preferences.
                                 </p>
                             </div>

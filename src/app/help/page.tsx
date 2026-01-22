@@ -172,7 +172,7 @@ export default function HelpPage() {
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg text-muted-foreground">
-                No results found for "{searchQuery}"
+                No results found for &quot;{searchQuery}&quot;
               </p>
               <p className="text-sm text-muted-foreground mt-2">
                 Try adjusting your search or browse by category
@@ -245,7 +245,7 @@ export default function HelpPage() {
         <CardHeader>
           <CardTitle>Still need help?</CardTitle>
           <CardDescription>
-            Can't find what you're looking for? We're here to help!
+            Can&apos;t find what you&apos;re looking for? We&apos;re here to help!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">

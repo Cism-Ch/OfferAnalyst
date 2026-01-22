@@ -81,15 +81,15 @@ interface ModernSidebarProps {
     onToggle?: () => void;
 }
 
-// Helper function to render nav items
-function renderNavItems(
-    items: NavItem[],
-    section: string | undefined,
-    isCollapsed: boolean,
-    isActive: (href: string) => boolean,
-    setMobileOpen: (open: boolean) => void
-) {
-    return (
+export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarProps) {
+    const pathname = usePathname();
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const isActive = (href: string) => {
+        return pathname === href;
+    };
+
+    const NavItems = ({ items, section }: { items: NavItem[]; section?: string }) => (
         <div className="space-y-1">
             {section && !isCollapsed && (
                 <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -108,7 +108,6 @@ function renderNavItems(
                                 : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                         )}
                         title={item.label}
-                        onClick={() => setMobileOpen(false)}
                     >
                         <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed && 'mx-auto')} />
                         {!isCollapsed && (
@@ -126,16 +125,8 @@ function renderNavItems(
             ))}
         </div>
     );
-}
 
-// Helper function to render sidebar content
-function renderSidebarContent(
-    isCollapsed: boolean,
-    onToggle: (() => void) | undefined,
-    isActive: (href: string) => boolean,
-    setMobileOpen: (open: boolean) => void
-) {
-    return (
+    const SidebarContent = () => (
         <>
             {/* Logo and Brand */}
             <div className={cn(
@@ -166,13 +157,13 @@ function renderSidebarContent(
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
-                {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen)}
+                <NavItems items={mainNavItems} />
                 <Separator className="my-4" />
-                {renderNavItems(secondaryNavItems, !isCollapsed ? 'More' : undefined, isCollapsed, isActive, setMobileOpen)}
+                <NavItems items={secondaryNavItems} section={!isCollapsed ? 'More' : undefined} />
                 <Separator className="my-4" />
-                {renderNavItems(dashboardNavItems, !isCollapsed ? 'Dashboard' : undefined, isCollapsed, isActive, setMobileOpen)}
+                <NavItems items={dashboardNavItems} section={!isCollapsed ? 'Dashboard' : undefined} />
                 <Separator className="my-4" />
-                {renderNavItems(adminNavItems, !isCollapsed ? 'Admin' : undefined, isCollapsed, isActive, setMobileOpen)}
+                <NavItems items={adminNavItems} section={!isCollapsed ? 'Admin' : undefined} />
             </nav>
 
             {/* User Profile */}
@@ -217,28 +208,19 @@ function renderSidebarContent(
             )}
         </>
     );
-}
-
-export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarProps) {
-    const pathname = usePathname();
-    const [mobileOpen, setMobileOpen] = useState(false);
-
-    const isActive = (href: string) => {
-        return pathname === href;
-    };
 
     return (
         <>
             {/* Mobile Menu Button */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-lg bg-background border shadow-lg hover:bg-accent"
+                className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-background border shadow-sm"
                 aria-label="Open menu"
             >
                 <Menu className="h-5 w-5" />
             </button>
 
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile Overlay */}
             <AnimatePresence>
                 {mobileOpen && (
                     <>
@@ -250,11 +232,11 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
                         />
                         <motion.aside
-                            initial={{ x: -256 }}
+                            initial={{ x: -300 }}
                             animate={{ x: 0 }}
-                            exit={{ x: -256 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="md:hidden fixed left-0 top-0 bottom-0 w-64 bg-background border-r z-50 flex flex-col"
+                            exit={{ x: -300 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="md:hidden fixed left-0 top-0 bottom-0 w-72 bg-background border-r z-50 flex flex-col"
                         >
                             <button
                                 onClick={() => setMobileOpen(false)}
@@ -263,7 +245,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             >
                                 <X className="h-5 w-5" />
                             </button>
-                            {renderSidebarContent(false, undefined, isActive, setMobileOpen)}
+                            <SidebarContent />
                         </motion.aside>
                     </>
                 )}
@@ -275,7 +257,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="hidden md:flex flex-col relative border-r bg-background min-h-screen sticky top-0"
             >
-                {renderSidebarContent(isCollapsed, onToggle, isActive, setMobileOpen)}
+                <SidebarContent />
             </motion.aside>
         </>
     );
