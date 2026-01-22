@@ -54,8 +54,8 @@ export function CookieConsent() {
     setShowSettings(false);
 
     // Trigger consent event for analytics
-    if (typeof window !== 'undefined' && (window as Record<string, unknown>).gtag) {
-      const gtag = (window as Record<string, unknown>).gtag as (
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).gtag) {
+      const gtag = (window as unknown as Record<string, unknown>).gtag as (
         command: string,
         action: string,
         options: Record<string, string>

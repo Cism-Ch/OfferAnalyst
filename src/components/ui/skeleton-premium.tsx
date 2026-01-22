@@ -60,7 +60,7 @@ export const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         variants={skeletonVariants}
         initial="initial"
         animate="animate"
-        {...props}
+        {...(props as any)}
       />
     );
   }
