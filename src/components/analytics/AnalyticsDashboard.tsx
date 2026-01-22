@@ -61,28 +61,33 @@ export function AnalyticsDashboard() {
 
   const loadAnalytics = async () => {
     try {
-      // TODO: Implement server-side API endpoint for authenticated analytics
-      // For now, using localStorage as fallback for demo/development purposes
-      // This provides example data structure until database CRUD is implemented
+      // Fetch analytics from server API endpoint
+      const response = await fetch('/api/analytics/summary');
       
-      const searchHistoryData = localStorage.getItem('searchHistory');
-      const savedOffersData = localStorage.getItem('savedOffers');
-      const projectsData = localStorage.getItem('projects');
-      
-      const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
-      const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
-      const projects = projectsData ? JSON.parse(projectsData).length : 0;
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+      } else {
+        // Fallback to localStorage if API fails (for development/offline mode)
+        const searchHistoryData = localStorage.getItem('searchHistory');
+        const savedOffersData = localStorage.getItem('savedOffers');
+        const projectsData = localStorage.getItem('projects');
+        
+        const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
+        const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
+        const projects = projectsData ? JSON.parse(projectsData).length : 0;
 
-      setAnalytics({
-        period: '30 days',
-        searches,
-        savedOffers,
-        projects,
-        apiCallsUsed: searches * 2, // Estimate: fetch + analyze
-      });
+        setAnalytics({
+          period: '30 days',
+          searches,
+          savedOffers,
+          projects,
+          apiCallsUsed: searches * 2, // Estimate: fetch + analyze
+        });
+      }
     } catch (error) {
       console.error('Failed to load analytics:', error);
-      // Set default fallback data on error
+      // Set empty data to show zero state instead of error
       setAnalytics({
         period: '30 days',
         searches: 0,
@@ -97,17 +102,22 @@ export function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="pb-2">
-              <div className="h-4 bg-muted rounded w-20" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-8 bg-muted rounded w-16" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div>
+          <div className="h-8 bg-muted rounded w-48 mb-2 animate-pulse" />
+          <div className="h-5 bg-muted rounded w-64 animate-pulse" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-6">
+              <div className="space-y-3">
+                <div className="h-4 bg-muted rounded w-20 animate-pulse" />
+                <div className="h-10 bg-muted rounded w-16 animate-pulse" />
+                <div className="h-3 bg-muted rounded w-32 animate-pulse" />
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }

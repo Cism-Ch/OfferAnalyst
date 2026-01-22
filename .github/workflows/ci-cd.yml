@@ -68,10 +68,10 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          # Mock environment variables for build
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || 'mock-key-for-build' }}
+          # Environment variables for build - use secrets if available, fallback to mock values
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY != '' && secrets.OPENROUTER_API_KEY || 'sk-or-v1-mock-key-for-ci-build-only' }}
           DATABASE_URL: 'mongodb://localhost:27017/test'
-          BETTER_AUTH_SECRET: 'test-secret-at-least-32-chars-long'
+          BETTER_AUTH_SECRET: 'test-secret-at-least-32-chars-long-for-ci-builds'
           BETTER_AUTH_URL: 'http://localhost:3000'
           NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
 

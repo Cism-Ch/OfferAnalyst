@@ -42,8 +42,18 @@ export interface WebVitalsMetric {
  */
 export async function trackEvent(event: AnalyticsEventData): Promise<void> {
   try {
-    // Development: Log events to console for debugging
-    // Production: Will store to database once AnalyticsEvent schema is added to Prisma
+    // Store event in database for production analytics
+    await prisma.analyticsEvent.create({
+      data: {
+        type: event.type,
+        userId: event.userId || null,
+        metadata: event.metadata ? JSON.stringify(event.metadata) : null,
+        userAgent: event.userAgent || null,
+        path: event.path || null,
+      },
+    });
+
+    // Also log in development for debugging
     if (process.env.NODE_ENV === 'development') {
       console.log('[Analytics Event]', {
         type: event.type,
@@ -52,18 +62,6 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
         timestamp: new Date().toISOString(),
       });
     }
-
-    // TODO: Implement database storage when AnalyticsEvent model is added to schema.prisma
-    // Example implementation (commented out until schema is ready):
-    // await prisma.analyticsEvent.create({
-    //   data: {
-    //     type: event.type,
-    //     userId: event.userId,
-    //     metadata: event.metadata ? JSON.stringify(event.metadata) : null,
-    //     userAgent: event.userAgent,
-    //     path: event.path,
-    //   }
-    // });
   } catch (error) {
     // Silent fail - analytics should never break the app
     console.error('[Analytics] Failed to track event:', error);
@@ -75,8 +73,18 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
  */
 export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
   try {
-    // Development: Log metrics to console for debugging
-    // Production: Will store to database once PerformanceMetric schema is added to Prisma
+    // Store metric in database for production monitoring
+    await prisma.performanceMetric.create({
+      data: {
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating,
+        path: metric.path || null,
+        userId: metric.userId || null,
+      },
+    });
+
+    // Also log in development for debugging
     if (process.env.NODE_ENV === 'development') {
       console.log('[Web Vitals]', {
         name: metric.name,
@@ -85,18 +93,6 @@ export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
         path: metric.path,
       });
     }
-
-    // TODO: Implement database storage when PerformanceMetric model is added to schema.prisma
-    // Example implementation (commented out until schema is ready):
-    // await prisma.performanceMetric.create({
-    //   data: {
-    //     name: metric.name,
-    //     value: metric.value,
-    //     rating: metric.rating,
-    //     path: metric.path,
-    //     userId: metric.userId,
-    //   }
-    // });
   } catch (error) {
     console.error('[Analytics] Failed to track web vitals:', error);
   }
