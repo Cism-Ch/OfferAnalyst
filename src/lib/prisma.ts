@@ -7,7 +7,8 @@
  * In production, we create a new client each time.
  * In development, we reuse the same client across hot-reloads.
  * 
- * Note: Prisma 7 with MongoDB - pass database URL directly to client constructor
+ * Note: Prisma 7 - DATABASE_URL must be set in environment variables
+ * The connection is configured through prisma.config.ts
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -16,19 +17,41 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Get database URL from environment or use default
-const databaseUrl = process.env.DATABASE_URL || 'mongodb://localhost:27017/offeranalyst';
+let _prisma: PrismaClient | undefined;
 
-// Create Prisma client with database URL for Prisma 7
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    datasourceUrl: databaseUrl,
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  });
+/**
+ * Get Prisma client instance
+ * Lazy initialization to avoid build-time errors
+ */
+export function getPrismaClient(): PrismaClient {
+  if (!_prisma) {
+    // Ensure DATABASE_URL is set
+    if (!process.env.DATABASE_URL) {
+      if (process.env.NODE_ENV === 'development') {
+        // Use default for development
+        process.env.DATABASE_URL = 'mongodb://localhost:27017/offeranalyst';
+      } else {
+        throw new Error('[Prisma] DATABASE_URL environment variable is not set');
+      }
+    }
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
+    _prisma = globalForPrisma.prisma ?? new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      globalForPrisma.prisma = _prisma;
+    }
+  }
+
+  return _prisma;
 }
+
+// Export the lazy getter as prisma for backwards compatibility
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return getPrismaClient()[prop as keyof PrismaClient];
+  },
+});
 
 export default prisma;
