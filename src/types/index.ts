@@ -57,7 +57,7 @@ export interface AgentActionError {
 }
 
 export type AgentActionResult<T> =
-  | { success: true; data: T; meta?: { model: string; latencyMs?: number; [key: string]: any } }
+  | { success: true; data: T; meta?: { model: string; latencyMs?: number; [key: string]: unknown } }
   | { success: false; error: AgentActionError };
 
 export type ProviderErrorPhase = 'fetch' | 'analyze';

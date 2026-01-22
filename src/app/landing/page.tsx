@@ -15,7 +15,6 @@ import {
     Sparkles,
     Zap,
     Shield,
-    TrendingUp,
     Users,
     Key,
     CheckCircle2,

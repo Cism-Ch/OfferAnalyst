@@ -10,7 +10,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { cardVariants, hoverLiftProps } from '@/lib/motion';
+import { cardVariants } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 // Infer card props from the component

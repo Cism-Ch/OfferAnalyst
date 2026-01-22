@@ -6,7 +6,7 @@
  */
 
 import pino from 'pino';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 
 /**
  * Audit event types
@@ -126,8 +126,7 @@ const auditLogger = pino({
 function hashIPAddress(ip: string): string {
   // Use Node.js crypto for production-grade hashing
   if (typeof window === 'undefined') {
-    const crypto = require('crypto');
-    return crypto.createHash('sha256').update(ip).digest('hex').slice(0, 16);
+    return createHash('sha256').update(ip).digest('hex').slice(0, 16);
   }
   // Fallback for browser (shouldn't be used in practice)
   return Buffer.from(ip).toString('base64').slice(0, 16);
