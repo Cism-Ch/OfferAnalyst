@@ -79,8 +79,10 @@ Make sure you have all required environment variables ready:
    | `GITHUB_CLIENT_ID` | (Optional) | Production, Preview, Development |
    | `GITHUB_CLIENT_SECRET` | (Optional) | Production, Preview, Development |
 
-   **Critical:** 
-   - `DATABASE_URL` **MUST** be available in ALL environments (including Development) because Prisma 7 requires it during the build process
+   **Important Notes:**
+   - Environment variables should be added directly in the Vercel dashboard, **not** as CLI secrets
+   - The `vercel.json` file declares which environment variables are required, but values are set in the dashboard
+   - **Critical:** `DATABASE_URL` **MUST** be available in ALL environments (including Development) because Prisma 7 requires it during the build process
    - Use the actual Vercel domain for production/preview environments
    - You'll get this domain after first deployment, update it afterwards
    - See [Prisma Build Configuration](./PRISMA_BUILD_CONFIG.md) for details on why DATABASE_URL is required at build time
