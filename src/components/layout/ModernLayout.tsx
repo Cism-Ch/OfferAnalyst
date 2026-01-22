@@ -18,8 +18,8 @@ import { cn } from '@/lib/utils';
 
 interface ModernLayoutProps {
     children: React.ReactNode;
-    selectedModel: string;
-    onModelChange: (modelId: string) => void;
+    selectedModel?: string;
+    onModelChange?: (modelId: string) => void;
     title?: string;
     description?: string;
     maxWidth?: 'full' | '7xl' | '6xl' | '5xl';
@@ -53,12 +53,14 @@ export function ModernLayout({
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
-                <ModernHeader
-                    selectedModel={selectedModel}
-                    onModelChange={onModelChange}
-                    title={title}
-                    description={description}
-                />
+                {selectedModel && onModelChange && (
+                    <ModernHeader
+                        selectedModel={selectedModel}
+                        onModelChange={onModelChange}
+                        title={title}
+                        description={description}
+                    />
+                )}
 
                 {/* Page Content */}
                 <main className="flex-1 overflow-auto">
