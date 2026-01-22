@@ -10,7 +10,6 @@ import React from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { useOfferAnalysis } from '@/hooks/use-offer-analysis';
-import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';

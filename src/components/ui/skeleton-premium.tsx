@@ -32,10 +32,11 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
-  ({ className, width, height, rounded = 'md', gradient = false, ...props }, ref) => {
+  ({ className, width, height, rounded = 'md', gradient = false, style: userStyle }, ref) => {
     const style: React.CSSProperties = {
       width: typeof width === 'number' ? `${width}px` : width,
       height: typeof height === 'number' ? `${height}px` : height,
+      ...userStyle,
     };
 
     const roundedClasses = {
@@ -60,7 +61,6 @@ export const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         variants={skeletonVariants}
         initial="initial"
         animate="animate"
-        {...(props as any)}
       />
     );
   }

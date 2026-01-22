@@ -65,6 +65,7 @@ export default function APIKeysPage() {
     ]);
 
     const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showAddDialog, setShowAddDialog] = useState(false);
 
     const maskKey = (key: string) => {

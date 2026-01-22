@@ -46,7 +46,7 @@ export async function fetchOffersActionV2(
 ): Promise<AgentActionResult<Offer[]>> {
     const {
         preferWebSources = true,
-        enableCaching = true,
+        // enableCaching - future feature
         async = false,
         batchSize = 10
     } = options;

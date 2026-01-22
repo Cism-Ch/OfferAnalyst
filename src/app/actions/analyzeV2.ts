@@ -65,8 +65,8 @@ export async function analyzeOffersActionV2(
         criteriaWeights = { relevance: 50, quality: 30, trend: 20 },
         language = 'en',
         async = false,
-        storeResults = false,
-        webhookUrl
+        storeResults = false
+        // webhookUrl - future feature
     } = options;
 
     const startedAt = Date.now();

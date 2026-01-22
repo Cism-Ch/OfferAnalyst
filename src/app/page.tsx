@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
+import { staggerContainerProps, staggerItemProps } from '@/lib/motion';
 
 /**
  * Main Home Page Component

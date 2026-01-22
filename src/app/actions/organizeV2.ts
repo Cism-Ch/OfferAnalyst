@@ -70,8 +70,8 @@ export async function organizeOffersActionV2(
 ): Promise<OrganizedOffersV2> {
     const {
         template = 'grid',
-        groupBy = 'category',
-        exportFormat = 'json'
+        groupBy = 'category'
+        // exportFormat - future feature
     } = options;
 
     const apiKey = process.env.OPENROUTER_API_KEY;

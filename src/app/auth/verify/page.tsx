@@ -30,35 +30,35 @@ function VerifyEmailContent() {
       return;
     }
 
-    verifyEmail(token);
-  }, [searchParams]);
+    const verifyEmail = async (token: string) => {
+      try {
+        // TODO: Implement email verification API call
+        const response = await fetch("/api/auth/verify-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
 
-  const verifyEmail = async (token: string) => {
-    try {
-      // TODO: Implement email verification API call
-      const response = await fetch("/api/auth/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Verification failed");
+        }
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Verification failed");
+        setStatus("success");
+        setMessage("Your email has been verified successfully!");
+        
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 2000);
+      } catch (err) {
+        setStatus("error");
+        setMessage(err instanceof Error ? err.message : "Failed to verify email");
       }
+    };
 
-      setStatus("success");
-      setMessage("Your email has been verified successfully!");
-      
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
-    } catch (err) {
-      setStatus("error");
-      setMessage(err instanceof Error ? err.message : "Failed to verify email");
-    }
-  };
+    verifyEmail(token);
+  }, [searchParams, router]);
 
   const handleResendEmail = async () => {
     // TODO: Implement resend verification email

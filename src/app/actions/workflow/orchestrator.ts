@@ -70,7 +70,7 @@ class WorkflowCancellationError extends Error {
     }
 }
 
-let cancelledWorkflows = new Set<string>();
+const cancelledWorkflows = new Set<string>();
 
 /**
  * Execute the full analysis workflow with state tracking
@@ -253,7 +253,8 @@ export async function cancelWorkflow(workflowId: string): Promise<boolean> {
 /**
  * Get workflow progress (for polling)
  */
-export async function getWorkflowProgress(workflowId: string): Promise<WorkflowProgress | null> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getWorkflowProgress(_workflowId: string): Promise<WorkflowProgress | null> {
     // TODO: Implement progress storage and retrieval
     // For now, return null
     return null;

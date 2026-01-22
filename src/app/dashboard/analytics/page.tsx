@@ -18,7 +18,6 @@ import React, { useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
     BarChart3, 
     TrendingUp, 
@@ -46,6 +45,7 @@ import {
 } from 'recharts';
 
 export default function AnalyticsPage() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [dateRange, setDateRange] = useState('30'); // 7, 30, 90 days
 
     // Mock data - will be replaced with actual analytics
