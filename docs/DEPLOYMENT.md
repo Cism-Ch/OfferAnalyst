@@ -67,7 +67,7 @@ Make sure you have all required environment variables ready:
 
    | Variable | Value | Environment |
    |----------|-------|-------------|
-   | `DATABASE_URL` | `mongodb+srv://user:pass@...` | Production, Preview, Development |
+   | `DATABASE_URL` | `mongodb+srv://user:pass@...` | **Production, Preview, Development** |
    | `BETTER_AUTH_SECRET` | Your generated secret | Production, Preview, Development |
    | `BETTER_AUTH_URL` | `https://your-domain.vercel.app` | Production |
    | `BETTER_AUTH_URL` | `https://your-preview.vercel.app` | Preview |
@@ -79,9 +79,11 @@ Make sure you have all required environment variables ready:
    | `GITHUB_CLIENT_ID` | (Optional) | Production, Preview, Development |
    | `GITHUB_CLIENT_SECRET` | (Optional) | Production, Preview, Development |
 
-   **Important:** 
+   **Critical:** 
+   - `DATABASE_URL` **MUST** be available in ALL environments (including Development) because Prisma 7 requires it during the build process
    - Use the actual Vercel domain for production/preview environments
    - You'll get this domain after first deployment, update it afterwards
+   - See [Prisma Build Configuration](./PRISMA_BUILD_CONFIG.md) for details on why DATABASE_URL is required at build time
 
 6. **Click "Deploy"**
    - Vercel will build and deploy your application
