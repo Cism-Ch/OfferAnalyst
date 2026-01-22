@@ -97,17 +97,15 @@ export const srOnlyClasses = 'absolute w-[1px] h-[1px] p-0 -m-[1px] overflow-hid
 export const focusVisibleClasses = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /**
- * Skip to main content link (for keyboard navigation)
+ * Get props for skip to main content link (for keyboard navigation)
+ * Component should be created in a .tsx file
  */
-export function SkipToMainContent() {
-  return (
-    <a
-      href="#main-content"
-      className={`${srOnlyClasses} focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md`}
-    >
-      Skip to main content
-    </a>
-  );
+export function getSkipToMainContentProps() {
+  return {
+    href: '#main-content',
+    className: `${srOnlyClasses} focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md`,
+    children: 'Skip to main content',
+  };
 }
 
 /**
@@ -141,7 +139,7 @@ export interface AccessibleButtonProps {
 }
 
 export function getAccessibleButtonProps(props: AccessibleButtonProps) {
-  const ariaProps: Record<string, any> = {
+  const ariaProps: Record<string, string | boolean> = {
     'aria-label': props.label,
   };
   
