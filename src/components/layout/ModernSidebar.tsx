@@ -32,7 +32,11 @@ import {
     X,
     Search,
     Database,
-    LineChart
+    LineChart,
+    Key,
+    Users,
+    Coffee,
+    Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -54,8 +58,18 @@ const secondaryNavItems: NavItem[] = [
     { label: 'Projects', href: '/projects', icon: Briefcase },
     { label: 'History', href: '/history', icon: Clock },
     { label: 'Saved Offers', href: '/saved', icon: Bookmark },
-    { label: 'Analytics', href: '/analytics', icon: BarChart3, badge: 'Soon' },
-    { label: 'Settings', href: '/settings', icon: Settings },
+];
+
+const dashboardNavItems: NavItem[] = [
+    { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+    { label: 'API Keys', href: '/dashboard/api-keys', icon: Key },
+    { label: 'Workspace', href: '/dashboard/workspace', icon: Users },
+    { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { label: 'Support', href: '/dashboard/support', icon: Coffee },
+];
+
+const adminNavItems: NavItem[] = [
+    { label: 'Admin Console', href: '/admin', icon: Shield, badge: 'Admin' },
 ];
 
 interface ModernSidebarProps {
@@ -142,6 +156,10 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 <NavItems items={mainNavItems} />
                 <Separator className="my-4" />
                 <NavItems items={secondaryNavItems} section={!isCollapsed ? 'More' : undefined} />
+                <Separator className="my-4" />
+                <NavItems items={dashboardNavItems} section={!isCollapsed ? 'Dashboard' : undefined} />
+                <Separator className="my-4" />
+                <NavItems items={adminNavItems} section={!isCollapsed ? 'Admin' : undefined} />
             </nav>
 
             {/* User Profile */}
