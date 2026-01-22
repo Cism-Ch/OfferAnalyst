@@ -19,7 +19,7 @@ export function WebVitalsTracker() {
 
     // Dynamic import of web-vitals to reduce bundle size
     import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-      const reportMetric = async (metric: any) => {
+      const reportMetric = async (metric: { name: string; value: number; rating: string }) => {
         try {
           // Send metric to analytics endpoint
           await fetch('/api/analytics/web-vitals', {

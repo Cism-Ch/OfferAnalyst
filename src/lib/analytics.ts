@@ -23,7 +23,7 @@ export type AnalyticsEventType =
 export interface AnalyticsEventData {
   type: AnalyticsEventType;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   userAgent?: string;
   path?: string;
 }
@@ -42,8 +42,8 @@ export interface WebVitalsMetric {
  */
 export async function trackEvent(event: AnalyticsEventData): Promise<void> {
   try {
-    // For now, just log to console in development
-    // In production, this would store to database
+    // Development: Log events to console for debugging
+    // Production: Will store to database once AnalyticsEvent schema is added to Prisma
     if (process.env.NODE_ENV === 'development') {
       console.log('[Analytics Event]', {
         type: event.type,
@@ -53,7 +53,8 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
       });
     }
 
-    // TODO: Store events in database when analytics schema is added
+    // TODO: Implement database storage when AnalyticsEvent model is added to schema.prisma
+    // Example implementation (commented out until schema is ready):
     // await prisma.analyticsEvent.create({
     //   data: {
     //     type: event.type,
@@ -74,6 +75,8 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
  */
 export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
   try {
+    // Development: Log metrics to console for debugging
+    // Production: Will store to database once PerformanceMetric schema is added to Prisma
     if (process.env.NODE_ENV === 'development') {
       console.log('[Web Vitals]', {
         name: metric.name,
@@ -83,7 +86,8 @@ export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
       });
     }
 
-    // TODO: Store metrics in database when performance schema is added
+    // TODO: Implement database storage when PerformanceMetric model is added to schema.prisma
+    // Example implementation (commented out until schema is ready):
     // await prisma.performanceMetric.create({
     //   data: {
     //     name: metric.name,
@@ -234,7 +238,7 @@ export async function trackCreditUsage(
   userId: string,
   action: 'FETCH' | 'ANALYZE' | 'ORGANIZE',
   model?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   try {
     await prisma.credit.create({

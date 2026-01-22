@@ -6,6 +6,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, value, rating, path } = body;
 
+    // Validate required fields
+    if (!name || typeof value !== 'number' || !rating) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate metric name
+    const validMetrics = ['FCP', 'LCP', 'CLS', 'TTFB', 'FID', 'INP'];
+    if (!validMetrics.includes(name)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid metric name' },
+        { status: 400 }
+      );
+    }
+
+    // Validate rating
+    const validRatings = ['good', 'needs-improvement', 'poor'];
+    if (!validRatings.includes(rating)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid rating' },
+        { status: 400 }
+      );
+    }
+
     // Track the web vitals metric
     await trackWebVitals({
       name,

@@ -61,11 +61,17 @@ export function AnalyticsDashboard() {
 
   const loadAnalytics = async () => {
     try {
-      // For now, load from localStorage saved data
-      // In production, this would call an API endpoint
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]').length;
-      const savedOffers = JSON.parse(localStorage.getItem('savedOffers') || '[]').length;
-      const projects = JSON.parse(localStorage.getItem('projects') || '[]').length;
+      // TODO: Implement server-side API endpoint for authenticated analytics
+      // For now, using localStorage as fallback for demo/development purposes
+      // This provides example data structure until database CRUD is implemented
+      
+      const searchHistoryData = localStorage.getItem('searchHistory');
+      const savedOffersData = localStorage.getItem('savedOffers');
+      const projectsData = localStorage.getItem('projects');
+      
+      const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
+      const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
+      const projects = projectsData ? JSON.parse(projectsData).length : 0;
 
       setAnalytics({
         period: '30 days',
@@ -76,6 +82,14 @@ export function AnalyticsDashboard() {
       });
     } catch (error) {
       console.error('Failed to load analytics:', error);
+      // Set default fallback data on error
+      setAnalytics({
+        period: '30 days',
+        searches: 0,
+        savedOffers: 0,
+        projects: 0,
+        apiCallsUsed: 0,
+      });
     } finally {
       setLoading(false);
     }
