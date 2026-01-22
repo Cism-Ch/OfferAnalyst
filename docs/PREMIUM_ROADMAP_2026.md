@@ -432,8 +432,7 @@
 - [ ] **Hosting** : Vercel (Next.js native)
 - [ ] **Database** : MongoDB Atlas (managed)
 - [ ] **CDN** : Cloudflare (caching + DDoS protection)
-- [ ] **File storage** : S3-compatible (MinIO/self-host ou S3 si besoin)
-- [ ] **Email** : Resend (free tier) pour transactional/auth
+- [ ] **File storage** : S3-compatible (Tigris S3 compatible si besoin env deja setup)
 - [ ] **Email** : Resend (free tier) pour transactional/auth
 
 ### 10.2 CI/CD Pipeline
