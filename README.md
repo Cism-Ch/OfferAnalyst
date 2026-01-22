@@ -200,29 +200,51 @@ Select your preferred model from the header dropdown.
 
 ## 🚢 Deployment
 
-### Build for Production
-
-```bash
-npm run build
-# or
-pnpm build
-```
-
-### Start Production Server
-
-```bash
-npm start
-# or
-pnpm start
-```
-
-### Deploy to Vercel
+### Quick Deploy to Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Cism-Ch/OfferAnalyst)
 
-1. Click the button above
-2. Add your `OPENROUTER_API_KEY` in environment variables
-3. Deploy!
+**Prerequisites:**
+1. MongoDB Atlas account and database cluster ([Setup Guide](./docs/MONGODB_SETUP.md))
+2. OpenRouter API key from [OpenRouter](https://openrouter.ai/)
+3. (Optional) OAuth credentials for Google/GitHub
+
+**Deployment Steps:**
+
+1. **Click "Deploy with Vercel" button above**
+
+2. **Add Required Environment Variables:**
+   - `DATABASE_URL` - Your MongoDB connection string
+   - `BETTER_AUTH_SECRET` - Generate with `openssl rand -base64 32`
+   - `BETTER_AUTH_URL` - Your Vercel domain (update after first deploy)
+   - `NEXT_PUBLIC_APP_URL` - Same as BETTER_AUTH_URL
+   - `OPENROUTER_API_KEY` - Your OpenRouter API key
+
+3. **Deploy and Update Domain**
+   - After first deployment, get your Vercel domain
+   - Update `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` with actual domain
+   - Redeploy
+
+4. **Configure OAuth (Optional):**
+   - Update OAuth redirect URIs with your Vercel domain
+   - Add OAuth credentials to Vercel environment variables
+
+📚 **Detailed Guides:**
+- [MongoDB Setup Guide](./docs/MONGODB_SETUP.md) - Step-by-step MongoDB Atlas configuration
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Complete Vercel deployment walkthrough
+
+### Local Production Build
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
 
 ---
 
