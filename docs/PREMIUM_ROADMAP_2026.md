@@ -432,7 +432,7 @@
 - [ ] **Hosting** : Vercel (Next.js native)
 - [ ] **Database** : MongoDB Atlas (managed)
 - [ ] **CDN** : Cloudflare (caching + DDoS protection)
-- [ ] **File storage** : S3-compatible (Tigris S3 compatible si besoin env deja setup)
+- [ ] **File storage** : S3-compatible (Tigris S3 compatible si besoin .env deja setup)
 - [ ] **Email** : Resend (free tier) pour transactional/auth
 
 ### 10.2 CI/CD Pipeline
@@ -452,7 +452,7 @@
 ### 10.4 Caching Strategy
 - [ ] **Redis** (optional, pour caching offres)
 - [ ] **HTTP caching** (Vercel edge caching)
-- [ ] **Client-side caching** (SWR, React Query)
+- [ ] **Client-side caching** (TanStack/React Query)
 
 ---
 
@@ -470,18 +470,19 @@
   - API key retrieval
   - First request example
   - Common use cases
+- **Blog post and changelog page** 
+  - explaining new features
+  - display new changelog with versioning implemented system
 
 ### 11.2 User Documentation
-- [ ] **Help Center** (Notion or Intercom)
+- [ ] **Help Center** (Agentic AI with local documentation)
   - FAQ
   - Tutorials écrits + gifs légers (pas de vidéo hébergée)
   - Troubleshooting guides
-  - Integrations (Zapier, Make)
 
 ### 11.3 Support Channels
-- [ ] **Email support** (Zendesk or similar)
-- [ ] **Chat support** (Intercom or Drift)
-- [ ] **Community forum** (Discourse optional)
+- [ ] **Email support** (Agentic AI based on hugging face model opensource)
+- [ ] **Chat support** (Agentic AI based on hugging face model opensource)
 
 ---
 
@@ -496,7 +497,6 @@
 - [ ] **Press release** distribution
 - [ ] **Social media campaign** (Twitter, LinkedIn)
 - [ ] **Product Hunt submission**
-- [ ] **Blog post** explaining new features
 
 ### 12.3 Post-Launch Monitoring
 - [ ] **Daily metrics tracking** (signups, BYOK adoption, errors)
