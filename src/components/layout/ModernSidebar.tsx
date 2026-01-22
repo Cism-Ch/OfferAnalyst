@@ -36,7 +36,9 @@ import {
     Key,
     Users,
     Coffee,
-    Shield
+    Shield,
+    HelpCircle,
+    FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +68,8 @@ const dashboardNavItems: NavItem[] = [
     { label: 'Workspace', href: '/dashboard/workspace', icon: Users },
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
     { label: 'Support', href: '/dashboard/support', icon: Coffee },
+    { label: 'Help Center', href: '/help', icon: HelpCircle },
+    { label: 'Changelog', href: '/changelog', icon: FileText },
 ];
 
 const adminNavItems: NavItem[] = [
