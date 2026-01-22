@@ -121,10 +121,15 @@ const auditLogger = pino({
 });
 
 /**
- * Hash IP address for privacy
+ * Hash IP address for privacy using cryptographic hash
  */
 function hashIPAddress(ip: string): string {
-  // Simple hash for privacy - in production, use crypto
+  // Use Node.js crypto for production-grade hashing
+  if (typeof window === 'undefined') {
+    const crypto = require('crypto');
+    return crypto.createHash('sha256').update(ip).digest('hex').slice(0, 16);
+  }
+  // Fallback for browser (shouldn't be used in practice)
   return Buffer.from(ip).toString('base64').slice(0, 16);
 }
 

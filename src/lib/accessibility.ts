@@ -46,10 +46,15 @@ function getLuminance(color: string): number {
   // Remove # if present
   color = color.replace('#', '');
   
+  // Validate hex format
+  if (color.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(color)) {
+    throw new Error('Invalid hex color format. Expected 6-digit hex code.');
+  }
+  
   // Convert to RGB
-  const r = parseInt(color.substr(0, 2), 16) / 255;
-  const g = parseInt(color.substr(2, 2), 16) / 255;
-  const b = parseInt(color.substr(4, 2), 16) / 255;
+  const r = parseInt(color.slice(0, 2), 16) / 255;
+  const g = parseInt(color.slice(2, 4), 16) / 255;
+  const b = parseInt(color.slice(4, 6), 16) / 255;
   
   // Apply gamma correction
   const rLinear = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
@@ -121,9 +126,11 @@ export function announceToScreenReader(message: string, priority: 'polite' | 'as
   
   document.body.appendChild(announcement);
   
-  // Remove after announcement
+  // Remove after announcement with safety check
   setTimeout(() => {
-    document.body.removeChild(announcement);
+    if (announcement.parentNode) {
+      document.body.removeChild(announcement);
+    }
   }, 1000);
 }
 
