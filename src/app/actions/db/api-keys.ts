@@ -46,10 +46,24 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             }
         });
 
-        return keys.map(key => ({
-            ...key,
+        return keys.map((key: { 
+            id: string; 
+            name: string; 
+            provider: string; 
+            keyPreview: string; 
+            createdAt: Date; 
+            lastUsed: Date | null; 
+            usageCount: number; 
+            isActive: boolean 
+        }): APIKeyData => ({
+            id: key.id,
+            name: key.name,
+            provider: key.provider,
+            keyPreview: key.keyPreview,
             createdAt: key.createdAt.toISOString(),
-            lastUsed: key.lastUsed?.toISOString() || null
+            lastUsed: key.lastUsed?.toISOString() || null,
+            usageCount: key.usageCount,
+            isActive: key.isActive
         }));
     } catch (error) {
         console.error('Error fetching API keys:', error);
@@ -164,7 +178,7 @@ export async function getAPIKeyStats(userId: string): Promise<{
             }
         });
 
-        const totalRequests = keys.reduce((sum, key) => sum + key.usageCount, 0);
+        const totalRequests = keys.reduce((sum: number, key: { usageCount: number }) => sum + key.usageCount, 0);
 
         return {
             totalKeys: keys.length,

@@ -93,8 +93,11 @@ export async function getRecentUsers(limit: number = 10): Promise<UserData[]> {
             }
         });
 
-        return users.map(user => ({
-            ...user,
+        return users.map((user: { id: string; name: string | null; email: string; role: string; createdAt: Date }): UserData => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
             status: 'Active', // Would need to check session/last activity
             createdAt: user.createdAt.toISOString()
         }));
@@ -123,7 +126,7 @@ export async function getProviderUsage(): Promise<Array<{
 
         const providerMap: Record<string, { free: number; byok: number }> = {};
         
-        searches.forEach(search => {
+        searches.forEach((search: { model: string }) => {
             // Extract provider from model name (simplified)
             const provider = search.model.includes('gpt') ? 'OpenRouter' :
                             search.model.includes('gemini') ? 'Google Gemini' :

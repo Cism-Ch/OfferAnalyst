@@ -45,7 +45,7 @@ export async function getUserAnalytics(userId: string): Promise<AnalyticsData> {
         ]);
 
         const avgScore = savedOffers.length > 0
-            ? savedOffers.reduce((sum, offer) => sum + offer.score, 0) / savedOffers.length
+            ? savedOffers.reduce((sum: number, offer: { score: number }) => sum + offer.score, 0) / savedOffers.length
             : 0;
 
         return {
@@ -89,15 +89,15 @@ export async function getSearchTimeline(
         });
 
         // Group by date
-        const grouped = searches.reduce((acc: Record<string, number>, search) => {
+        const grouped = searches.reduce((acc: Record<string, number>, search: { timestamp: Date }) => {
             const date = search.timestamp.toISOString().split('T')[0];
             acc[date] = (acc[date] || 0) + 1;
             return acc;
         }, {});
 
-        return Object.entries(grouped).map(([date, count]) => ({
+        return Object.entries(grouped).map(([date, count]): SearchTimelineData => ({
             date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            searches: count
+            searches: count as number
         }));
     } catch (error) {
         console.error('Error fetching search timeline:', error);
@@ -116,15 +116,15 @@ export async function getCategoryDistribution(userId: string): Promise<CategoryD
         });
 
         // Count by category
-        const categoryCount = savedOffers.reduce((acc: Record<string, number>, offer) => {
+        const categoryCount = savedOffers.reduce((acc: Record<string, number>, offer: { category: string | null }) => {
             const category = offer.category || 'Other';
             acc[category] = (acc[category] || 0) + 1;
             return acc;
         }, {});
 
-        return Object.entries(categoryCount).map(([name, value]) => ({
+        return Object.entries(categoryCount).map(([name, value]): CategoryData => ({
             name,
-            value
+            value: value as number
         }));
     } catch (error) {
         console.error('Error fetching category distribution:', error);
@@ -151,7 +151,7 @@ export async function getScoreDistribution(userId: string): Promise<{ score: str
             { label: '8-10', min: 8, max: 10, count: 0 }
         ];
 
-        savedOffers.forEach(offer => {
+        savedOffers.forEach((offer: { score: number }) => {
             const range = ranges.find(r => offer.score >= r.min && offer.score < r.max);
             if (range) range.count++;
         });
@@ -174,13 +174,13 @@ export async function getModelUsage(userId: string): Promise<{ model: string; re
         });
 
         // Count by model
-        const modelCount = searches.reduce((acc: Record<string, number>, search) => {
+        const modelCount = searches.reduce((acc: Record<string, number>, search: { model: string }) => {
             acc[search.model] = (acc[search.model] || 0) + 1;
             return acc;
         }, {});
 
         return Object.entries(modelCount)
-            .map(([model, requests]) => ({ model, requests }))
+            .map(([model, requests]): { model: string; requests: number } => ({ model, requests: requests as number }))
             .sort((a, b) => b.requests - a.requests);
     } catch (error) {
         console.error('Error fetching model usage:', error);
