@@ -42,24 +42,16 @@ export interface WebVitalsMetric {
  */
 export async function trackEvent(event: AnalyticsEventData): Promise<void> {
   try {
-    // Try to store event in database for production analytics
-    // This may fail during build time when DATABASE_URL is not properly configured
-    try {
-      await prisma.analyticsEvent.create({
-        data: {
-          type: event.type,
-          userId: event.userId || null,
-          metadata: event.metadata ? JSON.stringify(event.metadata) : null,
-          userAgent: event.userAgent || null,
-          path: event.path || null,
-        },
-      });
-    } catch (dbError) {
-      // Silent database fail - log only in development
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('[Analytics] Database storage failed:', dbError);
-      }
-    }
+    // Store event in database for production analytics
+    await prisma.analyticsEvent.create({
+      data: {
+        type: event.type,
+        userId: event.userId || null,
+        metadata: event.metadata ? JSON.stringify(event.metadata) : null,
+        userAgent: event.userAgent || null,
+        path: event.path || null,
+      },
+    });
 
     // Also log in development for debugging
     if (process.env.NODE_ENV === 'development') {
@@ -81,24 +73,16 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
  */
 export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
   try {
-    // Try to store metric in database for production monitoring
-    // This may fail during build time when DATABASE_URL is not properly configured
-    try {
-      await prisma.performanceMetric.create({
-        data: {
-          name: metric.name,
-          value: metric.value,
-          rating: metric.rating,
-          path: metric.path || null,
-          userId: metric.userId || null,
-        },
-      });
-    } catch (dbError) {
-      // Silent database fail - log only in development
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('[Analytics] Database storage failed:', dbError);
-      }
-    }
+    // Store metric in database for production monitoring
+    await prisma.performanceMetric.create({
+      data: {
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating,
+        path: metric.path || null,
+        userId: metric.userId || null,
+      },
+    });
 
     // Also log in development for debugging
     if (process.env.NODE_ENV === 'development') {
