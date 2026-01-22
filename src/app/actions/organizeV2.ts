@@ -90,7 +90,7 @@ export async function organizeOffersActionV2(
         price: offer.price,
         location: offer.location,
         category: offer.category,
-        finalScore: (offer as any).finalScore || 0,
+        finalScore: (offer as unknown as { finalScore?: number }).finalScore || 0,
         description: offer.description.length > 500 
             ? offer.description.substring(0, 500) + "..." 
             : offer.description

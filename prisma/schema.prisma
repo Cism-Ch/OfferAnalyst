@@ -230,3 +230,36 @@ model Credit {
   @@index([action])
   @@map("credits")
 }
+
+// Analytics events for privacy-first tracking
+model AnalyticsEvent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      String   // Event type: page_view, search_started, etc.
+  userId    String?  @db.ObjectId
+  metadata  String?  @db.String // JSON stringified metadata
+  userAgent String?
+  path      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+// Performance metrics for Web Vitals tracking
+model PerformanceMetric {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   // Metric name: FCP, LCP, CLS, TTFB, FID, INP
+  value     Float    // Metric value
+  rating    String   // Rating: good, needs-improvement, poor
+  path      String?
+  userId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([name])
+  @@index([createdAt])
+  @@index([rating])
+  @@map("performance_metrics")
+}

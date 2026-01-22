@@ -7,7 +7,7 @@
  * In production, we create a new client each time.
  * In development, we reuse the same client across hot-reloads.
  * 
- * Note: Prisma 7 with MongoDB - the connection string is configured in prisma.config.ts
+ * Prisma 5.22.0 - Compatible with MongoDB without adapters
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -16,8 +16,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Create Prisma client without extra configuration for Prisma 7
-// The connection is managed through prisma.config.ts
+// Create Prisma client with standard configuration
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({

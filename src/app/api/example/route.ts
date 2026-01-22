@@ -13,7 +13,7 @@ import {
   createRateLimitHeaders,
 } from '@/lib/rate-limiter';
 import { getSecurityHeaders } from '@/lib/security-headers';
-import { logRateLimitExceeded } from '@/lib/audit-logger';
+// import { logRateLimitExceeded } from '@/lib/audit-logger'; // Commented out due to pino build warnings
 
 /**
  * GET /api/example
@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
     const rateLimitResult = rateLimit(identifier, rateLimitConfigs.api);
 
     if (!rateLimitResult.success) {
-      // Log rate limit exceeded
-      logRateLimitExceeded(identifier, '/api/example');
+      // Log rate limit exceeded (audit logger commented out due to build issues)
+      // logRateLimitExceeded(identifier, '/api/example');
+      console.warn(`[Security] Rate limit exceeded for ${identifier} on /api/example`);
 
       // Return 429 Too Many Requests
       return NextResponse.json(
@@ -92,7 +93,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (!rateLimitResult.success) {
-      logRateLimitExceeded(identifier, '/api/example');
+      // logRateLimitExceeded(identifier, '/api/example'); // Commented out due to build issues
+      console.warn(`[Security] Rate limit exceeded for ${identifier} on /api/example POST`);
 
       return NextResponse.json(
         { error: 'Rate limit exceeded' },
