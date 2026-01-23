@@ -118,7 +118,7 @@ model APIKey {
   userId      String   @db.ObjectId
   name        String
   provider    String   // openrouter, google, anthropic, etc.
-  keyHash     String   // Hashed key for security
+  keyEncrypted String  // Encrypted key for security (AES-256-GCM)
   keyPreview  String   // Last 4 chars for display
   permissions String[] @default(["READ", "WRITE"])
   lastUsed    DateTime?

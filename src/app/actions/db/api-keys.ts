@@ -5,10 +5,11 @@
  * 
  * Server actions for managing user API keys in MongoDB.
  * Handles CRUD operations for BYOK (Bring Your Own Key) functionality.
+ * Keys are encrypted at rest using AES-256-GCM.
  */
 
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+import { encryptAPIKey, decryptAPIKey } from '@/lib/api-key-encryption';
 
 export interface APIKeyData {
     id: string;
@@ -72,6 +73,39 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
 }
 
 /**
+ * Get decrypted API key for a specific provider
+ * Used by server actions to retrieve user's BYOK keys
+ */
+export async function getDecryptedAPIKey(
+    userId: string,
+    provider: string
+): Promise<string | null> {
+    try {
+        const key = await prisma.aPIKey.findFirst({
+            where: {
+                userId,
+                provider,
+                isActive: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        if (!key) {
+            return null;
+        }
+
+        // Decrypt the key
+        const decryptedKey = decryptAPIKey(key.keyEncrypted);
+        return decryptedKey;
+    } catch (error) {
+        console.error('Error fetching decrypted API key:', error);
+        return null;
+    }
+}
+
+/**
  * Add a new API key for a user
  */
 export async function addAPIKey(
@@ -81,8 +115,8 @@ export async function addAPIKey(
     apiKey: string
 ): Promise<{ success: boolean; message: string; keyId?: string }> {
     try {
-        // Hash the key for security
-        const keyHash = await bcrypt.hash(apiKey, 10);
+        // Encrypt the key for security
+        const keyEncrypted = encryptAPIKey(apiKey);
         
         // Extract last 4 characters for preview
         const keyPreview = apiKey.slice(-4);
@@ -92,7 +126,7 @@ export async function addAPIKey(
                 userId,
                 name,
                 provider,
-                keyHash,
+                keyEncrypted,
                 keyPreview,
                 permissions: ['READ', 'WRITE']
             }
