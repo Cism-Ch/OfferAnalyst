@@ -1,6 +1,7 @@
 import { analyzeOffersAction } from '@/app/actions/analyze';
 import { fetchOffersAction } from '@/app/actions/fetch';
 import { AnalysisResponse, Offer, ProviderErrorState, UserProfile } from '@/types';
+import { useTemporaryApiKeys } from './use-temporary-api-keys';
 
 /**
  * Custom hook for handling offer analysis workflow
@@ -33,6 +34,8 @@ export function useOfferAnalysis({
     selectedModel: string;
     setProviderError: (error: ProviderErrorState | null) => void;
 }) {
+    const tempKeys = useTemporaryApiKeys();
+    
     /**
      * Handles the complete offer analysis workflow
      * 
@@ -74,7 +77,10 @@ export function useOfferAnalysis({
             if (autoFetch) {
                 setFetching(true);
                 try {
-                    const fetchResult = await fetchOffersAction(domain, explicitCriteria + " " + implicitContext, selectedModel);
+                    // Get temporary OpenRouter key if available (for unauthenticated users)
+                    const tempKey = tempKeys.getKey('openrouter');
+                    
+                    const fetchResult = await fetchOffersAction(domain, explicitCriteria + " " + implicitContext, selectedModel, tempKey || undefined);
                     if (!fetchResult.success) {
                         setProviderError({
                             ...fetchResult.error,
@@ -119,7 +125,10 @@ export function useOfferAnalysis({
                 implicitContext
             };
 
-            const analysisResult = await analyzeOffersAction(currentOffers, profile, parseInt(limit), selectedModel);
+            // Get temporary OpenRouter key if available (for unauthenticated users)
+            const tempKey = tempKeys.getKey('openrouter');
+
+            const analysisResult = await analyzeOffersAction(currentOffers, profile, parseInt(limit), selectedModel, tempKey || undefined);
             if (!analysisResult.success) {
                 setProviderError({
                     ...analysisResult.error,

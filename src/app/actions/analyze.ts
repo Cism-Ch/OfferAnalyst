@@ -33,19 +33,29 @@ export async function analyzeOffersAction(
     offers: Offer[],
     profile: UserProfile,
     limit: number = 3,
-    modelName: string = DEFAULT_MODEL_ID
+    modelName: string = DEFAULT_MODEL_ID,
+    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<AgentActionResult<AnalysisResponse>> {
     const startedAt = Date.now();
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
+    
+    // Try to get API key with BYOK support
+    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
+    
+    if (!apiKeyResult) {
         return {
             success: false,
-            error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'analyze offers')
+            error: toAgentActionError(
+                new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING'),
+                'analyze offers'
+            )
         };
     }
 
+    console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key for ${apiKeyResult.provider}`);
+
     const openrouter = new OpenRouter({
-        apiKey: apiKey,
+        apiKey: apiKeyResult.key,
     });
 
     // Optimize payload: Simplify offers to reduce token usage
@@ -156,12 +166,20 @@ export async function analyzeOffersAction(
     try {
         const data = await retryWithBackoff(operation, 3, 'analyze offers');
 
+        // Track BYOK usage if using a user's key
+        if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
+            await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
+                console.error('Failed to track BYOK usage:', err)
+            );
+        }
+
         return {
             success: true,
             data,
             meta: {
                 model: modelName,
-                latencyMs: Date.now() - startedAt
+                latencyMs: Date.now() - startedAt,
+                apiKeySource: apiKeyResult.source
             }
         };
     } catch (error) {

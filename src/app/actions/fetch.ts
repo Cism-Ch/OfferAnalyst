@@ -22,18 +22,27 @@ const FetchResponseSchema = z.array(OfferSchema);
 export async function fetchOffersAction(
     domain: string,
     context: string,
-    modelName: string = DEFAULT_MODEL_ID
+    modelName: string = DEFAULT_MODEL_ID,
+    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<AgentActionResult<Offer[]>> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
+    // Try to get API key with BYOK support
+    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
+    
+    if (!apiKeyResult) {
         return {
             success: false,
-            error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'fetch offers')
+            error: toAgentActionError(
+                new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING'),
+                'fetch offers'
+            )
         };
     }
 
+    console.log(`[fetchOffersAction] Using ${apiKeyResult.source} API key for ${apiKeyResult.provider}`);
+
     const openrouter = new OpenRouter({
-        apiKey: apiKey,
+        apiKey: apiKeyResult.key,
     });
 
     const systemInstruction = `
@@ -111,11 +120,20 @@ export async function fetchOffersAction(
 
     try {
         const offers = await retryWithBackoff(operation, 3, 'fetch offers');
+        
+        // Track BYOK usage if using a user's key
+        if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
+            await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
+                console.error('Failed to track BYOK usage:', err)
+            );
+        }
+        
         return {
             success: true,
             data: offers,
             meta: {
-                model: modelName
+                model: modelName,
+                apiKeySource: apiKeyResult.source
             }
         };
     } catch (error) {
