@@ -32,11 +32,13 @@ const STORAGE_KEY = 'offeranalyst_temp_api_keys';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Simple obfuscation (NOT encryption)
- * This just makes it slightly harder to spot keys in localStorage
+ * Simple obfuscation (NOT encryption - provides NO security)
+ * This ONLY makes keys slightly less obvious in DevTools localStorage view.
+ * Keys are still fully accessible to anyone with browser access.
+ * For true security, users must authenticate and use database storage.
  */
 function obfuscate(text: string): string {
-    return btoa(text); // Base64 encoding
+    return btoa(text); // Base64 encoding - NOT secure
 }
 
 function deobfuscate(text: string): string {
@@ -123,8 +125,15 @@ export function useTemporaryApiKeys() {
         const now = new Date();
         const expiresAt = new Date(now.getTime() + ONE_DAY_MS);
         
+        // Use crypto API for secure random ID generation
+        const randomBytes = new Uint8Array(8);
+        if (typeof window !== 'undefined' && window.crypto) {
+            window.crypto.getRandomValues(randomBytes);
+        }
+        const randomId = Array.from(randomBytes, byte => byte.toString(36)).join('');
+        
         const newKey: TemporaryAPIKey = {
-            id: `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            id: `temp_${Date.now()}_${randomId}`,
             name,
             provider,
             key,

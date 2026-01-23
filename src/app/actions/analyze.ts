@@ -52,7 +52,10 @@ export async function analyzeOffersAction(
         };
     }
 
-    console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key for ${apiKeyResult.provider}`);
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key`);
+    }
 
     const openrouter = new OpenRouter({
         apiKey: apiKeyResult.key,
@@ -178,8 +181,7 @@ export async function analyzeOffersAction(
             data,
             meta: {
                 model: modelName,
-                latencyMs: Date.now() - startedAt,
-                apiKeySource: apiKeyResult.source
+                latencyMs: Date.now() - startedAt
             }
         };
     } catch (error) {

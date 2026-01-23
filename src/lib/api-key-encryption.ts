@@ -24,14 +24,17 @@ function getEncryptionKey(): Buffer {
         throw new Error('API_KEY_ENCRYPTION_SECRET must be at least 32 characters long');
     }
     
-    // Derive a key using scrypt for consistent key derivation
-    const salt = Buffer.from('offeranalyst-api-keys', 'utf-8');
+    // Use a fixed but application-specific salt for consistency
+    // Note: This is acceptable for key derivation from a strong secret
+    // Each encryption still uses a unique IV for security
+    const salt = Buffer.from('offeranalyst-api-keys-v1', 'utf-8');
     return scryptSync(secret, salt, KEY_LENGTH);
 }
 
 /**
  * Encrypt an API key for storage
- * Returns a base64-encoded string containing: salt + iv + tag + ciphertext
+ * Returns a base64-encoded string containing: iv + tag + ciphertext
+ * Each encryption uses a unique random IV for security
  */
 export function encryptAPIKey(apiKey: string): string {
     const key = getEncryptionKey();

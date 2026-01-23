@@ -150,8 +150,10 @@ export default function APIKeysPage() {
     };
 
     const copyToClipboard = (key: string) => {
-        navigator.clipboard.writeText(key);
-        showToast('API key copied to clipboard', 'success');
+        if (confirm('Copy full API key to clipboard? This will expose your key to clipboard monitoring.')) {
+            navigator.clipboard.writeText(key);
+            showToast('API key copied to clipboard', 'success');
+        }
     };
 
     const handleAddKey = async (name: string, provider: string, key: string) => {

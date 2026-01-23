@@ -44,7 +44,10 @@ export async function getAPIKey(
             const decryptedKey = await getDecryptedAPIKey(session.user.id, provider);
             
             if (decryptedKey) {
-                console.log(`[getAPIKey] Using BYOK key for ${provider}`);
+                // Only log in development mode
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`[getAPIKey] Using BYOK key for ${provider}`);
+                }
                 
                 // Get the key ID for usage tracking
                 const keyRecord = await prisma.aPIKey.findFirst({
@@ -71,7 +74,10 @@ export async function getAPIKey(
 
     // If client provided a temporary key, use it
     if (clientApiKey) {
-        console.log(`[getAPIKey] Using client-provided temporary key for ${provider}`);
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[getAPIKey] Using client-provided temporary key for ${provider}`);
+        }
         return {
             key: clientApiKey,
             source: 'temp',
@@ -82,7 +88,10 @@ export async function getAPIKey(
     // Fallback to environment variable
     const envKey = getEnvAPIKey(provider);
     if (envKey) {
-        console.log(`[getAPIKey] Using environment variable for ${provider}`);
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[getAPIKey] Using environment variable for ${provider}`);
+        }
         return {
             key: envKey,
             source: 'env',
@@ -90,7 +99,10 @@ export async function getAPIKey(
         };
     }
 
-    console.warn(`[getAPIKey] No API key found for ${provider}`);
+    // Only warn in development mode
+    if (process.env.NODE_ENV === 'development') {
+        console.warn(`[getAPIKey] No API key found for ${provider}`);
+    }
     return null;
 }
 

@@ -45,7 +45,10 @@ export async function organizeOffersAction(
         throw new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING');
     }
 
-    console.log(`[organizeOffersAction] Using ${apiKeyResult.source} API key for ${apiKeyResult.provider}`);
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[organizeOffersAction] Using ${apiKeyResult.source} API key`);
+    }
 
     const openrouter = new OpenRouter({
         apiKey: apiKeyResult.key,
