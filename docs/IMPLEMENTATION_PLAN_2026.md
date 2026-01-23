@@ -21,12 +21,12 @@ This document consolidates all planned features, technical debt, and TODOs ident
 
 ## 🚨 Priority 0: Critical Fixes (IMMEDIATE)
 
-### Deployment Issues ✅ COMPLETED
-- [x] **Fix vercel.json secret references**
+### Deployment Issues ⏳ IN REVIEW
+- [x] **Fix vercel.json secret references** (PR pending merge)
   - **Issue:** Environment variables referenced non-existent secrets
   - **Solution:** Removed `@secret_name` syntax, use Vercel dashboard instead
   - **Files:** `vercel.json`, `docs/DEPLOYMENT.md`, `QUICKSTART.md`, `README.md`
-  - **Status:** ✅ Fixed and documented
+  - **Status:** ⏳ Awaiting PR merge and deployment verification
 
 ---
 
