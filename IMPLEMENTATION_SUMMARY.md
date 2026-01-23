@@ -176,19 +176,40 @@ npm run start
 7. **IDs sécurisés**: crypto.getRandomValues() pour génération d'IDs
 8. **Pas de fuite d'info**: Source des clés non exposée aux clients
 
-### Limitations Connues
+### Limitations Connues et Améliorations Futures
 
-⚠️ **Stockage Temporaire**:
-- Base64 obfuscation n'est PAS du chiffrement
-- Accessible via browser DevTools
-- Vulnérable aux extensions malveillantes
-- Recommandation: S'inscrire pour stockage sécurisé
+#### ⚠️ IMPORTANT: Limitations du Stockage Temporaire
 
-⚠️ **Pas encore implémenté**:
-- Rotation automatique des clés
-- Rate limiting par clé
-- Dates d'expiration pour clés authentifiées
-- Partage de clés entre organisations
+Pour les **utilisateurs non-authentifiés**, le stockage dans localStorage présente des risques de sécurité:
+
+- ❌ **Base64 n'est PAS du chiffrement** - Offre zéro protection cryptographique
+- ❌ **Accessible via browser DevTools** - N'importe qui avec accès physique peut voir les clés
+- ❌ **Vulnérable aux extensions malveillantes** - Extensions navigateur peuvent lire localStorage
+- ❌ **Susceptible aux attaques XSS** - Si une faille XSS existe, les clés peuvent être volées
+- ❌ **Pas de protection contre le vol d'appareil** - Si l'appareil est volé, les clés sont exposées
+
+**📢 Recommandation Forte**: Créez un compte pour bénéficier du stockage chiffré AES-256-GCM en base de données.
+
+#### 🔄 Fonctionnalités Non Encore Implémentées
+
+**Sécurité et Gestion des Clés:**
+- 🔄 **Rotation automatique des clés** - Renouvellement périodique automatique
+- ⏱️ **Rate limiting par clé** - Limiter le nombre de requêtes par clé
+- 📅 **Dates d'expiration personnalisées** - Pour les clés authentifiées
+- 🔔 **Système d'alertes** - Notifications pour activité suspecte
+- 📊 **Analytics d'utilisation détaillées** - Dashboard complet des usages
+
+**Collaboration:**
+- 👥 **Partage de clés entre organisations** - Gestion multi-utilisateurs
+- 🔑 **Plusieurs clés par provider** - Basculement automatique
+- 📝 **Versioning des clés** - Historique et rollback
+
+**Roadmap Prévue:**
+- **Q1 2026**: Rotation automatique, Rate limiting, Analytics avancées
+- **Q2 2026**: Expiration personnalisée, Partage organisationnel, Alertes
+- **Q3 2026**: Multi-clés, Versioning, Monitoring avancé
+
+Ces améliorations renforceront encore la sécurité et l'ergonomie du système BYOK.
 
 ## Documentation
 
@@ -220,9 +241,49 @@ Pour questions ou problèmes:
    - Monitorer les logs
 
 3. **Communiquer aux utilisateurs**:
-   - Informer du nouveau système de sécurité
-   - Demander de re-saisir leurs clés
-   - Encourager l'inscription pour stockage persistant
+   - ✅ **CHANGELOG.md créé** - Document complet des changements
+   - 📢 **Informer du nouveau système de sécurité** - Via annonce sur le site
+   - 🔑 **Demander de re-saisir leurs clés** - Migration nécessaire
+   - 💡 **Encourager l'inscription** - Pour stockage persistant et sécurisé
+   
+   **Messages Recommandés:**
+   
+   **Annonce Site Web:**
+   ```
+   🔐 Nouveau Système de Sécurité API
+   
+   Nous avons amélioré la sécurité de vos clés API:
+   - Chiffrement AES-256-GCM pour utilisateurs connectés
+   - Protection renforcée de vos données
+   
+   ⚠️ Action requise: Veuillez re-saisir vos clés API
+   👉 Connectez-vous maintenant pour un stockage sécurisé
+   ```
+   
+   **Email aux Utilisateurs Existants:**
+   ```
+   Sujet: [Action Requise] Mise à jour Sécurité - Re-saisissez vos clés API
+   
+   Bonjour,
+   
+   Nous avons mis en place un nouveau système de sécurité pour protéger
+   vos clés API avec un chiffrement AES-256-GCM de niveau militaire.
+   
+   Action requise:
+   1. Connectez-vous à votre compte
+   2. Allez dans Paramètres > API Keys
+   3. Ajoutez à nouveau vos clés API
+   
+   Vos anciennes clés seront automatiquement supprimées.
+   
+   Merci de votre compréhension.
+   L'équipe OfferAnalyst
+   ```
+   
+   **Notification In-App:**
+   - Banner persistant jusqu'à action utilisateur
+   - Lien direct vers `/dashboard/api-keys`
+   - Guide rapide de migration
 
 ## Résumé
 
