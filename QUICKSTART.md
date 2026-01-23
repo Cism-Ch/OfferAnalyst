@@ -47,12 +47,14 @@ See `docs/PRISMA_BUILD_CONFIG.md` for technical details.
 
 ### Environment Variables Checklist
 
-**Required:**
-- ✅ `DATABASE_URL` - MongoDB connection
+**Required (Add in Vercel Dashboard):**
+- ✅ `DATABASE_URL` - MongoDB connection (required in ALL environments for build)
 - ✅ `OPENROUTER_API_KEY` - AI models
-- ✅ `BETTER_AUTH_SECRET` - Auth security (32+ chars)
-- ✅ `BETTER_AUTH_URL` - Your domain
-- ✅ `NEXT_PUBLIC_APP_URL` - Your domain (public)
+- ✅ `BETTER_AUTH_SECRET` - Auth security (32+ chars, generate with `openssl rand -base64 32`)
+- ✅ `BETTER_AUTH_URL` - Your Vercel domain (update after first deploy)
+- ✅ `NEXT_PUBLIC_APP_URL` - Your Vercel domain (same as above)
+
+**Note:** Environment variables are set directly in the Vercel dashboard under Project Settings → Environment Variables. Do not use Vercel CLI secrets.
 
 **Optional (OAuth):**
 - `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
@@ -61,8 +63,12 @@ See `docs/PRISMA_BUILD_CONFIG.md` for technical details.
 
 ## 🔍 Troubleshooting
 
+### Deployment Error: "Secret does not exist"
+**Problem:** Vercel cannot find referenced secrets.
+**Solution:** Environment variables should be set directly in the Vercel dashboard (Project Settings → Environment Variables), not as CLI secrets. The `vercel.json` file only declares which variables are required.
+
 ### Build Fails: "requires adapter or accelerateUrl"
-**Solution:** Ensure `DATABASE_URL` is set in Vercel environment variables for ALL environments.
+**Solution:** Ensure `DATABASE_URL` is set in Vercel environment variables for ALL environments (Production, Preview, Development).
 
 ### Cannot Connect to Database
 **Solution:** Check MongoDB Atlas Network Access allows Vercel IPs (use 0.0.0.0/0).

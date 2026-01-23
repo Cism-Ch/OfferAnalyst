@@ -213,12 +213,14 @@ Select your preferred model from the header dropdown.
 
 1. **Click "Deploy with Vercel" button above**
 
-2. **Add Required Environment Variables:**
-   - `DATABASE_URL` - Your MongoDB connection string
+2. **Add Required Environment Variables in Vercel Dashboard:**
+   - `DATABASE_URL` - Your MongoDB connection string (required in ALL environments)
    - `BETTER_AUTH_SECRET` - Generate with `openssl rand -base64 32`
    - `BETTER_AUTH_URL` - Your Vercel domain (update after first deploy)
    - `NEXT_PUBLIC_APP_URL` - Same as BETTER_AUTH_URL
    - `OPENROUTER_API_KEY` - Your OpenRouter API key
+   
+   **Note:** Add these in Vercel Project Settings → Environment Variables, not as CLI secrets.
 
 3. **Deploy and Update Domain**
    - After first deployment, get your Vercel domain
