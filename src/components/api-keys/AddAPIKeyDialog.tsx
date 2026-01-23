@@ -30,7 +30,7 @@ import { AlertCircle } from 'lucide-react';
 interface AddAPIKeyDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onAdd: (name: string, provider: string, key: string) => Promise<void>;
+    onAdd: (name: string, provider: string, key: string, expiresAt?: Date | null, rateLimit?: number | null) => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -42,6 +42,15 @@ const AI_PROVIDERS = [
     { value: 'mistral', label: 'Mistral AI', prefix: '' },
 ] as const;
 
+const EXPIRATION_OPTIONS = [
+    { value: 'never', label: 'Jamais (Recommandé)' },
+    { value: '30', label: '30 jours' },
+    { value: '90', label: '90 jours' },
+    { value: '180', label: '6 mois' },
+    { value: '365', label: '1 an' },
+    { value: 'custom', label: 'Date personnalisée' },
+] as const;
+
 export function AddAPIKeyDialog({
     open,
     onOpenChange,
@@ -51,6 +60,9 @@ export function AddAPIKeyDialog({
     const [name, setName] = useState('');
     const [provider, setProvider] = useState<string>('openrouter');
     const [key, setKey] = useState('');
+    const [expirationOption, setExpirationOption] = useState<string>('never');
+    const [customExpiration, setCustomExpiration] = useState('');
+    const [rateLimit, setRateLimit] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -65,12 +77,31 @@ export function AddAPIKeyDialog({
 
         try {
             setIsLoading(true);
-            await onAdd(name.trim(), provider, key.trim());
+            
+            // Calculate expiration date
+            let expiresAt: Date | null = null;
+            if (isAuthenticated && expirationOption !== 'never') {
+                if (expirationOption === 'custom' && customExpiration) {
+                    expiresAt = new Date(customExpiration);
+                } else if (expirationOption !== 'custom') {
+                    const days = parseInt(expirationOption);
+                    expiresAt = new Date();
+                    expiresAt.setDate(expiresAt.getDate() + days);
+                }
+            }
+
+            // Parse rate limit
+            const rateLimitNum = rateLimit ? parseInt(rateLimit) : null;
+            
+            await onAdd(name.trim(), provider, key.trim(), expiresAt, rateLimitNum);
             
             // Reset form
             setName('');
             setKey('');
             setProvider('openrouter');
+            setExpirationOption('never');
+            setCustomExpiration('');
+            setRateLimit('');
             onOpenChange(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to add API key');
@@ -155,6 +186,60 @@ export function AddAPIKeyDialog({
                                 className="font-mono text-sm"
                             />
                         </div>
+
+                        {isAuthenticated && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="expiration">Expiration (Optionnel)</Label>
+                                    <Select
+                                        value={expirationOption}
+                                        onValueChange={setExpirationOption}
+                                        disabled={isLoading}
+                                    >
+                                        <SelectTrigger id="expiration">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {EXPIRATION_OPTIONS.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {expirationOption === 'custom' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="customExpiration">Date d'expiration personnalisée</Label>
+                                        <Input
+                                            id="customExpiration"
+                                            type="date"
+                                            value={customExpiration}
+                                            onChange={(e) => setCustomExpiration(e.target.value)}
+                                            disabled={isLoading}
+                                            min={new Date().toISOString().split('T')[0]}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="rateLimit">Rate Limit (Optionnel)</Label>
+                                    <Input
+                                        id="rateLimit"
+                                        type="number"
+                                        placeholder="Nombre max de requêtes par heure (vide = illimité)"
+                                        value={rateLimit}
+                                        onChange={(e) => setRateLimit(e.target.value)}
+                                        disabled={isLoading}
+                                        min="1"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Laissez vide pour aucune limite
+                                    </p>
+                                </div>
+                            </>
+                        )}
 
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-sm text-red-500">

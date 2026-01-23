@@ -38,6 +38,7 @@ import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/mo
 import { useSession } from '@/lib/auth-client';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { AddAPIKeyDialog } from '@/components/api-keys/AddAPIKeyDialog';
+import { SecurityMigrationBanner, UnauthenticatedSecurityWarning } from '@/components/api-keys/SecurityMigrationBanner';
 import { getUserAPIKeys, addAPIKey, deleteAPIKey, getAPIKeyStats } from '@/app/actions/db/api-keys';
 import type { APIKeyData } from '@/app/actions/db/api-keys';
 
@@ -49,8 +50,10 @@ interface DisplayAPIKey {
     createdAt: string;
     lastUsed: string | null;
     usageCount: number;
+    rateLimit?: number | null;
     isTemporary?: boolean;
     expiresAt?: string;
+    isExpired?: boolean;
 }
 
 export default function APIKeysPage() {
@@ -90,6 +93,9 @@ export default function APIKeysPage() {
                         createdAt: k.createdAt,
                         lastUsed: k.lastUsed,
                         usageCount: k.usageCount,
+                        rateLimit: k.rateLimit,
+                        expiresAt: k.expiresAt || undefined,
+                        isExpired: k.isExpired,
                         isTemporary: false
                     }));
                     
@@ -156,11 +162,11 @@ export default function APIKeysPage() {
         }
     };
 
-    const handleAddKey = async (name: string, provider: string, key: string) => {
+    const handleAddKey = async (name: string, provider: string, key: string, expiresAt?: Date | null, rateLimit?: number | null) => {
         try {
             if (isAuthenticated && session.user?.id) {
                 // Add to database
-                const result = await addAPIKey(session.user.id, name, provider, key);
+                const result = await addAPIKey(session.user.id, name, provider, key, expiresAt, rateLimit);
                 if (result.success) {
                     showToast('API key added successfully', 'success');
                     // Reload keys
@@ -177,6 +183,9 @@ export default function APIKeysPage() {
                         createdAt: k.createdAt,
                         lastUsed: k.lastUsed,
                         usageCount: k.usageCount,
+                        rateLimit: k.rateLimit,
+                        expiresAt: k.expiresAt || undefined,
+                        isExpired: k.isExpired,
                         isTemporary: false
                     }));
                     
@@ -253,6 +262,9 @@ export default function APIKeysPage() {
 
     return (
         <ModernLayout>
+            {/* Security Migration Banner */}
+            <SecurityMigrationBanner />
+            
             <div className="container mx-auto py-8 px-4 max-w-6xl">
                 {/* Toast notification */}
                 {toast && (
@@ -268,6 +280,11 @@ export default function APIKeysPage() {
                     >
                         {toast.message}
                     </motion.div>
+                )}
+
+                {/* Unauthenticated Warning */}
+                {!isAuthenticated && !isPending && (
+                    <UnauthenticatedSecurityWarning />
                 )}
 
                 {/* Header */}
@@ -480,6 +497,24 @@ export default function APIKeysPage() {
                                                             {!apiKey.isTemporary && (
                                                                 <div>
                                                                     {apiKey.usageCount} requests
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && apiKey.rateLimit && (
+                                                                <div className="flex items-center gap-1 text-blue-600">
+                                                                    <AlertCircle className="w-3 h-3" />
+                                                                    Rate limit: {apiKey.rateLimit}/h
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && apiKey.expiresAt && !apiKey.isExpired && (
+                                                                <div className="flex items-center gap-1 text-orange-600">
+                                                                    <Clock className="w-3 h-3" />
+                                                                    Expires {new Date(apiKey.expiresAt).toLocaleDateString()}
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && apiKey.isExpired && (
+                                                                <div className="flex items-center gap-1 text-red-600 font-semibold">
+                                                                    <AlertCircle className="w-3 h-3" />
+                                                                    Expired!
                                                                 </div>
                                                             )}
                                                             {apiKey.isTemporary && apiKey.expiresAt && (

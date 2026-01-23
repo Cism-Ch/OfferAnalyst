@@ -12,8 +12,9 @@
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { getDecryptedAPIKey, updateAPIKeyUsage } from '@/app/actions/db/api-keys';
+import { updateAPIKeyUsage } from '@/app/actions/db/api-keys';
 import { prisma } from '@/lib/prisma';
+import { decryptAPIKey } from '@/lib/api-key-encryption';
 
 export interface APIKeyResult {
     key: string;
@@ -41,29 +42,40 @@ export async function getAPIKey(
 
         if (session?.user?.id) {
             // User is authenticated, check for BYOK keys
-            const decryptedKey = await getDecryptedAPIKey(session.user.id, provider);
+            // Also check for expiration
+            const keyRecord = await prisma.aPIKey.findFirst({
+                where: {
+                    userId: session.user.id,
+                    provider: provider,
+                    isActive: true,
+                    OR: [
+                        { expiresAt: null },
+                        { expiresAt: { gt: new Date() } }
+                    ]
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                select: { 
+                    id: true,
+                    keyEncrypted: true
+                }
+            });
             
-            if (decryptedKey) {
+            if (keyRecord) {
                 // Only log in development mode
                 if (process.env.NODE_ENV === 'development') {
                     console.log(`[getAPIKey] Using BYOK key for ${provider}`);
                 }
                 
-                // Get the key ID for usage tracking
-                const keyRecord = await prisma.aPIKey.findFirst({
-                    where: {
-                        userId: session.user.id,
-                        provider: provider,
-                        isActive: true
-                    },
-                    select: { id: true }
-                });
+                // Decrypt the key
+                const decryptedKey = decryptAPIKey(keyRecord.keyEncrypted);
                 
                 return {
                     key: decryptedKey,
                     source: 'byok',
                     provider,
-                    keyId: keyRecord?.id
+                    keyId: keyRecord.id
                 };
             }
         }

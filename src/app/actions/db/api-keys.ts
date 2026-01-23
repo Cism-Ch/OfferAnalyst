@@ -19,7 +19,10 @@ export interface APIKeyData {
     createdAt: string;
     lastUsed: string | null;
     usageCount: number;
+    rateLimit: number | null;
+    expiresAt: string | null;
     isActive: boolean;
+    isExpired?: boolean;
 }
 
 /**
@@ -43,10 +46,13 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
                 createdAt: true,
                 lastUsed: true,
                 usageCount: true,
+                rateLimit: true,
+                expiresAt: true,
                 isActive: true
             }
         });
 
+        const now = new Date();
         return keys.map((key: { 
             id: string; 
             name: string; 
@@ -54,7 +60,9 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             keyPreview: string; 
             createdAt: Date; 
             lastUsed: Date | null; 
-            usageCount: number; 
+            usageCount: number;
+            rateLimit: number | null;
+            expiresAt: Date | null;
             isActive: boolean 
         }): APIKeyData => ({
             id: key.id,
@@ -64,7 +72,10 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             createdAt: key.createdAt.toISOString(),
             lastUsed: key.lastUsed?.toISOString() || null,
             usageCount: key.usageCount,
-            isActive: key.isActive
+            rateLimit: key.rateLimit,
+            expiresAt: key.expiresAt?.toISOString() || null,
+            isActive: key.isActive,
+            isExpired: key.expiresAt ? key.expiresAt < now : false
         }));
     } catch (error) {
         console.error('Error fetching API keys:', error);
@@ -112,7 +123,9 @@ export async function addAPIKey(
     userId: string,
     name: string,
     provider: string,
-    apiKey: string
+    apiKey: string,
+    expiresAt?: Date | null,
+    rateLimit?: number | null
 ): Promise<{ success: boolean; message: string; keyId?: string }> {
     try {
         // Encrypt the key for security
@@ -128,7 +141,9 @@ export async function addAPIKey(
                 provider,
                 keyEncrypted,
                 keyPreview,
-                permissions: ['READ', 'WRITE']
+                permissions: ['READ', 'WRITE'],
+                expiresAt,
+                rateLimit
             }
         });
 

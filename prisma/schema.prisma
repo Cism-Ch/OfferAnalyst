@@ -114,23 +114,26 @@ model Profile {
 
 // API Keys for BYOK (Bring Your Own Key)
 model APIKey {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  name        String
-  provider    String   // openrouter, google, anthropic, etc.
-  keyEncrypted String  // Encrypted key for security (AES-256-GCM)
-  keyPreview  String   // Last 4 chars for display
-  permissions String[] @default(["READ", "WRITE"])
-  lastUsed    DateTime?
-  usageCount  Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  name         String
+  provider     String    // openrouter, google, anthropic, etc.
+  keyEncrypted String    // Encrypted key for security (AES-256-GCM)
+  keyPreview   String    // Last 4 chars for display
+  permissions  String[]  @default(["READ", "WRITE"])
+  lastUsed     DateTime?
+  usageCount   Int       @default(0)
+  rateLimit    Int?      // Optional: max requests per hour (null = unlimited)
+  isActive     Boolean   @default(true)
+  expiresAt    DateTime? // Optional: expiration date for the key
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([provider])
+  @@index([expiresAt])
   @@map("api_keys")
 }
 
