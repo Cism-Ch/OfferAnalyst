@@ -6,7 +6,7 @@
  * Comprehensive dashboard displaying API key usage analytics with charts and metrics.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -50,14 +50,10 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDashboardProps) {
     const [analytics, setAnalytics] = useState<APIKeyAnalytics | null>(null);
-    const [timeline, setTimeline] = useState<any[]>([]);
+    const [timeline, setTimeline] = useState<Array<{ date: string; requests: number }>>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        loadAnalytics();
-    }, [userId, apiKeyId, days]);
-
-    const loadAnalytics = async () => {
+    const loadAnalytics = useCallback(async () => {
         setIsLoading(true);
         try {
             const [analyticsData, timelineData] = await Promise.all([
@@ -71,7 +67,11 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [userId, apiKeyId, days]);
+
+    useEffect(() => {
+        loadAnalytics();
+    }, [loadAnalytics]);
 
     if (isLoading) {
         return (
@@ -215,7 +215,7 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                         cx="50%"
                                         cy="50%"
                                         outerRadius={80}
-                                        label={(entry) => `${entry.provider}: ${entry.count}`}
+                                        label={(entry: any) => `${entry.provider}: ${entry.count}`}
                                     >
                                         {analytics.requestsByProvider.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

@@ -14,7 +14,6 @@ import {
     AlertTriangle, 
     ShieldAlert, 
     CheckCircle2, 
-    X,
     Trash2,
     Eye,
     EyeOff
@@ -37,7 +36,28 @@ export function SecurityAlerts({ userId }: SecurityAlertsProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [showResolved, setShowResolved] = useState(false);
 
-    const loadAlerts = async () => {
+    useEffect(() => {
+        let cancelled = false;
+        
+        const loadAlerts = async () => {
+            setIsLoading(true);
+            const data = await getUserSecurityAlerts(userId, {
+                unresolvedOnly: !showResolved
+            });
+            if (!cancelled) {
+                setAlerts(data);
+                setIsLoading(false);
+            }
+        };
+        
+        loadAlerts();
+        
+        return () => {
+            cancelled = true;
+        };
+    }, [userId, showResolved]);
+    
+    const loadAlertsManually = async () => {
         setIsLoading(true);
         const data = await getUserSecurityAlerts(userId, {
             unresolvedOnly: !showResolved
@@ -46,24 +66,20 @@ export function SecurityAlerts({ userId }: SecurityAlertsProps) {
         setIsLoading(false);
     };
 
-    useEffect(() => {
-        loadAlerts();
-    }, [userId, showResolved]);
-
     const handleMarkAsRead = async (alertId: string) => {
         await markAlertAsRead(userId, alertId);
-        await loadAlerts();
+        await loadAlertsManually();
     };
 
     const handleResolve = async (alertId: string) => {
         await resolveAlert(userId, alertId);
-        await loadAlerts();
+        await loadAlertsManually();
     };
 
     const handleDeleteResolved = async () => {
         const result = await deleteResolvedAlerts(userId);
         if (result.success) {
-            await loadAlerts();
+            await loadAlertsManually();
         }
     };
 
@@ -95,7 +111,8 @@ export function SecurityAlerts({ userId }: SecurityAlertsProps) {
     };
 
     const unresolvedCount = alerts.filter(a => !a.isResolved).length;
-    const unreadCount = alerts.filter(a => !a.isRead).length;
+    // Track unread alerts for future notifications
+    // const unreadCount = alerts.filter(a => !a.isRead).length;
 
     return (
         <Card>

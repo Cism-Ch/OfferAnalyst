@@ -59,7 +59,7 @@ export async function getUserSecurityAlerts(
                     select: {
                         apiKeys: {
                             where: {
-                                id: { not: null }
+                                id: { not: undefined as any }
                             },
                             select: {
                                 id: true,
@@ -71,21 +71,7 @@ export async function getUserSecurityAlerts(
             }
         });
 
-        return alerts.map((alert: {
-            id: string;
-            apiKeyId: string | null;
-            alertType: string;
-            severity: string;
-            message: string;
-            metadata: string | null;
-            isRead: boolean;
-            isResolved: boolean;
-            resolvedAt: Date | null;
-            createdAt: Date;
-            user: {
-                apiKeys: { id: string; name: string }[];
-            };
-        }) => ({
+        return alerts.map((alert) => ({
             id: alert.id,
             alertType: alert.alertType,
             severity: alert.severity,

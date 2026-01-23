@@ -56,6 +56,8 @@ If you did not authorize this activity, please immediately:
 OfferAnalyst Security Team
         `.trim();
 
+        // HTML template for rich email clients
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const html = `
 <!DOCTYPE html>
 <html>
@@ -130,6 +132,7 @@ OfferAnalyst Security Team
             console.log('To:', userEmail);
             console.log('Subject:', subject);
             console.log('Body:', body);
+            console.log('HTML available for email service integration');
         }
 
         return {

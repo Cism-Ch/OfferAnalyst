@@ -7,7 +7,7 @@
  * and prompts them to re-enter their keys.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -16,28 +16,26 @@ const BANNER_DISMISSED_KEY = 'api_security_migration_dismissed';
 const BANNER_VERSION = 'v1_2026_01'; // Change this to show banner again
 
 export function SecurityMigrationBanner() {
-    const [isVisible, setIsVisible] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        // Check if banner was already dismissed for this version
-        const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
-        if (dismissed !== BANNER_VERSION) {
-            setIsVisible(true);
+    const [state, setState] = useState<{ isVisible: boolean; isLoaded: boolean }>(() => {
+        if (typeof window === 'undefined') {
+            return { isVisible: false, isLoaded: true };
         }
-        setIsLoaded(true);
-    }, []);
+        
+        const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
+        return {
+            isVisible: dismissed !== BANNER_VERSION,
+            isLoaded: true
+        };
+    });
 
     const handleDismiss = () => {
         if (typeof window !== 'undefined') {
             localStorage.setItem(BANNER_DISMISSED_KEY, BANNER_VERSION);
         }
-        setIsVisible(false);
+        setState(prev => ({ ...prev, isVisible: false }));
     };
 
-    if (!isLoaded || !isVisible) {
+    if (!state.isLoaded || !state.isVisible) {
         return null;
     }
 
@@ -109,8 +107,8 @@ export function UnauthenticatedSecurityWarning() {
                         </p>
                         <ul className="list-disc list-inside space-y-1">
                             <li>Créez un compte pour le chiffrement AES-256-GCM</li>
-                            <li>Bénéficiez d'un stockage persistant et sécurisé</li>
-                            <li>Accédez aux statistiques d'utilisation</li>
+                            <li>Bénéficiez d&apos;un stockage persistant et sécurisé</li>
+                            <li>Accédez aux statistiques d&apos;utilisation</li>
                         </ul>
                         <div className="mt-3 flex gap-2">
                             <Link href="/auth/signup">

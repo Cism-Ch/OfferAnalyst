@@ -211,7 +211,7 @@ export function AddAPIKeyDialog({
 
                                 {expirationOption === 'custom' && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="customExpiration">Date d'expiration personnalisée</Label>
+                                        <Label htmlFor="customExpiration">Date d&apos;expiration personnalisée</Label>
                                         <Input
                                             id="customExpiration"
                                             type="date"
