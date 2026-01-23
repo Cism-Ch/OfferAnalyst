@@ -123,10 +123,12 @@ model APIKey {
   keyEncrypted String    // Encrypted key for security (AES-256-GCM)
   keyPreview   String    // Last 4 chars for display
   permissions  String[]  @default(["READ", "WRITE"])
+  priority     Int       @default(0) // Higher priority = used first (0 = lowest)
   lastUsed     DateTime?
   usageCount   Int       @default(0)
   rateLimit    Int?      // Optional: max requests per hour (null = unlimited)
   isActive     Boolean   @default(true)
+  isPrimary    Boolean   @default(false) // Mark as primary/default key for provider
   expiresAt    DateTime? // Optional: expiration date for the key
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -136,6 +138,7 @@ model APIKey {
   @@index([userId])
   @@index([provider])
   @@index([expiresAt])
+  @@index([priority])
   @@map("api_keys")
 }
 

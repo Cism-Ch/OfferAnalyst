@@ -334,6 +334,35 @@ async function createSecurityAlert(
                     metadata: metadata ? JSON.stringify(metadata) : null
                 }
             });
+
+            // Send email notification for high and critical severity alerts
+            if (severity === 'high' || severity === 'critical') {
+                try {
+                    const user = await prisma.user.findUnique({
+                        where: { id: userId },
+                        select: { email: true }
+                    });
+
+                    const apiKey = apiKeyId ? await prisma.aPIKey.findUnique({
+                        where: { id: apiKeyId },
+                        select: { name: true }
+                    }) : null;
+
+                    if (user?.email) {
+                        const { sendSecurityAlertEmail } = await import('@/lib/email-notifications');
+                        await sendSecurityAlertEmail(
+                            user.email,
+                            alertType,
+                            severity,
+                            message,
+                            apiKey?.name
+                        );
+                    }
+                } catch (emailError) {
+                    console.error('Error sending email notification:', emailError);
+                    // Don't fail alert creation if email fails
+                }
+            }
         }
     } catch (error) {
         console.error('Error creating security alert:', error);

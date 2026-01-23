@@ -20,6 +20,8 @@ export interface APIKeyData {
     lastUsed: string | null;
     usageCount: number;
     rateLimit: number | null;
+    priority: number;
+    isPrimary: boolean;
     expiresAt: string | null;
     isActive: boolean;
     isExpired?: boolean;
@@ -47,6 +49,8 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
                 lastUsed: true,
                 usageCount: true,
                 rateLimit: true,
+                priority: true,
+                isPrimary: true,
                 expiresAt: true,
                 isActive: true
             }
@@ -62,6 +66,8 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             lastUsed: Date | null; 
             usageCount: number;
             rateLimit: number | null;
+            priority: number;
+            isPrimary: boolean;
             expiresAt: Date | null;
             isActive: boolean 
         }): APIKeyData => ({
@@ -73,6 +79,8 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             lastUsed: key.lastUsed?.toISOString() || null,
             usageCount: key.usageCount,
             rateLimit: key.rateLimit,
+            priority: key.priority,
+            isPrimary: key.isPrimary,
             expiresAt: key.expiresAt?.toISOString() || null,
             isActive: key.isActive,
             isExpired: key.expiresAt ? key.expiresAt < now : false
@@ -125,7 +133,9 @@ export async function addAPIKey(
     provider: string,
     apiKey: string,
     expiresAt?: Date | null,
-    rateLimit?: number | null
+    rateLimit?: number | null,
+    priority?: number,
+    isPrimary?: boolean
 ): Promise<{ success: boolean; message: string; keyId?: string }> {
     try {
         // Encrypt the key for security
@@ -133,6 +143,20 @@ export async function addAPIKey(
         
         // Extract last 4 characters for preview
         const keyPreview = apiKey.slice(-4);
+
+        // If setting as primary, unset other primary keys for this provider
+        if (isPrimary) {
+            await prisma.aPIKey.updateMany({
+                where: {
+                    userId,
+                    provider,
+                    isPrimary: true
+                },
+                data: {
+                    isPrimary: false
+                }
+            });
+        }
 
         const newKey = await prisma.aPIKey.create({
             data: {
@@ -142,6 +166,8 @@ export async function addAPIKey(
                 keyEncrypted,
                 keyPreview,
                 permissions: ['READ', 'WRITE'],
+                priority: priority ?? 0,
+                isPrimary: isPrimary ?? false,
                 expiresAt,
                 rateLimit
             }

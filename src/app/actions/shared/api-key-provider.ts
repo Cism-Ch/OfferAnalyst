@@ -42,8 +42,8 @@ export async function getAPIKey(
 
         if (session?.user?.id) {
             // User is authenticated, check for BYOK keys
-            // Also check for expiration
-            const keyRecord = await prisma.aPIKey.findFirst({
+            // Get all active, non-expired keys for this provider, ordered by priority
+            const keyRecords = await prisma.aPIKey.findMany({
                 where: {
                     userId: session.user.id,
                     provider: provider,
@@ -53,19 +53,45 @@ export async function getAPIKey(
                         { expiresAt: { gt: new Date() } }
                     ]
                 },
-                orderBy: {
-                    createdAt: 'desc'
-                },
+                orderBy: [
+                    { priority: 'desc' }, // Higher priority first
+                    { isPrimary: 'desc' }, // Primary keys first
+                    { createdAt: 'desc' } // Newest first if same priority
+                ],
                 select: { 
                     id: true,
-                    keyEncrypted: true
+                    keyEncrypted: true,
+                    priority: true,
+                    isPrimary: true,
+                    rateLimit: true,
+                    name: true
                 }
             });
             
-            if (keyRecord) {
-                // Only log in development mode
+            // Try each key in priority order
+            for (const keyRecord of keyRecords) {
+                // Check if key has reached rate limit
+                if (keyRecord.rateLimit) {
+                    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+                    const recentUsage = await prisma.aPIKeyUsageLog.count({
+                        where: {
+                            apiKeyId: keyRecord.id,
+                            timestamp: { gte: oneHourAgo }
+                        }
+                    });
+
+                    if (recentUsage >= keyRecord.rateLimit) {
+                        // Skip this key, try next one
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log(`[getAPIKey] Skipping key "${keyRecord.name}" - rate limit reached`);
+                        }
+                        continue;
+                    }
+                }
+
+                // Use this key
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`[getAPIKey] Using BYOK key for ${provider}`);
+                    console.log(`[getAPIKey] Using BYOK key "${keyRecord.name}" (priority: ${keyRecord.priority}) for ${provider}`);
                 }
                 
                 // Decrypt the key
@@ -77,6 +103,11 @@ export async function getAPIKey(
                     provider,
                     keyId: keyRecord.id
                 };
+            }
+
+            // All keys exhausted or rate limited
+            if (keyRecords.length > 0 && process.env.NODE_ENV === 'development') {
+                console.log(`[getAPIKey] All BYOK keys for ${provider} are rate limited or unavailable`);
             }
         }
     } catch (error) {
