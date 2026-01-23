@@ -10,9 +10,13 @@
  * - Delete/Regenerate keys
  * - Usage statistics
  * - BYOK (Bring Your Own Key) support
+ * 
+ * Security Model:
+ * - Authenticated users: Keys stored securely in database (persistent)
+ * - Unauthenticated users: Keys stored in browser localStorage (temporary, 24h max)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,47 +30,109 @@ import {
     EyeOff,
     CheckCircle2,
     AlertCircle,
-    Clock
+    Clock,
+    ShieldAlert
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
+import { useSession } from '@/lib/auth-client';
+import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
+import { AddAPIKeyDialog } from '@/components/api-keys/AddAPIKeyDialog';
+import { getUserAPIKeys, addAPIKey, deleteAPIKey, getAPIKeyStats } from '@/app/actions/db/api-keys';
+import type { APIKeyData } from '@/app/actions/db/api-keys';
 
-interface APIKey {
+interface DisplayAPIKey {
     id: string;
     name: string;
     provider: string;
     key: string;
     createdAt: string;
     lastUsed: string | null;
-    requestsThisMonth: number;
+    usageCount: number;
+    isTemporary?: boolean;
+    expiresAt?: string;
 }
 
 export default function APIKeysPage() {
-    // Mock data - will be replaced with actual DB queries
-    const [apiKeys, setApiKeys] = useState<APIKey[]>([
-        {
-            id: '1',
-            name: 'OpenRouter Production',
-            provider: 'OpenRouter',
-            key: 'sk-or-v1-1234567890abcdef',
-            createdAt: '2026-01-15',
-            lastUsed: '2026-01-22',
-            requestsThisMonth: 234
-        },
-        {
-            id: '2',
-            name: 'Gemini Development',
-            provider: 'Google Gemini',
-            key: 'AIzaSyABCDEF123456',
-            createdAt: '2026-01-10',
-            lastUsed: '2026-01-20',
-            requestsThisMonth: 89
-        }
-    ]);
-
+    const { data: session, isPending } = useSession();
+    const temporaryKeys = useTemporaryApiKeys();
+    
+    const [displayKeys, setDisplayKeys] = useState<DisplayAPIKey[]>([]);
+    const [stats, setStats] = useState({
+        totalKeys: 0,
+        totalRequests: 0,
+        byokActive: false
+    });
     const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showAddDialog, setShowAddDialog] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const isAuthenticated = !!session?.user && !isPending;
+
+    // Load keys based on authentication status
+    useEffect(() => {
+        async function loadKeys() {
+            setIsLoading(true);
+            try {
+                if (isAuthenticated && session.user?.id) {
+                    // Load persistent keys from database
+                    const [dbKeys, dbStats] = await Promise.all([
+                        getUserAPIKeys(session.user.id),
+                        getAPIKeyStats(session.user.id)
+                    ]);
+                    
+                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
+                        id: k.id,
+                        name: k.name,
+                        provider: k.provider,
+                        key: k.keyPreview,
+                        createdAt: k.createdAt,
+                        lastUsed: k.lastUsed,
+                        usageCount: k.usageCount,
+                        isTemporary: false
+                    }));
+                    
+                    setDisplayKeys(keys);
+                    setStats(dbStats);
+                } else if (temporaryKeys.isLoaded) {
+                    // Load temporary keys from localStorage
+                    const keys: DisplayAPIKey[] = temporaryKeys.keys.map(k => ({
+                        id: k.id,
+                        name: k.name,
+                        provider: k.provider,
+                        key: k.key,
+                        createdAt: k.createdAt,
+                        lastUsed: null,
+                        usageCount: 0,
+                        isTemporary: true,
+                        expiresAt: k.expiresAt
+                    }));
+                    
+                    setDisplayKeys(keys);
+                    setStats({
+                        totalKeys: keys.length,
+                        totalRequests: 0,
+                        byokActive: keys.length > 0
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load API keys:', error);
+                showToast('Failed to load API keys', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        if (!isPending) {
+            loadKeys();
+        }
+    }, [isAuthenticated, session?.user?.id, temporaryKeys.isLoaded, temporaryKeys.keys, isPending]);
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const maskKey = (key: string) => {
         if (key.length <= 8) return '••••••••';
@@ -85,26 +151,133 @@ export default function APIKeysPage() {
 
     const copyToClipboard = (key: string) => {
         navigator.clipboard.writeText(key);
-        // TODO: Show toast notification
+        showToast('API key copied to clipboard', 'success');
     };
 
-    const deleteKey = (id: string) => {
-        if (confirm('Are you sure you want to delete this API key?')) {
-            setApiKeys(keys => keys.filter(k => k.id !== id));
-            // TODO: Call delete API
+    const handleAddKey = async (name: string, provider: string, key: string) => {
+        try {
+            if (isAuthenticated && session.user?.id) {
+                // Add to database
+                const result = await addAPIKey(session.user.id, name, provider, key);
+                if (result.success) {
+                    showToast('API key added successfully', 'success');
+                    // Reload keys
+                    const [dbKeys, dbStats] = await Promise.all([
+                        getUserAPIKeys(session.user.id),
+                        getAPIKeyStats(session.user.id)
+                    ]);
+                    
+                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
+                        id: k.id,
+                        name: k.name,
+                        provider: k.provider,
+                        key: k.keyPreview,
+                        createdAt: k.createdAt,
+                        lastUsed: k.lastUsed,
+                        usageCount: k.usageCount,
+                        isTemporary: false
+                    }));
+                    
+                    setDisplayKeys(keys);
+                    setStats(dbStats);
+                } else {
+                    throw new Error(result.message);
+                }
+            } else {
+                // Add to localStorage
+                temporaryKeys.addKey(name, provider, key);
+                showToast('Temporary API key added (expires in 24 hours)', 'success');
+            }
+        } catch (error) {
+            console.error('Failed to add API key:', error);
+            throw error;
         }
+    };
+
+    const handleDeleteKey = async (id: string, isTemporary?: boolean) => {
+        if (!confirm('Are you sure you want to delete this API key?')) {
+            return;
+        }
+
+        try {
+            if (isTemporary) {
+                temporaryKeys.deleteKey(id);
+                showToast('API key deleted', 'success');
+            } else if (isAuthenticated && session.user?.id) {
+                const result = await deleteAPIKey(session.user.id, id);
+                if (result.success) {
+                    showToast('API key deleted', 'success');
+                    // Reload keys
+                    const [dbKeys, dbStats] = await Promise.all([
+                        getUserAPIKeys(session.user.id),
+                        getAPIKeyStats(session.user.id)
+                    ]);
+                    
+                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
+                        id: k.id,
+                        name: k.name,
+                        provider: k.provider,
+                        key: k.keyPreview,
+                        createdAt: k.createdAt,
+                        lastUsed: k.lastUsed,
+                        usageCount: k.usageCount,
+                        isTemporary: false
+                    }));
+                    
+                    setDisplayKeys(keys);
+                    setStats(dbStats);
+                } else {
+                    throw new Error(result.message);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to delete API key:', error);
+            showToast('Failed to delete API key', 'error');
+        }
+    };
+
+    const getTimeRemaining = (expiresAt: string): string => {
+        const now = new Date();
+        const expires = new Date(expiresAt);
+        const diffMs = expires.getTime() - now.getTime();
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (diffHours > 0) {
+            return `${diffHours}h ${diffMinutes}m remaining`;
+        }
+        return `${diffMinutes}m remaining`;
     };
 
     return (
         <ModernLayout>
             <div className="container mx-auto py-8 px-4 max-w-6xl">
+                {/* Toast notification */}
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+                            toast.type === 'success' 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-red-500 text-white'
+                        }`}
+                    >
+                        {toast.message}
+                    </motion.div>
+                )}
+
                 {/* Header */}
                 <motion.div {...fadeInUpProps} className="mb-8">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold mb-2">API Keys</h1>
                             <p className="text-muted-foreground">
-                                Manage your AI provider API keys for BYOK (Bring Your Own Key) usage
+                                {isAuthenticated 
+                                    ? 'Manage your AI provider API keys for BYOK (Bring Your Own Key) usage'
+                                    : 'Add temporary API keys to enable BYOK access (keys expire after 24 hours)'
+                                }
                             </p>
                         </div>
                         <Button onClick={() => setShowAddDialog(true)}>
@@ -114,57 +287,97 @@ export default function APIKeysPage() {
                     </div>
                 </motion.div>
 
+                {/* Warning banner for unauthenticated users */}
+                {!isAuthenticated && (
+                    <motion.div {...fadeInUpProps} className="mb-6">
+                        <Card className="border-yellow-500/50 bg-yellow-500/5">
+                            <CardContent className="pt-6">
+                                <div className="flex gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="font-semibold mb-2">Temporary Storage Mode</h4>
+                                        <p className="text-sm text-muted-foreground mb-3">
+                                            Your API keys are stored locally in your browser and will expire after 24 hours. 
+                                            For persistent, encrypted storage, please{' '}
+                                            <a href="/auth/signup" className="underline font-medium">create an account</a>.
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <Button size="sm" asChild>
+                                                <a href="/auth/signup">Sign Up</a>
+                                            </Button>
+                                            <Button size="sm" variant="outline" asChild>
+                                                <a href="/auth/login">Login</a>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+
                 {/* Usage Overview */}
-                <motion.div {...fadeInUpProps} className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Total Keys
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{apiKeys.length}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Active API keys
-                                </p>
-                            </CardContent>
-                        </Card>
+                {!isLoading && (
+                    <motion.div {...fadeInUpProps} className="mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Total Keys
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats.totalKeys}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {isAuthenticated ? 'Persistent' : 'Temporary'} API keys
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Requests This Month
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {apiKeys.reduce((sum, key) => sum + key.requestsThisMonth, 0)}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Across all keys
-                                </p>
-                            </CardContent>
-                        </Card>
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Requests This Month
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {stats.totalRequests}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {isAuthenticated ? 'Across all keys' : 'Not tracked for temporary keys'}
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    BYOK Status
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                                    <span className="text-2xl font-bold">Active</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Unlimited usage with your keys
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </motion.div>
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        BYOK Status
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center gap-2">
+                                        {stats.byokActive ? (
+                                            <>
+                                                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                                <span className="text-2xl font-bold">Active</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <AlertCircle className="w-5 h-5 text-yellow-500" />
+                                                <span className="text-2xl font-bold">Inactive</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {stats.byokActive ? 'Unlimited usage with your keys' : 'Add a key to enable'}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* API Keys List */}
                 <motion.div {...staggerContainerProps}>
@@ -172,11 +385,18 @@ export default function APIKeysPage() {
                         <CardHeader>
                             <CardTitle>Your API Keys</CardTitle>
                             <CardDescription>
-                                Manage and monitor your API keys. Keys are encrypted and never shared.
+                                {isAuthenticated 
+                                    ? 'Manage and monitor your API keys. Keys are encrypted and never shared.'
+                                    : 'Temporarily stored keys for this browser session (24h expiration).'
+                                }
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {apiKeys.length === 0 ? (
+                            {isLoading ? (
+                                <div className="text-center py-12">
+                                    <p className="text-muted-foreground">Loading API keys...</p>
+                                </div>
+                            ) : displayKeys.length === 0 ? (
                                 <div className="text-center py-12">
                                     <Key className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                                     <h3 className="text-lg font-semibold mb-2">No API Keys</h3>
@@ -190,7 +410,7 @@ export default function APIKeysPage() {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {apiKeys.map((apiKey, index) => (
+                                    {displayKeys.map((apiKey, index) => (
                                         <motion.div
                                             key={apiKey.id}
                                             {...staggerItemProps}
@@ -202,7 +422,14 @@ export default function APIKeysPage() {
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <Key className="w-5 h-5 text-primary" />
                                                         <div>
-                                                            <h3 className="font-semibold">{apiKey.name}</h3>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="font-semibold">{apiKey.name}</h3>
+                                                                {apiKey.isTemporary && (
+                                                                    <Badge variant="outline" className="text-yellow-500 border-yellow-500">
+                                                                        Temporary
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                             <Badge variant="outline" className="mt-1">
                                                                 {apiKey.provider}
                                                             </Badge>
@@ -240,17 +467,25 @@ export default function APIKeysPage() {
                                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                                             <div className="flex items-center gap-1">
                                                                 <Clock className="w-3 h-3" />
-                                                                Created {apiKey.createdAt}
+                                                                Created {new Date(apiKey.createdAt).toLocaleDateString()}
                                                             </div>
                                                             {apiKey.lastUsed && (
                                                                 <div className="flex items-center gap-1">
                                                                     <CheckCircle2 className="w-3 h-3" />
-                                                                    Last used {apiKey.lastUsed}
+                                                                    Last used {new Date(apiKey.lastUsed).toLocaleDateString()}
                                                                 </div>
                                                             )}
-                                                            <div>
-                                                                {apiKey.requestsThisMonth} requests this month
-                                                            </div>
+                                                            {!apiKey.isTemporary && (
+                                                                <div>
+                                                                    {apiKey.usageCount} requests
+                                                                </div>
+                                                            )}
+                                                            {apiKey.isTemporary && apiKey.expiresAt && (
+                                                                <div className="flex items-center gap-1 text-yellow-600">
+                                                                    <AlertCircle className="w-3 h-3" />
+                                                                    {getTimeRemaining(apiKey.expiresAt)}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -258,7 +493,7 @@ export default function APIKeysPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => deleteKey(apiKey.id)}
+                                                    onClick={() => handleDeleteKey(apiKey.id, apiKey.isTemporary)}
                                                     className="text-destructive hover:text-destructive"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -282,19 +517,32 @@ export default function APIKeysPage() {
                                     <h4 className="font-semibold">About BYOK (Bring Your Own Key)</h4>
                                     <p className="text-sm text-muted-foreground">
                                         When you add your own API keys, you unlock unlimited usage with no product-imposed limits. 
-                                        The only restrictions are those from your AI provider. Your keys are encrypted at rest and never shared.
+                                        The only restrictions are those from your AI provider.
                                     </p>
                                     <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                                         <li>Free tier uses shared keys with rate limits</li>
                                         <li>BYOK mode removes all product limits</li>
                                         <li>You only pay your AI provider directly</li>
                                         <li>Recommended: OpenRouter for multi-model access</li>
+                                        {isAuthenticated ? (
+                                            <li>Your keys are encrypted at rest and stored securely</li>
+                                        ) : (
+                                            <li>Temporary keys expire after 24 hours - sign up for persistent storage</li>
+                                        )}
                                     </ul>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
+
+                {/* Add API Key Dialog */}
+                <AddAPIKeyDialog
+                    open={showAddDialog}
+                    onOpenChange={setShowAddDialog}
+                    onAdd={handleAddKey}
+                    isAuthenticated={isAuthenticated}
+                />
             </div>
         </ModernLayout>
     );
