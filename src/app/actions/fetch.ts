@@ -25,8 +25,23 @@ export async function fetchOffersAction(
     modelName: string = DEFAULT_MODEL_ID,
     clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<AgentActionResult<Offer[]>> {
+    const startTime = Date.now();
+    let userId: string | undefined;
+    
     // Try to get API key with BYOK support
     const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const { logAPIKeyUsage, checkForSuspiciousActivity } = await import('./db/api-key-analytics');
+    const { auth } = await import('@/lib/auth');
+    const { headers } = await import('next/headers');
+    
+    // Get session for logging
+    try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        userId = session?.user?.id;
+    } catch {
+        // Continue without user ID
+    }
+    
     const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
     
     if (!apiKeyResult) {
@@ -131,6 +146,21 @@ export async function fetchOffersAction(
             );
         }
         
+        // Log usage for analytics
+        if (userId && apiKeyResult.keyId) {
+            const responseTime = Date.now() - startTime;
+            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
+                model: modelName,
+                success: true,
+                responseTime
+            }).catch(err => console.error('Failed to log usage:', err));
+            
+            // Check for suspicious activity
+            await checkForSuspiciousActivity(userId, apiKeyResult.keyId).catch(err =>
+                console.error('Failed to check suspicious activity:', err)
+            );
+        }
+        
         return {
             success: true,
             data: offers,
@@ -140,6 +170,18 @@ export async function fetchOffersAction(
         };
     } catch (error) {
         console.error('Fetch offers failed', error);
+        
+        // Log failed request
+        if (userId && apiKeyResult.keyId) {
+            const responseTime = Date.now() - startTime;
+            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
+                model: modelName,
+                success: false,
+                errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                responseTime
+            }).catch(err => console.error('Failed to log usage:', err));
+        }
+        
         return {
             success: false,
             error: toAgentActionError(error, 'fetch offers')
