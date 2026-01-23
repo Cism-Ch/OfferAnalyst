@@ -58,9 +58,6 @@ export async function getUserSecurityAlerts(
                 user: {
                     select: {
                         apiKeys: {
-                            where: {
-                                id: { not: undefined as any }
-                            },
                             select: {
                                 id: true,
                                 name: true

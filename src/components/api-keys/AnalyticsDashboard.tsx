@@ -215,7 +215,11 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                         cx="50%"
                                         cy="50%"
                                         outerRadius={80}
-                                        label={(entry: any) => `${entry.provider}: ${entry.count}`}
+                                        label={(props: unknown) => {
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            const entry = (props as any).payload || props;
+                                            return `${entry.provider}: ${entry.count}`;
+                                        }}
                                     >
                                         {analytics.requestsByProvider.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
