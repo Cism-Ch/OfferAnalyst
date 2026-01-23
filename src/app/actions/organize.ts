@@ -34,15 +34,24 @@ export interface OrganizedOffers {
 }
 
 export async function organizeOffersAction(
-    offers: Offer[]
+    offers: Offer[],
+    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<OrganizedOffers> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-        throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
+    // Try to get API key with BYOK support
+    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
+    
+    if (!apiKeyResult) {
+        throw new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING');
+    }
+
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[organizeOffersAction] Using ${apiKeyResult.source} API key`);
     }
 
     const openrouter = new OpenRouter({
-        apiKey: apiKey,
+        apiKey: apiKeyResult.key,
     });
 
     // Optimize payload: Simplify offers to reduce token usage
@@ -133,6 +142,13 @@ export async function organizeOffersAction(
         }));
 
         console.log(`Organize: Successfully organized into ${hydratedCategories.length} categories`);
+
+        // Track BYOK usage if using a user's key
+        if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
+            await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
+                console.error('Failed to track BYOK usage:', err)
+            );
+        }
 
         return {
             categories: hydratedCategories,

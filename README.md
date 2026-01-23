@@ -16,6 +16,15 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 
 ---
 
+> [!IMPORTANT]
+> **🔐 Security Update (January 2026)**: We've implemented a new secure API key management system with AES-256-GCM encryption.
+> 
+> **Action Required**: If you have existing API keys, please re-enter them after updating.
+> 
+> See [CHANGELOG.md](CHANGELOG.md) for full details and migration guide.
+
+---
+
 ## 📖 Overview
 
 **OfferAnalyst** is a high-performance recommendation engine that intelligently ranks offers based on user context. Powered by **OpenRouter AI models** (including DeepSeek R1, GPT-4, Claude, and more), it uses a Server Action backbone to secure API keys and provide robust results.
@@ -23,6 +32,7 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 ### ✨ Key Features
 
 - 🧠 **AI Analysis**: Server-side analysis using multiple AI models via OpenRouter
+- 🔐 **Secure API Keys**: AES-256-GCM encrypted storage with BYOK support ([details](docs/API_KEY_SECURITY.md))
 - 🎨 **Modern UI**: Built with `shadcn/ui` and Tailwind CSS v4 in a clean dashboard style
 - ⚡ **Next.js App Router**: Optimized performance and server actions
 - 📊 **Visualizations**: Interactive charts using Recharts
@@ -30,6 +40,7 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 - 🔍 **Smart Search**: Track and restore previous searches
 - 📈 **Project Management**: Organize research into projects
 - 🔄 **Comparison View**: Side-by-side offer comparison
+- 📝 **Change Tracking**: See [CHANGELOG.md](CHANGELOG.md) for latest updates
 
 ---
 

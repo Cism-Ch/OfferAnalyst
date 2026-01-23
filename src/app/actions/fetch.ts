@@ -22,18 +22,45 @@ const FetchResponseSchema = z.array(OfferSchema);
 export async function fetchOffersAction(
     domain: string,
     context: string,
-    modelName: string = DEFAULT_MODEL_ID
+    modelName: string = DEFAULT_MODEL_ID,
+    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<AgentActionResult<Offer[]>> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
+    const startTime = Date.now();
+    let userId: string | undefined;
+    
+    // Try to get API key with BYOK support
+    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const { logAPIKeyUsage, checkForSuspiciousActivity } = await import('./db/api-key-analytics');
+    const { auth } = await import('@/lib/auth');
+    const { headers } = await import('next/headers');
+    
+    // Get session for logging
+    try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        userId = session?.user?.id;
+    } catch {
+        // Continue without user ID
+    }
+    
+    const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
+    
+    if (!apiKeyResult) {
         return {
             success: false,
-            error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'fetch offers')
+            error: toAgentActionError(
+                new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING'),
+                'fetch offers'
+            )
         };
     }
 
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[fetchOffersAction] Using ${apiKeyResult.source} API key`);
+    }
+
     const openrouter = new OpenRouter({
-        apiKey: apiKey,
+        apiKey: apiKeyResult.key,
     });
 
     const systemInstruction = `
@@ -111,6 +138,29 @@ export async function fetchOffersAction(
 
     try {
         const offers = await retryWithBackoff(operation, 3, 'fetch offers');
+        
+        // Track BYOK usage if using a user's key
+        if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
+            await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
+                console.error('Failed to track BYOK usage:', err)
+            );
+        }
+        
+        // Log usage for analytics
+        if (userId && apiKeyResult.keyId) {
+            const responseTime = Date.now() - startTime;
+            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
+                model: modelName,
+                success: true,
+                responseTime
+            }).catch(err => console.error('Failed to log usage:', err));
+            
+            // Check for suspicious activity
+            await checkForSuspiciousActivity(userId, apiKeyResult.keyId).catch(err =>
+                console.error('Failed to check suspicious activity:', err)
+            );
+        }
+        
         return {
             success: true,
             data: offers,
@@ -120,6 +170,18 @@ export async function fetchOffersAction(
         };
     } catch (error) {
         console.error('Fetch offers failed', error);
+        
+        // Log failed request
+        if (userId && apiKeyResult.keyId) {
+            const responseTime = Date.now() - startTime;
+            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
+                model: modelName,
+                success: false,
+                errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                responseTime
+            }).catch(err => console.error('Failed to log usage:', err));
+        }
+        
         return {
             success: false,
             error: toAgentActionError(error, 'fetch offers')

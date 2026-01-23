@@ -5,10 +5,11 @@
  * 
  * Server actions for managing user API keys in MongoDB.
  * Handles CRUD operations for BYOK (Bring Your Own Key) functionality.
+ * Keys are encrypted at rest using AES-256-GCM.
  */
 
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+import { encryptAPIKey, decryptAPIKey } from '@/lib/api-key-encryption';
 
 export interface APIKeyData {
     id: string;
@@ -18,7 +19,12 @@ export interface APIKeyData {
     createdAt: string;
     lastUsed: string | null;
     usageCount: number;
+    rateLimit: number | null;
+    priority: number;
+    isPrimary: boolean;
+    expiresAt: string | null;
     isActive: boolean;
+    isExpired?: boolean;
 }
 
 /**
@@ -42,10 +48,15 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
                 createdAt: true,
                 lastUsed: true,
                 usageCount: true,
+                rateLimit: true,
+                priority: true,
+                isPrimary: true,
+                expiresAt: true,
                 isActive: true
             }
         });
 
+        const now = new Date();
         return keys.map((key: { 
             id: string; 
             name: string; 
@@ -53,7 +64,11 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             keyPreview: string; 
             createdAt: Date; 
             lastUsed: Date | null; 
-            usageCount: number; 
+            usageCount: number;
+            rateLimit: number | null;
+            priority: number;
+            isPrimary: boolean;
+            expiresAt: Date | null;
             isActive: boolean 
         }): APIKeyData => ({
             id: key.id,
@@ -63,11 +78,49 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
             createdAt: key.createdAt.toISOString(),
             lastUsed: key.lastUsed?.toISOString() || null,
             usageCount: key.usageCount,
-            isActive: key.isActive
+            rateLimit: key.rateLimit,
+            priority: key.priority,
+            isPrimary: key.isPrimary,
+            expiresAt: key.expiresAt?.toISOString() || null,
+            isActive: key.isActive,
+            isExpired: key.expiresAt ? key.expiresAt < now : false
         }));
     } catch (error) {
         console.error('Error fetching API keys:', error);
         return [];
+    }
+}
+
+/**
+ * Get decrypted API key for a specific provider
+ * Used by server actions to retrieve user's BYOK keys
+ */
+export async function getDecryptedAPIKey(
+    userId: string,
+    provider: string
+): Promise<string | null> {
+    try {
+        const key = await prisma.aPIKey.findFirst({
+            where: {
+                userId,
+                provider,
+                isActive: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        if (!key) {
+            return null;
+        }
+
+        // Decrypt the key
+        const decryptedKey = decryptAPIKey(key.keyEncrypted);
+        return decryptedKey;
+    } catch (error) {
+        console.error('Error fetching decrypted API key:', error);
+        return null;
     }
 }
 
@@ -78,23 +131,45 @@ export async function addAPIKey(
     userId: string,
     name: string,
     provider: string,
-    apiKey: string
+    apiKey: string,
+    expiresAt?: Date | null,
+    rateLimit?: number | null,
+    priority?: number,
+    isPrimary?: boolean
 ): Promise<{ success: boolean; message: string; keyId?: string }> {
     try {
-        // Hash the key for security
-        const keyHash = await bcrypt.hash(apiKey, 10);
+        // Encrypt the key for security
+        const keyEncrypted = encryptAPIKey(apiKey);
         
         // Extract last 4 characters for preview
         const keyPreview = apiKey.slice(-4);
+
+        // If setting as primary, unset other primary keys for this provider
+        if (isPrimary) {
+            await prisma.aPIKey.updateMany({
+                where: {
+                    userId,
+                    provider,
+                    isPrimary: true
+                },
+                data: {
+                    isPrimary: false
+                }
+            });
+        }
 
         const newKey = await prisma.aPIKey.create({
             data: {
                 userId,
                 name,
                 provider,
-                keyHash,
+                keyEncrypted,
                 keyPreview,
-                permissions: ['READ', 'WRITE']
+                permissions: ['READ', 'WRITE'],
+                priority: priority ?? 0,
+                isPrimary: isPrimary ?? false,
+                expiresAt,
+                rateLimit
             }
         });
 

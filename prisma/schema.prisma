@@ -32,6 +32,8 @@ model User {
   sessions       Session[]
   subscriptions  Subscription[]
   credits        Credit[]
+  apiKeyUsageLogs APIKeyUsageLog[]
+  securityAlerts SecurityAlert[]
 
   @@index([createdAt])
   @@map("users")
@@ -114,23 +116,29 @@ model Profile {
 
 // API Keys for BYOK (Bring Your Own Key)
 model APIKey {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  name        String
-  provider    String   // openrouter, google, anthropic, etc.
-  keyHash     String   // Hashed key for security
-  keyPreview  String   // Last 4 chars for display
-  permissions String[] @default(["READ", "WRITE"])
-  lastUsed    DateTime?
-  usageCount  Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  name         String
+  provider     String    // openrouter, google, anthropic, etc.
+  keyEncrypted String    // Encrypted key for security (AES-256-GCM)
+  keyPreview   String    // Last 4 chars for display
+  permissions  String[]  @default(["READ", "WRITE"])
+  priority     Int       @default(0) // Higher priority = used first (0 = lowest)
+  lastUsed     DateTime?
+  usageCount   Int       @default(0)
+  rateLimit    Int?      // Optional: max requests per hour (null = unlimited)
+  isActive     Boolean   @default(true)
+  isPrimary    Boolean   @default(false) // Mark as primary/default key for provider
+  expiresAt    DateTime? // Optional: expiration date for the key
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([provider])
+  @@index([expiresAt])
+  @@index([priority])
   @@map("api_keys")
 }
 
@@ -262,4 +270,55 @@ model PerformanceMetric {
   @@index([createdAt])
   @@index([rating])
   @@map("performance_metrics")
+}
+
+
+// API Key Usage Logs for detailed analytics
+model APIKeyUsageLog {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  apiKeyId      String   @db.ObjectId
+  provider      String   // openrouter, openai, etc.
+  action        String   // fetch, analyze, organize
+  model         String?  // AI model used
+  tokensUsed    Int?     // Tokens consumed
+  success       Boolean  @default(true)
+  errorMessage  String?  @db.String
+  responseTime  Int?     // Response time in ms
+  ipAddress     String?
+  userAgent     String?  @db.String
+  timestamp     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([timestamp])
+  @@index([provider])
+  @@map("api_key_usage_logs")
+}
+
+// Security Alerts for suspicious activity
+model SecurityAlert {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  apiKeyId    String?  @db.ObjectId
+  alertType   String   // rate_limit_exceeded, unusual_activity, expired_key_usage, etc.
+  severity    String   // low, medium, high, critical
+  message     String   @db.String
+  metadata    String?  @db.String // JSON stringified additional data
+  isRead      Boolean  @default(false)
+  isResolved  Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([alertType])
+  @@index([severity])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("security_alerts")
 }

@@ -27,6 +27,7 @@ const protectedRoutes = [
   "/compare",
   "/settings",
   "/profile",
+  "/dashboard",
 ];
 
 export async function middleware(request: NextRequest) {
