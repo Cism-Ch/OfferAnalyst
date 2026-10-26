@@ -1,0 +1,82 @@
+name: OfferAnalyst CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Code Quality & Type Integrity
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "mongodb://localhost:27017/test"
+      BETTER_AUTH_SECRET: "test-secret-min-32-chars-long-for-ci-pipeline"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Strict TypeScript Compilation
+        run: npx tsc --noEmit
+
+      - name: Strict ESLint Verification
+        run: npm run lint
+
+  e2e-tests:
+    name: Playwright End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    env:
+      DATABASE_URL: "mongodb://localhost:27017/test"
+      BETTER_AUTH_SECRET: "test-secret-min-32-chars-long-for-ci-pipeline"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium Browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build Application for Testing
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Run E2E Tests
+        run: npx playwright test
+        env:
+          CI: true

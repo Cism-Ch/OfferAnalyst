@@ -6,6 +6,8 @@
  * Sends email notifications for security alerts and important events.
  */
 
+import { enqueueJob } from '@/lib/qstash';
+
 export interface EmailNotification {
     to: string;
     subject: string;
@@ -14,7 +16,7 @@ export interface EmailNotification {
 }
 
 /**
- * Send security alert email notification
+ * Send security alert email notification asynchronously via QStash
  */
 export async function sendSecurityAlertEmail(
     userEmail: string,
@@ -24,9 +26,6 @@ export async function sendSecurityAlertEmail(
     apiKeyName?: string
 ): Promise<{ success: boolean; message: string }> {
     try {
-        // In production, integrate with email service (SendGrid, AWS SES, Resend, etc.)
-        // For now, log the notification
-        
         const subject = `🔐 Security Alert: ${alertType.replace(/_/g, ' ')}`;
         const body = `
 Security Alert Detected
@@ -56,8 +55,6 @@ If you did not authorize this activity, please immediately:
 OfferAnalyst Security Team
         `.trim();
 
-        // HTML template for rich email clients
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const html = `
 <!DOCTYPE html>
 <html>
@@ -116,31 +113,23 @@ OfferAnalyst Security Team
 </html>
         `.trim();
 
-        // TODO: Integrate with actual email service
-        // Example with Resend:
-        // import { Resend } from 'resend';
-        // const resend = new Resend(process.env.RESEND_API_KEY);
-        // await resend.emails.send({
-        //     from: 'security@offeranalyst.com',
-        //     to: userEmail,
-        //     subject,
-        //     html
-        // });
-
-        if (process.env.NODE_ENV === 'development') {
-            console.log('📧 [Email Notification]');
-            console.log('To:', userEmail);
-            console.log('Subject:', subject);
-            console.log('Body:', body);
-            console.log('HTML available for email service integration');
-        }
+        // Asynchronously enqueue email job to QStash without blocking the caller
+        await enqueueJob({
+            id: `sec-alert-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+            type: 'send_email',
+            createdAt: new Date().toISOString(),
+            to: userEmail,
+            subject,
+            html,
+            text: body,
+        });
 
         return {
             success: true,
-            message: 'Email notification sent successfully'
+            message: 'Email notification queued successfully'
         };
     } catch (error) {
-        console.error('Error sending email notification:', error);
+        console.error('Error queuing email notification:', error);
         return {
             success: false,
             message: 'Failed to send email notification'

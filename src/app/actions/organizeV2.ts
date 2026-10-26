@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { convertToCSV } from "@/lib/export/csv";
 import { preparePDFData, PDFExportData } from "@/lib/export/pdf";
+import { uploadExportDocument, getPresignedDownloadUrl } from "@/lib/storage";
 
 const CategorySchema = z.object({
     name: z.string(),
@@ -258,14 +259,22 @@ export async function organizeOffersActionV2(
 
 export { convertToCSV, preparePDFData };
 
+export interface ExportActionResult {
+    format: 'csv' | 'pdf-ready';
+    content: string | PDFExportData;
+    cloudUrl?: string;
+    cloudKey?: string;
+}
+
 /**
  * Server Action for exporting organized offers or offer lists to CSV or structured PDF formats.
+ * Supports direct in-memory returns or persistent Tigris S3 cloud uploads with presigned download links.
  */
 export async function exportOrganizedOffersAction(
     data: OrganizedOffersV2 | Offer[],
     format: 'csv' | 'pdf-ready',
-    options?: { title?: string; domain?: string }
-): Promise<AgentActionResult<{ format: 'csv' | 'pdf-ready'; content: string | PDFExportData }>> {
+    options?: { title?: string; domain?: string; uploadToCloud?: boolean }
+): Promise<AgentActionResult<ExportActionResult>> {
     try {
         if (!data) {
             return {
@@ -277,23 +286,56 @@ export async function exportOrganizedOffersAction(
             };
         }
 
+        let cloudUrl: string | undefined;
+        let cloudKey: string | undefined;
+
         if (format === 'csv') {
             const csvContent = convertToCSV(data);
+
+            if (options?.uploadToCloud) {
+                const fileName = `${options?.title || 'offers'}-${Date.now()}.csv`;
+                const uploadResult = await uploadExportDocument(fileName, csvContent, 'text/csv');
+                if (uploadResult.success && uploadResult.key) {
+                    cloudKey = uploadResult.key;
+                    const presigned = await getPresignedDownloadUrl(uploadResult.key, 900);
+                    if (presigned.success) {
+                        cloudUrl = presigned.url;
+                    }
+                }
+            }
+
             return {
                 success: true,
                 data: {
                     format: 'csv',
-                    content: csvContent
+                    content: csvContent,
+                    cloudUrl,
+                    cloudKey,
                 }
             };
         }
 
         const pdfData = preparePDFData(data, options);
+
+        if (options?.uploadToCloud) {
+            const fileName = `${options?.title || 'report'}-${Date.now()}.json`;
+            const uploadResult = await uploadExportDocument(fileName, JSON.stringify(pdfData, null, 2), 'application/json');
+            if (uploadResult.success && uploadResult.key) {
+                cloudKey = uploadResult.key;
+                const presigned = await getPresignedDownloadUrl(uploadResult.key, 900);
+                if (presigned.success) {
+                    cloudUrl = presigned.url;
+                }
+            }
+        }
+
         return {
             success: true,
             data: {
                 format: 'pdf-ready',
-                content: pdfData
+                content: pdfData,
+                cloudUrl,
+                cloudKey,
             }
         };
     } catch (error) {

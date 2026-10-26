@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ⚡ Infrastructure & Distributed Scalability (Sprint 5 - October 2026)
+
+- **Upstash QStash Async Worker**:
+  - Implemented `src/lib/qstash.ts` with singleton client and `Receiver` for cryptographic signature verification (`upstash-signature`).
+  - Created `/api/jobs/route.ts` background worker supporting idempotent job handling (`send_email`, `webhook_retry`, `heavy_analysis`).
+  - Asynchronously offloaded email notifications in `src/lib/email-notifications.ts` without blocking the HTTP request cycle.
+
+- **Tigris S3 Cloud Object Storage**:
+  - Implemented `src/lib/storage.ts` using AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`) targeting Tigris Storage.
+  - Added `uploadExportDocument` and `getPresignedDownloadUrl` supporting secure 15-minute presigned download URLs.
+  - Extended `exportOrganizedOffersAction` in `src/app/actions/organizeV2.ts` with `uploadToCloud: true` support.
+
+- **Automated E2E Testing & CI/CD Pipeline**:
+  - Configured Playwright with `playwright.config.ts` and created `tests/e2e/workflow.spec.ts` covering critical user journeys and API security.
+  - Added `npm run test:e2e` script to `package.json`.
+  - Built GitHub Actions CI/CD workflow (`.github/workflows/ci.yml`) enforcing strict lint, TypeScript compilation (`tsc --noEmit`), and Playwright test validation on every PR.
+
 ### 🔐 Security - API Key Management System (January 2026)
 
 #### ⚠️ BREAKING CHANGE: New Secure API Key System

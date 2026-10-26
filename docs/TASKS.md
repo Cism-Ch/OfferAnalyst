@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 26 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Phase 5 (Sprints 1, 2, 3 & 4 Complétés — Sprint 5 Infrastructure Actif)
+**Statut Global :** Phase 6 (Sprints 1 à 5 Complétés — Sprint 6 Expansion & Monétisation Actif)
 
 ---
 
@@ -13,63 +13,21 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│   🔴 SPRINT 5 (ACTIF)   │  │  🟢 SPRINT 6 (SUIVANT)  │  │       ✅ TERMINÉ        │
+│   🔴 SPRINT 6 (ACTIF)   │  │    🟢 BACKLOG FUTUR     │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-INFRA-01       │  │ [ ] TASK-GROWTH-01      │  │ [x] TASK-LINT-01 (React)│
-│     (Upstash QStash)    │  │     (Chrome Ext. MV3)   │  │ [x] TASK-AI-01 (Fetch)  │
-│ [ ] TASK-INFRA-02       │  │ [ ] TASK-GROWTH-02      │  │ [x] TASK-AI-02 (Cache)  │
-│     (Tigris S3 Storage) │  │     (Stripe Billing)    │  │ [x] TASK-AI-03 (Workflow)│
-│ [ ] TASK-INFRA-03       │  │ [ ] TASK-GROWTH-03      │  │ [x] TASK-DATA-01(MongoDB│
-│     (E2E Tests & CI)    │  │     (Realtime Collab)   │  │ [x] TASK-DATA-02(Webhook│
-│                         │  │                         │  │ [x] TASK-DATA-03(Exports│
-│                         │  │                         │  │ [x] TASK-AUTH-01(Verify)│
-│                         │  │                         │  │ [x] TASK-AUTH-02(Reset) │
-│                         │  │                         │  │ [x] TASK-AUTH-03(Onboard│
-│                         │  │                         │  │ [x] TASK-ADMIN-01(Flags)│
-│                         │  │                         │  │ [x] TASK-UI-01 (Analytics│
-│                         │  │                         │  │ [x] TASK-UI-02 (Workspac│
-│                         │  │                         │  │ [x] TASK-UI-03 (Themes) │
+│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-INFRA-01(QStash│
+│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │ [x] TASK-INFRA-02(Tigris│
+│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-INFRA-03(E2E/CI│
+│     (Stripe Billing)    │  │     Automatisées        │  │ [x] TASK-ADMIN-01(Flags)│
+│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-AUTH-01(Verify)│
+│     (Realtime Collab)   │  │                         │  │ [x] TASK-DATA-01(MongoDB│
+│                         │  │                         │  │ [x] TASK-LINT-01 (React)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 5 — Infrastructure Distribuée & Scalabilité
-
-### ⚡ Tâches Asynchrones, Cloud Storage & Fiabilité
-
-- [ ] **`TASK-INFRA-01` — Délégation Asynchrone Upstash QStash & Receiver Verify**
-  - **Priorité :** 🔴 HAUTE (Conformité Règle 5 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
-  - **Fichiers cibles :** `src/lib/qstash.ts`, `src/app/api/jobs/route.ts`, `src/lib/email-notifications.ts`
-  - **Description :** Décharger les opérations lourdes (envoi d'emails transactionnels, génération et compilation d'analyses de plus de 50 offres, retries de webhooks) vers Upstash QStash. Implémenter l'endpoint de réception avec validation cryptographique de signature (`receiver.verify({ signature, body })`) et concevoir des handlers strictement idempotents pour absorber les réémissions automatiques.
-  - **Critères d'acceptation :**
-    - [ ] Client singleton QStash (`@/lib/qstash`) initialisé avec `QSTASH_TOKEN`.
-    - [ ] Route webhook `/api/jobs` sécurisée par `Receiver` vérifiant la signature HMAC QStash.
-    - [ ] Déchargement des emails de réinitialisation/vérification via file QStash (zéro blocage du thread HTTP).
-    - [ ] Mécanisme d'idempotence basé sur l'identifiant de message (`messageId` ou hash d'opération).
-
-- [ ] **`TASK-INFRA-02` — Stockage Cloud d'Objets Tigris S3 & URLs Pré-signées**
-  - **Priorité :** 🔴 HAUTE (Conformité Règle 4 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
-  - **Fichiers cibles :** `src/lib/storage.ts`, `src/app/actions/organizeV2.ts`, `src/lib/export/`
-  - **Description :** Remplacer le transport en mémoire vive des exports volumineux par un téléversement persistant vers Tigris Data Storage (compatible AWS S3). Générer des URLs temporaires pré-signées (*presigned URLs*) valables 15 minutes pour le téléchargement sécurisé des rapports PDF et exports CSV.
-  - **Critères d'acceptation :**
-    - [ ] Client S3 compatible Tigris configuré dans `@/lib/storage.ts` via `@aws-sdk/client-s3`.
-    - [ ] Fonction `uploadExportDocument(fileName, content, contentType)` retournant la clé d'objet.
-    - [ ] Fonction `getPresignedDownloadUrl(fileKey, expiresInSeconds=900)` fournissant un lien direct sécurisé.
-    - [ ] Action `exportOrganizedOffersAction` enrichie avec option `uploadToCloud: true` et retour de lien signé.
-
-- [ ] **`TASK-INFRA-03` — Suite de Tests E2E Automatisés & Pipeline CI/CD**
-  - **Priorité :** 🟡 MOYENNE (Conformité Règle 17 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
-  - **Fichiers cibles :** `tests/e2e/workflow.spec.ts`, `.github/workflows/ci.yml`, `package.json`
-  - **Description :** Mettre en place une suite de tests end-to-end automatisés (Playwright) couvrant le parcours utilisateur complet : Auth/Invité → Saisie de critères → Recherche Fetch V2 → Scoring Analyze V2 → Export CSV/PDF. Configurer le workflow GitHub Actions exécutant lint, typecheck et tests E2E.
-  - **Critères d'acceptation :**
-    - [ ] Script `npm run test:e2e` exécutable en local et en intégration continue.
-    - [ ] Test E2E validant la chaîne complète du workflow multi-agents sans régression.
-    - [ ] Workflow GitHub Actions bloquant toute PR échouant au linter ou au typage strict.
-
----
-
-## 📦 Backlog Prochain Sprint : Sprint 6 — Expansion & Monétisation
+## 🚀 Sprint Actif : Sprint 6 — Expansion & Monétisation
 
 ### 🌐 Extension Web, Facturation Stripe & Collaboration
 
@@ -100,6 +58,35 @@
     - [ ] Invitation par lien d'accès ou par email avec permissions lecture/écriture.
     - [ ] Système d'annotations et commentaires sur chaque carte d'offre.
     - [ ] Synchronisation optimiste et alertes de mise à jour collaborative.
+
+---
+
+## 🛠️ Tâches Récemment Complétées
+
+### ⚡ Infrastructure Distribuée & Scalabilité (Sprint 5)
+
+- [x] **`TASK-INFRA-01` — Délégation Asynchrone Upstash QStash & Receiver Verify**
+  - **Fichiers cibles :** `src/lib/qstash.ts`, `src/app/api/jobs/route.ts`, `src/lib/email-notifications.ts`
+  - **Critères d'acceptation :**
+    - [x] Client singleton QStash (`@/lib/qstash`) initialisé avec `QSTASH_TOKEN`.
+    - [x] Route webhook `/api/jobs` sécurisée par `Receiver` vérifiant la signature HMAC QStash.
+    - [x] Déchargement des emails de réinitialisation/vérification via file QStash (zéro blocage du thread HTTP).
+    - [x] Mécanisme d'idempotence basé sur l'identifiant de message (`messageId` ou hash d'opération).
+
+- [x] **`TASK-INFRA-02` — Stockage Cloud d'Objets Tigris S3 & URLs Pré-signées**
+  - **Fichiers cibles :** `src/lib/storage.ts`, `src/app/actions/organizeV2.ts`, `src/lib/export/`
+  - **Critères d'acceptation :**
+    - [x] Client S3 compatible Tigris configuré dans `@/lib/storage.ts` via `@aws-sdk/client-s3`.
+    - [x] Fonction `uploadExportDocument(fileName, content, contentType)` retournant la clé d'objet.
+    - [x] Fonction `getPresignedDownloadUrl(fileKey, expiresInSeconds=900)` fournissant un lien direct sécurisé.
+    - [x] Action `exportOrganizedOffersAction` enrichie avec option `uploadToCloud: true` et retour de lien signé.
+
+- [x] **`TASK-INFRA-03` — Suite de Tests E2E Automatisés & Pipeline CI/CD**
+  - **Fichiers cibles :** `tests/e2e/workflow.spec.ts`, `.github/workflows/ci.yml`, `package.json`, `playwright.config.ts`
+  - **Critères d'acceptation :**
+    - [x] Script `npm run test:e2e` exécutable en local et en intégration continue.
+    - [x] Test E2E validant la chaîne complète du workflow multi-agents sans régression.
+    - [x] Workflow GitHub Actions bloquant toute PR échouant au linter ou au typage strict.
 
 ---
 
