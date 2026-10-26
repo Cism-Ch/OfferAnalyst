@@ -377,8 +377,17 @@ export async function getUserAnalysisHistory(
                 createdAt: true
             }
         });
-
-        const history: AnalysisHistorySummary[] = records.map(r => {
+        const history: AnalysisHistorySummary[] = records.map((r: {
+            id: string;
+            domain: string;
+            criteria: string | null;
+            model: string;
+            language: string;
+            marketSummary: string;
+            topOffers: string;
+            totalAnalyzed: number;
+            createdAt: Date;
+        }) => {
             let topOffersCount = 0;
             try {
                 const parsed = JSON.parse(r.topOffers);

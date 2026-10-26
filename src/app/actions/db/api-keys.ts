@@ -42,7 +42,7 @@ export interface APIKeyData {
 /**
  * Get all API keys for the current authenticated user
  */
-export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyData[]> {
+export async function getUserAPIKeys(_providedUserId?: string): Promise<APIKeyData[]> {
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -88,7 +88,28 @@ export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyDat
         });
 
         const now = new Date();
-        return keys.map((key) => ({
+        return keys.map((key: {
+            id: string;
+            name: string;
+            provider: string;
+            keyPreview: string;
+            createdAt: Date;
+            lastUsed: Date | null;
+            usageCount: number;
+            rateLimit: number | null;
+            priority: number;
+            isPrimary: boolean;
+            expiresAt: Date | null;
+            isActive: boolean;
+            healthStatus?: string | null;
+            lastChecked?: Date | null;
+            lastPingLatency?: number | null;
+            lastError?: string | null;
+            creditsRemaining?: number | null;
+            creditsLimit?: number | null;
+            totalTokensUsed?: number | null;
+            totalCostUsd?: number | null;
+        }) => ({
             id: key.id,
             name: key.name,
             provider: key.provider,
@@ -378,7 +399,7 @@ export async function updateAPIKeyUsage(keyId: string): Promise<void> {
 /**
  * Get API key statistics for the current authenticated user
  */
-export async function getAPIKeyStats(providedUserId?: string): Promise<{
+export async function getAPIKeyStats(_providedUserId?: string): Promise<{
     totalKeys: number;
     totalRequests: number;
     byokActive: boolean;

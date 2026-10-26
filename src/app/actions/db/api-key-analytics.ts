@@ -511,7 +511,7 @@ export async function getAdminTelemetryStats(): Promise<AdminTelemetryStats> {
         ]);
 
         const totalRequests = logs.length;
-        const successfulRequests = logs.filter((l) => l.success).length;
+        const successfulRequests = logs.filter((l: { success: boolean }) => l.success).length;
         const failedRequests = totalRequests - successfulRequests;
         const successRate = totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 100;
 
@@ -582,7 +582,18 @@ export async function getAdminTelemetryStats(): Promise<AdminTelemetryStats> {
             else healthCounts.unchecked++;
         }
 
-        const recentLogs = logs.slice(0, 20).map((l) => ({
+        const recentLogs = logs.slice(0, 20).map((l: {
+            id: string;
+            timestamp: Date;
+            model: string | null;
+            provider: string;
+            action: string;
+            tokensUsed?: number | null;
+            costUsd?: number | null;
+            responseTime: number | null;
+            success: boolean;
+            errorMessage: string | null;
+        }) => ({
             id: l.id,
             timestamp: l.timestamp.toISOString(),
             model: l.model || 'Inconnu',

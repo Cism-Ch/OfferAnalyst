@@ -42,7 +42,7 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 /**
  * Get KPI data for a user
  */
-export async function getUserAnalytics(providedUserId: string): Promise<AnalyticsData> {
+export async function getUserAnalytics(_providedUserId: string): Promise<AnalyticsData> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
         if (!sessionUserId) {
@@ -138,7 +138,7 @@ export async function getSearchTimeline(
 /**
  * Get category distribution data
  */
-export async function getCategoryDistribution(providedUserId: string): Promise<CategoryData[]> {
+export async function getCategoryDistribution(_providedUserId: string): Promise<CategoryData[]> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
         if (!sessionUserId) {
@@ -171,7 +171,7 @@ export async function getCategoryDistribution(providedUserId: string): Promise<C
 /**
  * Get score distribution data
  */
-export async function getScoreDistribution(providedUserId: string): Promise<{ score: string; count: number }[]> {
+export async function getScoreDistribution(_providedUserId: string): Promise<{ score: string; count: number }[]> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
         if (!sessionUserId) {
@@ -208,7 +208,7 @@ export async function getScoreDistribution(providedUserId: string): Promise<{ sc
 /**
  * Get model usage statistics
  */
-export async function getModelUsage(providedUserId: string): Promise<{ model: string; requests: number }[]> {
+export async function getModelUsage(_providedUserId: string): Promise<{ model: string; requests: number }[]> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
         if (!sessionUserId) {

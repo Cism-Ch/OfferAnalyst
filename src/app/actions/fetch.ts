@@ -30,7 +30,7 @@ export async function fetchOffersAction(
     
     // Try to get API key with BYOK support
     const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
-    const { logAPIKeyUsage, checkForSuspiciousActivity } = await import('./db/api-key-analytics');
+    const { checkForSuspiciousActivity } = await import('./db/api-key-analytics');
     const { auth } = await import('@/lib/auth');
     const { headers } = await import('next/headers');
     

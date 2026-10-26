@@ -205,7 +205,7 @@ export async function resolveAlert(
 /**
  * Get unread alert count
  */
-export async function getUnreadAlertCount(providedUserId: string): Promise<number> {
+export async function getUnreadAlertCount(_providedUserId: string): Promise<number> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
         if (!sessionUserId) {
@@ -229,7 +229,7 @@ export async function getUnreadAlertCount(providedUserId: string): Promise<numbe
  * Delete all resolved alerts
  */
 export async function deleteResolvedAlerts(
-    providedUserId: string
+    _providedUserId: string
 ): Promise<{ success: boolean; message: string; count: number }> {
     try {
         const sessionUserId = await getAuthenticatedUserId();
