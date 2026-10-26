@@ -125,10 +125,10 @@ export async function getUserAPIKeys(_providedUserId?: string): Promise<APIKeyDa
             isExpired: key.expiresAt ? key.expiresAt < now : false,
             healthStatus: key.healthStatus || 'UNCHECKED',
             lastChecked: key.lastChecked?.toISOString() || null,
-            lastPingLatency: key.lastPingLatency,
-            lastError: key.lastError,
-            creditsRemaining: key.creditsRemaining,
-            creditsLimit: key.creditsLimit,
+            lastPingLatency: key.lastPingLatency ?? null,
+            lastError: key.lastError ?? null,
+            creditsRemaining: key.creditsRemaining ?? null,
+            creditsLimit: key.creditsLimit ?? null,
             totalTokensUsed: key.totalTokensUsed || 0,
             totalCostUsd: key.totalCostUsd || 0
         }));
