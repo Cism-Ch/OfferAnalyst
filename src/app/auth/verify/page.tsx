@@ -72,9 +72,44 @@ function VerifyEmailContent() {
     };
   }, [searchParams, router]);
 
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendEmail, setResendEmail] = useState(searchParams.get("email") || "");
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [resendCooldown]);
+
   const handleResendEmail = async () => {
-    // TODO: Implement resend verification email
-    console.log("Resending verification email...");
+    if (!resendEmail || resendCooldown > 0) return;
+    setResending(true);
+    setResendStatus(null);
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resendEmail }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend verification email");
+      }
+
+      setResendStatus("Verification email sent! Check your inbox.");
+      setResendCooldown(60); // 60 seconds cooldown
+    } catch (err) {
+      setResendStatus(err instanceof Error ? err.message : "Error sending email");
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -127,9 +162,35 @@ function VerifyEmailContent() {
               <p className="text-sm text-muted-foreground text-center">
                 The verification link may have expired or is invalid.
               </p>
-              <Button onClick={handleResendEmail} variant="outline" className="w-full">
-                Resend verification email
-              </Button>
+              
+              <div className="space-y-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                />
+                <Button 
+                  onClick={handleResendEmail} 
+                  variant="outline" 
+                  disabled={resending || resendCooldown > 0 || !resendEmail}
+                  className="w-full"
+                >
+                  {resending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : resendCooldown > 0 ? (
+                    `Resend in ${resendCooldown}s`
+                  ) : (
+                    "Resend verification email"
+                  )}
+                </Button>
+                {resendStatus && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    {resendStatus}
+                  </p>
+                )}
+              </div>
             </CardContent>
           )}
 

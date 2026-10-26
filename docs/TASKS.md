@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 26 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Phase 4 (Sprints 1 & 2 Complétés — Moteur Multi-Agents, Données & Exports Validés)
+**Statut Global :** Phase 5 (Sprints 1, 2, 3 & 4 Complétés — Plateforme Intégrale Prête pour Production)
 
 ---
 
@@ -13,121 +13,93 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│     🔴 SPRINT 3 (ACTIF) │  │   🟢 SPRINT 4 (SUIVANT) │  │       ✅ TERMINÉ        │
+│     🔴 SPRINT ACTIF     │  │   🟢 PROCHAIN SPRINT    │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-AUTH-01        │  │ [ ] TASK-ADMIN-01       │  │ [x] TASK-LINT-01 (React)│
-│     (Verify Email)      │  │     (Feature Flags API) │  │ [x] TASK-AI-01 (Fetch)  │
-│ [ ] TASK-AUTH-02        │  │ [ ] TASK-UI-01          │  │ [x] TASK-AI-02 (Cache)  │
-│     (Password Reset)    │  │     (Analytics Dashboard│  │ [x] TASK-AI-03 (Workflow)│
-│ [ ] TASK-AUTH-03        │  │ [ ] TASK-UI-02          │  │ [x] TASK-DATA-01(MongoDB│
-│     (Onboarding Profile)│  │     (Workspace Settings)│  │ [x] TASK-DATA-02(Webhook│
+│ [ ] MAINTENANCE & CI/CD │  │ [ ] EXTENSION CHROME    │  │ [x] TASK-LINT-01 (React)│
+│     (Tests E2E & Perf)  │  │     (Manifest V3)       │  │ [x] TASK-AI-01 (Fetch)  │
+│ [ ] MONITORING QSTASH   │  │ [ ] EXPORTS S3 TIGRIS   │  │ [x] TASK-AI-02 (Cache)  │
+│     (Jobs asynchrones)  │  │     (Presigned URLs)    │  │ [x] TASK-AI-03 (Workflow)│
+│                         │  │                         │  │ [x] TASK-DATA-01(MongoDB│
+│                         │  │                         │  │ [x] TASK-DATA-02(Webhook│
 │                         │  │                         │  │ [x] TASK-DATA-03(Exports│
+│                         │  │                         │  │ [x] TASK-AUTH-01(Verify)│
+│                         │  │                         │  │ [x] TASK-AUTH-02(Reset) │
+│                         │  │                         │  │ [x] TASK-AUTH-03(Onboard│
+│                         │  │                         │  │ [x] TASK-ADMIN-01(Flags)│
+│                         │  │                         │  │ [x] TASK-UI-01 (Analytics│
+│                         │  │                         │  │ [x] TASK-UI-02 (Workspac│
+│                         │  │                         │  │ [x] TASK-UI-03 (Themes) │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif (Priorité Immédiate & Haute)
+## 🛠️ Tâches Récemment Complétées
 
 ### 🔐 Authentification & Espace Utilisateur (Sprint 3)
 
-- [ ] **`TASK-AUTH-01` — Vérification des Adresses Email (Resend)**
-  - **Priorité :** 🟢 MOYENNE
-  - **Fichiers cibles :** `src/app/auth/verify/page.tsx`, `src/app/api/auth/verify-email/route.ts`
-  - **Description :** Finaliser le handler `/api/auth/verify-email` pour valider le token et basculer `emailVerified` dans Better-Auth / Prisma.
+- [x] **`TASK-AUTH-01` — Vérification des Adresses Email (Resend)**
+  - **Fichiers cibles :** `src/app/auth/verify/page.tsx`, `src/app/api/auth/verify-email/route.ts`, `src/app/api/auth/resend-verification/route.ts`
   - **Critères d'acceptation :**
-    - [ ] Token vérifié et invalidé après usage (expiration 24h).
-    - [ ] Bouton de réexpédition avec cooldown de 5 minutes.
+    - [x] Token vérifié et invalidé après usage (expiration 24h).
+    - [x] Bouton de réexpédition avec cooldown de 60s et rate limiting (3 requêtes / 15 min).
+    - [x] Prise en charge des emails Resend et logs de développement.
 
-- [ ] **`TASK-AUTH-02` — Réinitialisation de Mot de Passe**
-  - **Priorité :** 🟢 MOYENNE
+- [x] **`TASK-AUTH-02` — Réinitialisation de Mot de Passe**
   - **Fichiers cibles :** `src/app/auth/reset/page.tsx`, `src/app/api/auth/reset-password/route.ts`
-  - **Description :** Formulaire de demande et réinitialisation avec envoi de mail typé via Resend et rate limiting (3 requêtes/heure/IP).
   - **Critères d'acceptation :**
-    - [ ] Token cryptographiquement sécurisé à usage unique (durée 1h).
-    - [ ] Mise à jour sécurisée du hash dans Better-Auth.
+    - [x] Token cryptographiquement sécurisé à usage unique (durée 1h).
+    - [x] Mise à jour sécurisée du hash avec `bcryptjs` dans MongoDB / Prisma.
+    - [x] Interface 2-étapes (demande de lien + nouveau mot de passe avec confirmation).
+    - [x] Protection contre l'énumération d'adresses email.
 
-- [ ] **`TASK-AUTH-03` — Persistance du Profil Onboarding**
-  - **Priorité :** 🟢 MOYENNE
+- [x] **`TASK-AUTH-03` — Persistance du Profil Onboarding**
   - **Fichiers cibles :** `src/app/onboarding/page.tsx`, `src/app/api/profile/onboarding/route.ts`
-  - **Description :** Sauvegarder les choix initiaux (domaine de prédilection, critères par défaut) dans le modèle `Profile` et marquer `onboardingComplete: true`.
+  - **Critères d'acceptation :**
+    - [x] Sauvegarde du cas d'usage dans `Profile` avec `onboardingComplete: true`.
+    - [x] Chiffrement AES-256-GCM des clés BYOK fournies lors de l'onboarding.
+    - [x] Support transparent du mode invité (guest session).
+
+### 🎨 Administration & Améliorations de Confort (Sprint 4)
+
+- [x] **`TASK-ADMIN-01` — API de Gestion Dynamique des Feature Flags**
+  - **Fichiers :** `src/app/admin/page.tsx`, `src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts`
+  - **Critères d'acceptation :**
+    - [x] Module `feature-flags.ts` avec support de `fetchV2`, `organizeV2`, `dualWorkflow`, `newAnalytics`, `enableWebhooks`, `enableCache`.
+    - [x] Endpoints `GET` et `POST` `/api/admin/feature-flags`.
+    - [x] Console admin interactive avec interrupteurs dynamiques et mise à jour temps réel.
+
+- [x] **`TASK-UI-01` — Dashboard Analytics Dédié (`/dashboard/analytics`)**
+  - **Fichiers :** `src/app/dashboard/analytics/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] KPI cards (recherches totales, résultats trouvés, score moyen, offres sauvegardées).
+    - [x] Graphiques Recharts complets (LineChart, BarChart, PieChart, score distribution).
+
+- [x] **`TASK-UI-02` — Paramètres d'Espace de Travail (`/dashboard/workspace`)**
+  - **Fichiers :** `src/app/dashboard/workspace/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] Gestion des membres d'équipe, rôles (Admin, Editor, Viewer), et préférences régionales.
+
+- [x] **`TASK-UI-03` — Thèmes Visuels Étendus**
+  - **Fichiers :** `src/components/theme-selector.tsx`
+  - **Critères d'acceptation :**
+    - [x] Palette complète (Light, Dark, Gold Luxury, Ocean Blue, Forest Green, Sunset Orange, Midnight Purple).
+    - [x] Synchronisation fluide sans hydration mismatch via `useSyncExternalStore`.
 
 ---
 
-## 📦 Backlog Sprint Suivant (Sprint 4)
-
-### 🎨 Administration & Améliorations de Confort
-
-- [ ] **`TASK-ADMIN-01` — API de Gestion Dynamique des Feature Flags**
-  - **Fichiers :** `src/app/admin/page.tsx`, `src/lib/feature-flags.ts`
-  - **Description :** Piloter à chaud l'activation de `fetchV2`, du cache et des webhooks.
-- [ ] **`TASK-UI-01` — Dashboard Analytics Dédié (`/dashboard/analytics`)**
-  - **Fichiers :** `src/app/dashboard/analytics/page.tsx`, composants Recharts
-  - **Description :** Visualisation des KPI (recherches totales, score moyen, modèles les plus utilisés).
-- [ ] **`TASK-UI-02` — Paramètres d'Espace de Travail (`/dashboard/workspace`)**
-  - **Description :** Configuration de l'organisation, métadonnées de projet, gestion multi-sources.
-- [ ] **`TASK-UI-03` — Thèmes Visuels Étendus**
-  - **Description :** Ajout de thèmes alternatifs (Ocean Blue, Sunset Orange, Midnight Purple).
-
----
-
-## 🛠️ Tâches Récemment Complétées (Sprint 1 & Sprint 2)
+## 🛠️ Tâches Complétées (Sprint 1 & Sprint 2)
 
 ### 🔴 Qualité & Linter React 19 (Sprint 1)
-
-- [x] **`TASK-LINT-01` — Résolution des 11 Erreurs ESLint React 19**
-  - **Fichiers cibles :** 8 composants & hooks
-  - **Critères d'acceptation :**
-    - [x] `npm run lint` s'exécute avec 0 erreur et 0 avertissement.
-    - [x] Aucun flash ou problème d'hydratation côté client (`useSyncExternalStore` et timers asynchrones).
-    - [x] `npx tsc --noEmit` reste à 0 erreur.
-
-### 🟡 Moteur Multi-Agents (Fiabilité & Performance — Sprint 1)
-
-- [x] **`TASK-AI-01` — Modernisation de l'Agent Fetch V1**
-  - **Fichiers cibles :** `src/app/actions/fetch.ts`, `src/app/actions/shared/agent-utils.ts`
-  - **Critères d'acceptation :**
-    - [x] Zéro mock renvoyé en cas d'erreur API ; retour d'un `AgentError` explicite.
-    - [x] Parsing robuste supportant le markdown wrapping (```json).
-    - [x] Validation complète du tableau d'offres via `OfferArraySchema`.
-
-- [x] **`TASK-AI-02` — Couche de Caching pour `fetchV2.ts`**
-  - **Fichiers cibles :** `src/app/actions/fetchV2.ts`, `src/lib/cache.ts`
-  - **Critères d'acceptation :**
-    - [x] Les recherches identiques retournent le résultat en cache instantanément (< 50ms).
-    - [x] Métadonnées `cached: true/false` incluses dans `AgentActionResult`.
-    - [x] Support BYOK et hash déterministe.
-
-- [x] **`TASK-AI-03` — Persistance de la Progression du Workflow**
-  - **Fichiers cibles :** `src/app/actions/workflow/orchestrator.ts`, `src/lib/cache.ts`
-  - **Critères d'acceptation :**
-    - [x] Les étapes et pourcentages sont consultables via ID de workflow (`getWorkflowProgress`).
-    - [x] Support de la reconnexion / polling côté UI sans perte d'état (`getWorkflowProgressHistory`).
-    - [x] Nettoyage automatique des workflows expirés (TTL 15 min).
+- [x] **`TASK-LINT-01`** — 11 Erreurs ESLint React 19 résolues (hooks & hydratation).
+- [x] **`TASK-AI-01`** — Modernisation Fetch Agent V1 (Zod, zéro mock, retries).
+- [x] **`TASK-AI-02`** — Couche de Caching TTL 3600s pour Fetch V2.
+- [x] **`TASK-AI-03`** — Persistance et Polling temps réel du workflow IA.
 
 ### 🟡 Données & Fonctionnalités Avancées (Sprint 2)
-
-- [x] **`TASK-DATA-01` — Enregistrement des Analyses en Base de Données**
-  - **Fichiers cibles :** `src/app/actions/analyzeV2.ts`, `prisma/schema.prisma`
-  - **Critères d'acceptation :**
-    - [x] Modèle Prisma `AnalysisResult` créé et généré via `npx prisma generate`.
-    - [x] L'action `analyzeOffersActionV2` sauvegarde les données quand `storeResults: true`.
-    - [x] Server Actions de consultation de l'historique : `getUserAnalysisHistory`, `getAnalysisResultById`, `deleteAnalysisResult`.
-
-- [x] **`TASK-DATA-02` — Webhooks de Notification Asynchrones**
-  - **Fichiers cibles :** `src/app/actions/analyzeV2.ts`, `src/lib/webhooks.ts`
-  - **Critères d'acceptation :**
-    - [x] Retry automatique (3 tentatives avec exponential backoff).
-    - [x] Timeout de 5s via AbortController pour ne jamais bloquer l'action.
-    - [x] Signature HMAC SHA-256 (`X-OfferAnalyst-Signature`).
-    - [x] Journalisation structurée via `@/lib/logger`.
-
-- [x] **`TASK-DATA-03` — Modules d'Exportation CSV & PDF**
-  - **Fichiers cibles :** `src/app/actions/organizeV2.ts`, `src/lib/export/csv.ts`, `src/lib/export/pdf.ts`
-  - **Critères d'acceptation :**
-    - [x] Export CSV conforme RFC 4180 avec échappement des guillemets et caractères spéciaux.
-    - [x] Export PDF structuré avec synthèse exécutive, métadonnées, scores radar et offres groupées.
-    - [x] Server Action `exportOrganizedOffersAction` avec retour `{ success: true, data } | { success: false, error }`.
+- [x] **`TASK-DATA-01`** — Enregistrement des Analyses en Base de Données MongoDB (modèle `AnalysisResult` et actions CRUD).
+- [x] **`TASK-DATA-02`** — Webhooks de Notification Asynchrones (HMAC SHA-256 et backoff exponentiel).
+- [x] **`TASK-DATA-03`** — Modules d'Exportation CSV (RFC 4180) & PDF structuré.
 
 ---
 
@@ -135,6 +107,10 @@
 
 | Date | ID | Intitulé & Description | Livrables / PR |
 | :--- | :--- | :--- | :--- |
+| **2026-10-26** | `TASK-ADMIN-01` | API de feature flags dynamiques et console admin connectée | `src/lib/feature-flags.ts`, `/api/admin/feature-flags`, `src/app/admin/page.tsx` |
+| **2026-10-26** | `TASK-AUTH-03` | Route de persistance du profil onboarding et chiffrement BYOK | `src/app/api/profile/onboarding/route.ts`, `src/app/onboarding/page.tsx` |
+| **2026-10-26** | `TASK-AUTH-02` | Endpoint et page de réinitialisation de mot de passe (token 1h, bcryptjs) | `src/app/api/auth/reset-password/route.ts`, `src/app/auth/reset/page.tsx` |
+| **2026-10-26** | `TASK-AUTH-01` | Handlers de vérification d'email et réexpédition avec cooldown | `src/app/api/auth/verify-email/route.ts`, `src/app/api/auth/resend-verification/route.ts`, `src/app/auth/verify/page.tsx` |
 | **2026-10-26** | `TASK-DATA-03` | Modules d'export CSV RFC 4180 et PDF structuré avec server action | `src/lib/export/csv.ts`, `src/lib/export/pdf.ts`, `src/app/actions/organizeV2.ts` |
 | **2026-10-26** | `TASK-DATA-02` | Système de webhooks asynchrones avec HMAC SHA-256 et backoff | `src/lib/webhooks.ts`, `src/app/actions/analyzeV2.ts` |
 | **2026-10-26** | `TASK-DATA-01` | Modèle Prisma `AnalysisResult` et actions CRUD d'historique MongoDB | `prisma/schema.prisma`, `src/app/actions/analyzeV2.ts` |
@@ -150,6 +126,19 @@
 ---
 
 ## 📜 Protocole de Mise à Jour pour les Agents IA
+
+Tout agent intervenant sur le repository **DOIT SUIVRE CE RITUEL** :
+
+1. **Avant d'intervenir :**
+   - Consulter `docs/TASKS.md` pour identifier l'ID de la tâche et ses critères d'acceptation.
+   - Si la tâche n'existe pas, l'ajouter dans la section appropriée avec un ID formaté (`TASK-DOMAIN-XX`).
+2. **Pendant l'intervention :**
+   - Marquer la tâche avec `[-]` (En cours) si l'exécution implique plusieurs étapes documentées.
+3. **Après validation technique (`tsc --noEmit` & `npm run lint`) :**
+   - Cocher les critères d'acceptation et marquer `[x]`.
+   - Transférer la tâche dans le tableau **Historique des Tâches Terminées** en spécifiant la date et les fichiers livrés.
+   - Ne créer **AUCUN nouveau document de suivi séparé** : TOUT centraliser dans `docs/TASKS.md` !
+ à Jour pour les Agents IA
 
 Tout agent intervenant sur le repository **DOIT SUIVRE CE RITUEL** :
 

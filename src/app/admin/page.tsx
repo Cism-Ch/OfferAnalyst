@@ -35,13 +35,36 @@ import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
 
 export default function AdminPage() {
-    // Mock data - will be replaced with actual admin queries
     const [featureFlags, setFeatureFlags] = useState({
-        fetchV2: false,
-        organizeV2: false,
+        fetchV2: true,
+        organizeV2: true,
         dualWorkflow: true,
-        newAnalytics: true
+        newAnalytics: true,
+        enableWebhooks: true,
+        enableCache: true
     });
+
+    React.useEffect(() => {
+        let isMounted = true;
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch('/api/admin/feature-flags');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (isMounted && data.flags) {
+                        setFeatureFlags(data.flags);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load feature flags:', err);
+            }
+        }, 0);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timer);
+        };
+    }, []);
 
     const systemStats = {
         totalUsers: 1247,
@@ -63,9 +86,21 @@ export default function AdminPage() {
         { provider: 'DeepSeek', freeRequests: 2145, byokRequests: 567, errors: 2 }
     ];
 
-    const toggleFeature = (feature: keyof typeof featureFlags) => {
-        setFeatureFlags(prev => ({ ...prev, [feature]: !prev[feature] }));
-        // TODO: Call API to update feature flag
+    const toggleFeature = async (feature: keyof typeof featureFlags) => {
+        const nextValue = !featureFlags[feature];
+        setFeatureFlags(prev => ({ ...prev, [feature]: nextValue }));
+
+        try {
+            await fetch('/api/admin/feature-flags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ flag: feature, enabled: nextValue })
+            });
+        } catch (err) {
+            console.error('Failed to save feature flag:', err);
+            // Revert on error
+            setFeatureFlags(prev => ({ ...prev, [feature]: !nextValue }));
+        }
     };
 
     return (
@@ -296,6 +331,32 @@ export default function AdminPage() {
                                         <Switch
                                             checked={featureFlags.newAnalytics}
                                             onCheckedChange={() => toggleFeature('newAnalytics')}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h4 className="font-medium">Async Webhooks</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                HMAC-signed notification delivery
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={featureFlags.enableWebhooks}
+                                            onCheckedChange={() => toggleFeature('enableWebhooks')}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h4 className="font-medium">In-Memory Cache</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                TTL-based fetch and workflow acceleration
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={featureFlags.enableCache}
+                                            onCheckedChange={() => toggleFeature('enableCache')}
                                         />
                                     </div>
                                 </CardContent>
