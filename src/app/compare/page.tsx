@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useMemo, useEffect, Suspense } from 'react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, MapPin, DollarSign, Star } from 'lucide-react';
+import { TrendingUp, MapPin, DollarSign, Star } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ScoredOffer } from '@/types';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -45,25 +45,12 @@ function ComparePageContent() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">
-            <header className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/saved">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold">Compare Offers</h1>
-                        <p className="text-muted-foreground">Side-by-side comparison</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto">
+        <SimpleLayout
+            title="Compare Offers"
+            description="Side-by-side comparison of selected offers"
+            maxWidth="7xl"
+        >
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {selectedOffers.map((offer, index) => (
                         <Card key={offer.id} className="border-2 hover:border-primary/50 transition-colors">
@@ -147,7 +134,7 @@ function ComparePageContent() {
 
                                 {/* Justification */}
                                 {offer.justification && (
-                                    <div className="bg-slate-100 dark:bg-zinc-800 p-3 rounded-lg">
+                                    <div className="bg-muted/50 border border-border/50 p-3 rounded-lg">
                                         <p className="text-xs text-muted-foreground italic">{offer.justification}</p>
                                     </div>
                                 )}
@@ -172,33 +159,33 @@ function ComparePageContent() {
                 </div>
 
                 {/* Summary Section */}
-                <Card className="mt-6 bg-linear-to-br from-slate-900 to-slate-800 text-white border-none">
+                <Card className="mt-6 bg-primary/5 border border-primary/20 text-foreground">
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4" />
+                            <TrendingUp className="h-4 w-4 text-primary" />
                             Comparison Summary
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
-                        <p className="text-slate-300">
+                        <p className="text-muted-foreground">
                             Comparing {selectedOffers.length} offers. 
                             {selectedOffers.some(o => o.finalScore !== undefined) && (
-                                <> Highest score: <span className="font-semibold text-white">
+                                <> Highest score: <span className="font-semibold text-primary">
                                     {Math.max(...selectedOffers.filter(o => o.finalScore !== undefined).map(o => o.finalScore))}
                                 </span>.</>
                             )}
                         </p>
                     </CardContent>
                 </Card>
-            </main>
-        </div>
-);
+            </div>
+        </SimpleLayout>
+    );
 }
 
 export default function ComparePage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100 flex items-center justify-center">
+            <div className="min-h-screen bg-background p-6 font-sans text-foreground flex items-center justify-center">
                 <div className="text-muted-foreground">Loading comparison...</div>
             </div>
         }>

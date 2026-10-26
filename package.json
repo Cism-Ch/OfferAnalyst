@@ -1,13 +1,20 @@
 {
   "name": "offer-analyst",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "eval:fullstack": "python evals/run_fullstack_eval.py",
+    "eval:quick": "python evals/run_fullstack_eval.py --quick",
+    "rsi:orchestrate": "python evals/rsi_orchestrator.py",
+    "rsi:guardrail": "python evals/rsi_orchestrator.py --guardrail",
+    "db:validate": "python .agents/skills/db_schema_validator.py",
+    "version:bump": "python evals/version_manager.py",
+    "version:check": "python evals/version_manager.py --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

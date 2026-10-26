@@ -8,6 +8,8 @@
 
 import { prisma } from '@/lib/prisma';
 import { encryptAPIKey } from '@/lib/api-key-encryption';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface KeyRotationResult {
     success: boolean;
@@ -20,12 +22,25 @@ export interface KeyRotationResult {
  * Rotate an API key (create new, mark old as deprecated)
  */
 export async function rotateAPIKey(
-    userId: string,
+    providedUserId: string,
     oldKeyId: string,
     newApiKey: string,
     autoDeleteOld: boolean = false
 ): Promise<KeyRotationResult> {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                message: 'Unauthorized: Authentication required'
+            };
+        }
+
+        const userId = session.user.id;
+
         // Get the old key details
         const oldKey = await prisma.aPIKey.findFirst({
             where: {

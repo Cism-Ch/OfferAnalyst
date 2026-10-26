@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, PartyPopper } from "lucide-react";
 
 interface FirstSearchStepProps {
   onComplete: () => void;
@@ -44,7 +44,9 @@ export default function FirstSearchStep({ onComplete }: FirstSearchStepProps) {
         <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
         </div>
-        <h2 className="text-3xl font-bold mb-4">Amazing! 🎉</h2>
+        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
+          Amazing! <PartyPopper className="h-7 w-7 text-primary" />
+        </h2>
         <p className="text-lg text-muted-foreground">
           You&apos;ve successfully run your first analysis
         </p>

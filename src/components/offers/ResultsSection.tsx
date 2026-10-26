@@ -86,11 +86,11 @@ export function ResultsSection({
             ))}
 
             {/* Market Summary Card */}
-            <Card className="bg-slate-900 text-white border-none">
-                <CardHeader>
-                    <CardTitle className="text-sm">Market Summary</CardTitle>
+            <Card className="bg-primary/5 border border-primary/20 text-foreground shadow-xs">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Market Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm text-slate-300">
+                <CardContent className="text-sm text-muted-foreground leading-relaxed">
                     {results.marketSummary}
                 </CardContent>
             </Card>

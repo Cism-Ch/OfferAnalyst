@@ -131,9 +131,9 @@ export default function OnboardingPage() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-8 max-w-4xl pt-safe pb-safe">
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8 mt-4">
+        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 mt-4">
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
             <div
               key={index}
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
             transition={{ duration: 0.3 }}
           >
             <Card className="border-0 shadow-lg">
-              <CardContent className="p-8">
+              <CardContent className="p-4 sm:p-8">
                 {renderStep()}
               </CardContent>
             </Card>
@@ -172,13 +172,14 @@ export default function OnboardingPage() {
               variant="ghost"
               onClick={handleBack}
               disabled={currentStep === 1}
+              className="min-h-[44px]"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
 
             {currentStep < TOTAL_STEPS && (
-              <Button variant="ghost" onClick={handleSkip}>
+              <Button variant="ghost" onClick={handleSkip} className="min-h-[44px]">
                 Skip
               </Button>
             )}

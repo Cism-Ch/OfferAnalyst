@@ -1,9 +1,8 @@
-'use server';
-
 /**
- * Email Notification Service
+ * Email Notification Service (Server-only module - NOT a Server Action)
  * 
- * Sends email notifications for security alerts and important events.
+ * Sends email notifications internally for security alerts and important events.
+ * Must NOT be exposed as an unauthenticated public Server Action endpoint.
  */
 
 import { enqueueJob } from '@/lib/qstash';

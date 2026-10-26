@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, .neon *));
 
 @theme inline {
   --color-background: var(--background);
@@ -115,17 +115,39 @@
   --sidebar-ring: #d4d4d8;
 }
 
+/* Premium Theme: Gold Luxury */
 .gold {
+  --background: #fdfbf7;
+  --foreground: #292524;
+  --card: #ffffff;
+  --card-foreground: #292524;
+  --popover: #ffffff;
+  --popover-foreground: #292524;
   --primary: #d4af37;
-  --primary-foreground: #fafafa;
+  --primary-foreground: #1c1917;
+  --secondary: #fef9ee;
+  --secondary-foreground: #78350f;
+  --muted: #fbf6ec;
+  --muted-foreground: #857564;
+  --accent: #fcf1d8;
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626;
+  --border: #eedfc2;
+  --input: #eedfc2;
   --ring: #d4af37;
+  --sidebar: #fbf8f0;
+  --sidebar-foreground: #292524;
   --sidebar-primary: #d4af37;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #fcfbf8;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #f5eedb;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #eedfc2;
   --sidebar-ring: #d4af37;
   --chart-1: #d4af37;
   --chart-2: #eec14d;
   --chart-3: #c5a028;
+  --chart-4: #f59e0b;
+  --chart-5: #b45309;
 }
 
 /* Premium Theme: Ocean Blue */
@@ -200,66 +222,66 @@
 
 /* Premium Theme: Silver Luxury */
 .silver {
-  --background: #fafafa;
-  --foreground: #18181b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #71717a;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #52525b;
-  --accent: #e4e4e7;
-  --accent-foreground: #18181b;
+  --popover-foreground: #0f172a;
+  --primary: #475569;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
   --destructive: #dc2626;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #18181b;
-  --sidebar-primary: #71717a;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #a1a1aa;
-  --chart-1: #71717a;
-  --chart-2: #a1a1aa;
-  --chart-3: #52525b;
-  --chart-4: #d4d4d8;
-  --chart-5: #3f3f46;
+  --border: #cbd5e1;
+  --input: #cbd5e1;
+  --ring: #64748b;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #475569;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #cbd5e1;
+  --sidebar-ring: #64748b;
+  --chart-1: #475569;
+  --chart-2: #64748b;
+  --chart-3: #94a3b8;
+  --chart-4: #cbd5e1;
+  --chart-5: #334155;
 }
 
 /* Premium Theme: Neon Dark */
 .neon {
-  --background: #0a0a0a;
+  --background: #09090b;
   --foreground: #fafafa;
-  --card: #0f0f0f;
+  --card: #121118;
   --card-foreground: #fafafa;
-  --popover: #0f0f0f;
+  --popover: #121118;
   --popover-foreground: #fafafa;
   --primary: #a855f7;
-  --primary-foreground: #fafafa;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #fafafa;
-  --muted: #1f1f1f;
+  --primary-foreground: #ffffff;
+  --secondary: #1c182b;
+  --secondary-foreground: #e9d5ff;
+  --muted: #1c182b;
   --muted-foreground: #a1a1aa;
   --accent: #ec4899;
-  --accent-foreground: #fafafa;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
+  --border: #2a243d;
+  --input: #2a243d;
   --ring: #a855f7;
-  --sidebar: #0a0a0a;
+  --sidebar: #09090b;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #a855f7;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #1f1f1f;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #2a2a2a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1c182b;
+  --sidebar-accent-foreground: #e9d5ff;
+  --sidebar-border: #2a243d;
   --sidebar-ring: #a855f7;
   --chart-1: #a855f7;
   --chart-2: #ec4899;
@@ -375,4 +397,43 @@
   .card-premium:hover {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
+
+  /* 2026 Mobile & Responsive Insets Utilities */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pl-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .pr-safe {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Prevent 300ms tap delay & accidental double-tap zoom on UI elements */
+  button, 
+  a, 
+  input, 
+  select, 
+  textarea, 
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Smooth momentum scrolling for mobile viewports */
+  .momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Guard against horizontal viewport blowouts */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
 }

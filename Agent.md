@@ -17,6 +17,7 @@
 9. [🛡️ Sécurité des Fichiers d'Environnement (.env)](#9--sécurité-des-fichiers-denvironnement-env)
 10. [🧪 Commandes de Validation & Hygiène du Code](#10--commandes-de-validation--hygiène-du-code)
 11. [📋 Protocole de Suivi & Mise à Jour des Tâches (SSOT: docs/TASKS.md)](#11--protocole-de-suivi--mise-à-jour-des-tâches-ssot-docstasksmd)
+12. [🔄 Protocole RSI (Recursive Self-Improvement) & Méta-Gouvernance IA](#12--protocole-rsi-recursive-self-improvement--méta-gouvernance-ia)
 
 ---
 
@@ -72,7 +73,7 @@ Chaque agent IA opérant sur ce dépôt **DOIT RESPECTER SCRUPULEUSEMENT** ces d
 
 ```
 OfferAnalyst/
-├── .agent/skills/               # 160+ skills spécialisés pour les agents IA
+├── .agents/skills/              # 160+ skills spécialisés pour les agents IA
 ├── docs/                        # Documentation d'architecture & guides de déploiement
 │   ├── AGENTS_ARCHITECTURE.md   # Spécifications détaillées des agents internes
 │   ├── API_KEY_SECURITY.md      # Système de chiffrement AES-256-GCM BYOK
@@ -364,5 +365,57 @@ Afin d'éliminer la dispersion documentaire et de garantir un suivi rigoureux, *
 
 ---
 
+## 12. 🔄 Protocole RSI (Recursive Self-Improvement) & Méta-Gouvernance IA
+
+Le protocole RSI dote l'écosystème d'un cycle d'auto-apprentissage autonome : chaque régression ou échec rencontré lors du développement est consigné, analysé par un méta-agent et traduit en règles préventives durables.
+
+### 12.1 Arborescence du Système RSI
+
+```text
+OfferAnalyst/
+├── .agents/
+│   ├── rules/
+│   │   ├── system_core.md            # Règles immuables (Stack, 17 règles, BDD, Sécurité)
+│   │   └── fullstack_playbook.md     # Mémoire évolutive RSI (< 150 lignes, modifiée par Méta-Agent)
+│   ├── prompts/
+│   │   ├── worker_fullstack.md       # Rôle de l'Agent Développeur Fullstack
+│   │   └── meta_optimizer.md         # Rôle du Méta-Agent Optimiseur RSI
+│   ├── skills/
+│   │   └── db_schema_validator.py    # Validateur Prisma MongoDB & Singletons
+│   └── workflows/
+│       └── rsi-feature.md            # Workflow Antigravity (/rsi-feature)
+├── evals/
+│   ├── run_fullstack_eval.py         # Juge déterministe binaire (Types, Lint, Prisma, Build)
+│   ├── rsi_orchestrator.py           # Orchestrateur de cycle & Git Guardrail
+│   └── logs/
+│       ├── trajectory_latest.json    # Rapport d'évaluation de la dernière tentative
+│       └── trajectory_history.jsonl   # Historique complet des essais et corrections
+```
+
+### 12.2 Cycle d'Auto-Amélioration en 4 Phases (`/rsi-feature`)
+
+1. **Phase 1 (Exécution) :** Consultation de `system_core.md` et `fullstack_playbook.md`, enregistrement dans `docs/TASKS.md`, puis implémentation complète (DB -> Actions -> UI).
+2. **Phase 2 (Évaluation Déterministe) :** Lancement de `evals/run_fullstack_eval.py`. Si score < 100/100, lecture des logs d'erreur, correction du code et nouvel essai (maximum 3 tentatives).
+3. **Phase 3 (Mutation Méta-Cognitive Proactive) :** Dès qu'un échec a été réparé, qu'un audit de sécurité a été conduit ou qu'un anti-pattern majeur a été découvert/corrigé, adoption du rôle `meta_optimizer.md`, abstraction de la cause en une règle atomique `[R-COUCHE-XX]`, compaction anti-bloat (< 150 lignes) et insertion automatique dans `fullstack_playbook.md`.
+4. **Phase 4 (Validation & Clôture) :** Exécution du guardrail `python evals/rsi_orchestrator.py --guardrail`, confirmation de `tsc --noEmit` et `eslint`, clôture dans `docs/TASKS.md`.
+
+### 12.3 Commandes Utilitaires Dédiées
+
+| Commande | Rôle |
+| :--- | :--- |
+| `npm run eval:fullstack` | Juge déterministe complet (Types + Lint + Prisma + Build) |
+| `npm run eval:quick` | Évaluation rapide (Types + Lint + Prisma) sans build Next.js |
+| `npm run rsi:orchestrate`| Exécution du cycle RSI avec enregistrement de trajectoire |
+| `npm run rsi:guardrail`  | Vérification stricte des contraintes (Playbook <= 150 lignes) |
+### 12.4 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
+
+Afin d'éviter le gonflement incontrôlé des fichiers de documentation qui épuise la fenêtre de contexte des agents IA :
+1. **Plafond strict de `docs/TASKS.md` :** Ne doit jamais dépasser 250 lignes. Dès dépassement, les sprints terminés sont archivés dans `docs/archive/tasks/TASKS_HISTORY_SX.md`.
+2. **Ventilation des Audits & Diagnostics :** Tout audit découvrant de multiples vulnérabilités doit les décomposer en sous-tâches unitaires (`TASK-DOM-XX.01`, etc.) et générer un rapport complet dans `docs/archive/reports/`.
+3. **Liens Relatifs Persistants :** Le document actif doit systématiquement maintenir des liens Markdown clairs vers ses archives pour assurer la continuité mémorielle sans surcharger le contexte actif.
+
+---
+
 *Fin du document — Document maintenu pour l'écosystème d'Agents Autonomes OfferAnalyst.*
+
 

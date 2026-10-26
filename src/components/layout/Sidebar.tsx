@@ -6,11 +6,12 @@ import Link from 'next/link';
 import {
     Briefcase,
     Home,
-    TrendingUp,
     User,
     Wallet,
     Clock
 } from 'lucide-react';
+
+import { OffanLogo } from '@/components/brand/OffanBrand';
 
 /**
  * Sidebar Component
@@ -29,19 +30,18 @@ import {
  */
 export function Sidebar() {
     return (
-        <aside className="w-64 border-r bg-white dark:bg-zinc-900 hidden md:flex flex-col">
+        <aside className="w-64 border-r bg-card text-card-foreground hidden md:flex flex-col">
             {/* Logo and Brand */}
-            <div className="p-6 flex items-center gap-2 font-bold text-xl text-primary">
-                <div className="bg-primary text-primary-foreground p-1 rounded-md">
-                    <TrendingUp size={20} />
-                </div>
-                OfferAnalyst
+            <div className="p-6">
+                <Link href="/" className="inline-flex focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+                    <OffanLogo variant="full" size="md" glow />
+                </Link>
             </div>
 
             {/* Navigation Menu */}
             <nav className="flex-1 px-4 py-4 space-y-2">
                 <Link href="/">
-                    <Button variant="ghost" className="w-full justify-start gap-2 bg-slate-100 dark:bg-zinc-800 text-primary">
+                    <Button variant="ghost" className="w-full justify-start gap-2 bg-muted text-primary">
                         <Home size={18} /> Dashboard
                     </Button>
                 </Link>

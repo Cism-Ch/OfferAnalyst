@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-26T20:09:04.955250",
+  "mode": "QUICK",
+  "total_score": 100,
+  "raw_score": 100,
+  "max_score": 100,
+  "status": "PASS",
+  "failed_steps": [],
+  "summary": {
+    "typecheck": "PASSED",
+    "lint": "PASSED",
+    "prisma_hygiene": "PASSED"
+  }
+}

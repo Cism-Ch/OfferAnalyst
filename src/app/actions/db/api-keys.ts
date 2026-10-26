@@ -9,7 +9,9 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { encryptAPIKey, decryptAPIKey } from '@/lib/api-key-encryption';
+import { encryptAPIKey } from '@/lib/api-key-encryption';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface APIKeyData {
     id: string;
@@ -28,10 +30,21 @@ export interface APIKeyData {
 }
 
 /**
- * Get all API keys for a user
+ * Get all API keys for the current authenticated user
  */
-export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
+export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyData[]> {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return [];
+        }
+
+        // Strictly enforce authenticated user ID to prevent IDOR
+        const userId = session.user.id;
+
         const keys = await prisma.aPIKey.findMany({
             where: {
                 userId,
@@ -92,43 +105,10 @@ export async function getUserAPIKeys(userId: string): Promise<APIKeyData[]> {
 }
 
 /**
- * Get decrypted API key for a specific provider
- * Used by server actions to retrieve user's BYOK keys
- */
-export async function getDecryptedAPIKey(
-    userId: string,
-    provider: string
-): Promise<string | null> {
-    try {
-        const key = await prisma.aPIKey.findFirst({
-            where: {
-                userId,
-                provider,
-                isActive: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
-
-        if (!key) {
-            return null;
-        }
-
-        // Decrypt the key
-        const decryptedKey = decryptAPIKey(key.keyEncrypted);
-        return decryptedKey;
-    } catch (error) {
-        console.error('Error fetching decrypted API key:', error);
-        return null;
-    }
-}
-
-/**
- * Add a new API key for a user
+ * Add a new API key for the current authenticated user
  */
 export async function addAPIKey(
-    userId: string,
+    providedUserId: string,
     name: string,
     provider: string,
     apiKey: string,
@@ -138,6 +118,19 @@ export async function addAPIKey(
     isPrimary?: boolean
 ): Promise<{ success: boolean; message: string; keyId?: string }> {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                message: 'Unauthorized: Authentication required'
+            };
+        }
+
+        // Strictly enforce authenticated user ID to prevent IDOR
+        const userId = session.user.id;
         // Encrypt the key for security
         const keyEncrypted = encryptAPIKey(apiKey);
         
@@ -188,13 +181,26 @@ export async function addAPIKey(
 }
 
 /**
- * Delete an API key
+ * Delete an API key for the current authenticated user
  */
 export async function deleteAPIKey(
-    userId: string,
+    providedUserId: string,
     keyId: string
 ): Promise<{ success: boolean; message: string }> {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                message: 'Unauthorized: Authentication required'
+            };
+        }
+
+        const userId = session.user.id;
+
         await prisma.aPIKey.deleteMany({
             where: {
                 id: keyId,
@@ -216,7 +222,7 @@ export async function deleteAPIKey(
 }
 
 /**
- * Update API key usage stats
+ * Update API key usage stats (internal usage)
  */
 export async function updateAPIKeyUsage(keyId: string): Promise<void> {
     try {
@@ -235,14 +241,28 @@ export async function updateAPIKeyUsage(keyId: string): Promise<void> {
 }
 
 /**
- * Get API key statistics for a user
+ * Get API key statistics for the current authenticated user
  */
-export async function getAPIKeyStats(userId: string): Promise<{
+export async function getAPIKeyStats(providedUserId?: string): Promise<{
     totalKeys: number;
     totalRequests: number;
     byokActive: boolean;
 }> {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return {
+                totalKeys: 0,
+                totalRequests: 0,
+                byokActive: false
+            };
+        }
+
+        const userId = session.user.id;
+
         const keys = await prisma.aPIKey.findMany({
             where: {
                 userId,

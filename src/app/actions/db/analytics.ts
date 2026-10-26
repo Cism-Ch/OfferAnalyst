@@ -8,6 +8,8 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface AnalyticsData {
     totalSearches: number;
@@ -26,11 +28,33 @@ export interface CategoryData {
     value: number;
 }
 
+async function getAuthenticatedUserId(): Promise<string | null> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return session?.user?.id || null;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Get KPI data for a user
  */
-export async function getUserAnalytics(userId: string): Promise<AnalyticsData> {
+export async function getUserAnalytics(providedUserId: string): Promise<AnalyticsData> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return {
+                totalSearches: 0,
+                resultsFound: 0,
+                avgScore: 0,
+                savedOffers: 0
+            };
+        }
+        const userId = sessionUserId;
+
         const [searchCount, savedCount, savedOffers] = await Promise.all([
             prisma.searchHistory.count({
                 where: { userId }
@@ -69,10 +93,16 @@ export async function getUserAnalytics(userId: string): Promise<AnalyticsData> {
  * Get search timeline data for charts
  */
 export async function getSearchTimeline(
-    userId: string,
+    providedUserId: string,
     days: number = 7
 ): Promise<SearchTimelineData[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
@@ -108,8 +138,14 @@ export async function getSearchTimeline(
 /**
  * Get category distribution data
  */
-export async function getCategoryDistribution(userId: string): Promise<CategoryData[]> {
+export async function getCategoryDistribution(providedUserId: string): Promise<CategoryData[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const savedOffers = await prisma.savedOffer.findMany({
             where: { userId },
             select: { category: true }
@@ -135,8 +171,14 @@ export async function getCategoryDistribution(userId: string): Promise<CategoryD
 /**
  * Get score distribution data
  */
-export async function getScoreDistribution(userId: string): Promise<{ score: string; count: number }[]> {
+export async function getScoreDistribution(providedUserId: string): Promise<{ score: string; count: number }[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const savedOffers = await prisma.savedOffer.findMany({
             where: { userId },
             select: { score: true }
@@ -166,8 +208,14 @@ export async function getScoreDistribution(userId: string): Promise<{ score: str
 /**
  * Get model usage statistics
  */
-export async function getModelUsage(userId: string): Promise<{ model: string; requests: number }[]> {
+export async function getModelUsage(providedUserId: string): Promise<{ model: string; requests: number }[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const searches = await prisma.searchHistory.findMany({
             where: { userId },
             select: { model: true }

@@ -289,17 +289,17 @@ export default function APIKeysPage() {
 
                 {/* Header */}
                 <motion.div {...fadeInUpProps} className="mb-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold mb-2">API Keys</h1>
-                            <p className="text-muted-foreground">
+                            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">API Keys</h1>
+                            <p className="text-sm sm:text-base text-muted-foreground">
                                 {isAuthenticated 
                                     ? 'Manage your AI provider API keys for BYOK (Bring Your Own Key) usage'
                                     : 'Add temporary API keys to enable BYOK access (keys expire after 24 hours)'
                                 }
                             </p>
                         </div>
-                        <Button onClick={() => setShowAddDialog(true)}>
+                        <Button onClick={() => setShowAddDialog(true)} className="min-h-[44px] w-full sm:w-auto shrink-0">
                             <Plus className="w-4 h-4 mr-2" />
                             Add API Key
                         </Button>
@@ -455,35 +455,41 @@ export default function APIKeysPage() {
                                                         </div>
                                                     </div>
                                                     
-                                                    <div className="ml-8 space-y-2">
-                                                        <div className="flex items-center gap-2 font-mono text-sm">
-                                                            <span>
+                                                    <div className="ml-0 sm:ml-8 mt-2 space-y-2">
+                                                        <div className="flex flex-wrap items-center gap-2 font-mono text-xs sm:text-sm">
+                                                            <span className="break-all max-w-[220px] sm:max-w-md bg-muted/50 px-2 py-1 rounded">
                                                                 {visibleKeys.has(apiKey.id) 
                                                                     ? apiKey.key 
                                                                     : maskKey(apiKey.key)
                                                                 }
                                                             </span>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => toggleKeyVisibility(apiKey.id)}
-                                                            >
-                                                                {visibleKeys.has(apiKey.id) ? (
-                                                                    <EyeOff className="w-4 h-4" />
-                                                                ) : (
-                                                                    <Eye className="w-4 h-4" />
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => copyToClipboard(apiKey.key)}
-                                                            >
-                                                                <Copy className="w-4 h-4" />
-                                                            </Button>
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 w-8 p-0"
+                                                                    onClick={() => toggleKeyVisibility(apiKey.id)}
+                                                                    aria-label="Toggle visibility"
+                                                                >
+                                                                    {visibleKeys.has(apiKey.id) ? (
+                                                                        <EyeOff className="w-4 h-4" />
+                                                                    ) : (
+                                                                        <Eye className="w-4 h-4" />
+                                                                    )}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 w-8 p-0"
+                                                                    onClick={() => copyToClipboard(apiKey.key)}
+                                                                    aria-label="Copy key"
+                                                                >
+                                                                    <Copy className="w-4 h-4" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
 
-                                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
                                                             <div className="flex items-center gap-1">
                                                                 <Clock className="w-3 h-3" />
                                                                 Created {new Date(apiKey.createdAt).toLocaleDateString()}

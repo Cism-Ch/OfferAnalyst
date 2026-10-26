@@ -8,6 +8,8 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface APIKeyAnalytics {
     totalRequests: number;
@@ -30,6 +32,17 @@ export interface UsageTimelineData {
     requests: number;
     successfulRequests: number;
     failedRequests: number;
+}
+
+async function getAuthenticatedUserId(): Promise<string | null> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return session?.user?.id || null;
+    } catch {
+        return null;
+    }
 }
 
 /**
@@ -76,11 +89,25 @@ export async function logAPIKeyUsage(
  * Get comprehensive API key analytics for a user
  */
 export async function getAPIKeyAnalytics(
-    userId: string,
+    providedUserId: string,
     apiKeyId?: string,
     days: number = 30
 ): Promise<APIKeyAnalytics> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return {
+                totalRequests: 0,
+                successRate: 0,
+                avgResponseTime: 0,
+                totalTokens: 0,
+                requestsByProvider: [],
+                requestsByAction: [],
+                recentActivity: []
+            };
+        }
+        const userId = sessionUserId;
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
@@ -181,11 +208,17 @@ export async function getAPIKeyAnalytics(
  * Get usage timeline for charts
  */
 export async function getUsageTimeline(
-    userId: string,
+    providedUserId: string,
     apiKeyId?: string,
     days: number = 30
 ): Promise<UsageTimelineData[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 

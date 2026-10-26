@@ -47,7 +47,7 @@ export function SecurityMigrationBanner() {
                         <ShieldCheck className="w-5 h-5 flex-shrink-0" />
                         <div className="flex-1">
                             <p className="text-sm font-semibold mb-1">
-                                🔐 Mise à Jour de Sécurité - Action Requise
+                                Mise à Jour de Sécurité - Action Requise
                             </p>
                             <p className="text-xs opacity-90">
                                 Nous avons amélioré la sécurité de vos clés API avec un chiffrement AES-256-GCM. 

@@ -9,7 +9,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Coffee, Heart, Zap } from "lucide-react";
+import { Coffee, Heart, Zap, PartyPopper, Smile } from "lucide-react";
 
 interface SupportStepProps {
   onComplete: () => void;
@@ -31,7 +31,9 @@ export default function SupportStep({ onComplete, onSkip }: SupportStepProps) {
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <h2 className="text-3xl font-bold mb-4">You&apos;re All Set! 🎉</h2>
+        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
+          You&apos;re All Set! <PartyPopper className="h-7 w-7 text-primary" />
+        </h2>
         <p className="text-lg text-muted-foreground">
           OfferAnalyst is <strong>free forever</strong> with integrated AI models
         </p>
@@ -92,8 +94,9 @@ export default function SupportStep({ onComplete, onSkip }: SupportStepProps) {
         <Button onClick={onSkip} variant="ghost" size="lg">
           Maybe Later
         </Button>
-        <p className="text-xs text-muted-foreground text-center max-w-md">
-          You can always support us later from the Settings page. No pressure! 😊
+        <p className="text-xs text-muted-foreground text-center max-w-md flex items-center justify-center gap-1.5">
+          <span>You can always support us later from the Settings page. No pressure!</span>
+          <Smile className="h-3.5 w-3.5 text-muted-foreground inline shrink-0" />
         </p>
       </motion.div>
     </div>

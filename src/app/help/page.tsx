@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, HelpCircle, BookOpen, Zap, Key, Settings, AlertCircle } from 'lucide-react';
+import { Search, HelpCircle, BookOpen, Zap, Key, Settings, AlertCircle, Mail, MessageSquare } from 'lucide-react';
 
 interface FAQItem {
   question: string;
@@ -249,14 +249,16 @@ export default function HelpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p className="text-sm">
-            📧 Email:{' '}
+          <p className="text-sm flex items-center gap-2">
+            <Mail className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-muted-foreground">Email:</span>
             <a href="mailto:support@offeranalyst.com" className="text-primary hover:underline">
               support@offeranalyst.com
             </a>
           </p>
-          <p className="text-sm">
-            💬 GitHub Discussions:{' '}
+          <p className="text-sm flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-muted-foreground">GitHub Discussions:</span>
             <a
               href="https://github.com/Cism-Ch/OfferAnalyst/discussions"
               target="_blank"

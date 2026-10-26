@@ -169,13 +169,30 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                         </CardTitle>
                         <CardDescription>Daily request volume and success rate</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-2 sm:p-6">
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={timeline}>
+                            <LineChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip />
+                                <XAxis 
+                                    dataKey="date" 
+                                    fontSize={11}
+                                    interval="preserveStartEnd"
+                                    minTickGap={20}
+                                    tickFormatter={(str: string) => {
+                                        if (!str) return '';
+                                        const parts = str.split('-');
+                                        return parts.length >= 3 ? `${parts[1]}/${parts[2]}` : str;
+                                    }}
+                                />
+                                <YAxis fontSize={11} />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: 'hsl(var(--card))',
+                                        color: 'hsl(var(--card-foreground))',
+                                        borderRadius: '8px', 
+                                        border: '1px solid hsl(var(--border))' 
+                                    }}
+                                />
                                 <Legend />
                                 <Line 
                                     type="monotone" 
@@ -216,7 +233,7 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                             </CardTitle>
                             <CardDescription>Distribution across AI providers</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-2 sm:p-6">
                             <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
                                     <Pie
@@ -236,7 +253,14 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip 
+                                        contentStyle={{ 
+                                            backgroundColor: 'hsl(var(--card))',
+                                            color: 'hsl(var(--card-foreground))',
+                                            borderRadius: '8px', 
+                                            border: '1px solid hsl(var(--border))' 
+                                        }}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -253,13 +277,24 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                             </CardTitle>
                             <CardDescription>Usage breakdown by operation type</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-2 sm:p-6">
                             <ResponsiveContainer width="100%" height={250}>
-                                <BarChart data={analytics.requestsByAction}>
+                                <BarChart data={analytics.requestsByAction} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="action" />
-                                    <YAxis />
-                                    <Tooltip />
+                                    <XAxis 
+                                        dataKey="action" 
+                                        fontSize={11}
+                                        tickFormatter={(str: string) => (typeof str === 'string' && str.length > 10 ? `${str.slice(0, 8)}…` : str)}
+                                    />
+                                    <YAxis fontSize={11} />
+                                    <Tooltip 
+                                        contentStyle={{ 
+                                            backgroundColor: 'hsl(var(--card))',
+                                            color: 'hsl(var(--card-foreground))',
+                                            borderRadius: '8px', 
+                                            border: '1px solid hsl(var(--border))' 
+                                        }}
+                                    />
                                     <Bar dataKey="count" fill="#3b82f6" />
                                 </BarChart>
                             </ResponsiveContainer>

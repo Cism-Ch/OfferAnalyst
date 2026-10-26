@@ -41,6 +41,7 @@ import {
     FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OffanIcon, OffanLogo } from '@/components/brand/OffanBrand';
 
 interface NavItem {
     label: string;
@@ -139,27 +140,18 @@ function renderSidebarContent(
         <>
             {/* Logo and Brand */}
             <div className={cn(
-                'flex items-center gap-3 px-4 py-5',
-                isCollapsed && 'justify-center px-2'
+                'flex items-center px-4 py-5',
+                isCollapsed ? 'justify-center px-2' : 'justify-start'
             )}>
-                <motion.div
-                    className="bg-gradient-gold text-white p-2 rounded-xl shadow-lg"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <Sparkles className="h-5 w-5" />
-                </motion.div>
-                {!isCollapsed && (
-                    <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="flex flex-col"
-                    >
-                        <span className="font-bold text-lg leading-none">OfferAnalyst</span>
-                        <span className="text-xs text-muted-foreground">Premium AI</span>
-                    </motion.div>
-                )}
+                <Link href="/" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+                    {isCollapsed ? (
+                        <div className="p-1.5 rounded-xl bg-card border border-border shadow-xs hover:border-primary/50 hover:scale-105 transition-all">
+                            <OffanIcon size={24} glow />
+                        </div>
+                    ) : (
+                        <OffanLogo variant="full" size="md" glow />
+                    )}
+                </Link>
             </div>
 
             <Separator />
@@ -229,10 +221,10 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
 
     return (
         <>
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Accessible 44x44px Touch Target */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-lg bg-background border shadow-lg hover:bg-accent"
+                className="md:hidden fixed top-3 left-3 z-40 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors"
                 aria-label="Open menu"
             >
                 <Menu className="h-5 w-5" />

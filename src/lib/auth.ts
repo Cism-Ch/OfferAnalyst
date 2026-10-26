@@ -29,7 +29,12 @@ export const auth = betterAuth({
       enabled: !!process.env.GITHUB_CLIENT_ID && !!process.env.GITHUB_CLIENT_SECRET,
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET || "development-secret-change-in-production",
+  secret: (() => {
+    if (process.env.NODE_ENV === 'production' && !process.env.BETTER_AUTH_SECRET) {
+      throw new Error('CRITICAL SECURITY ERROR: BETTER_AUTH_SECRET must be defined in production environment');
+    }
+    return process.env.BETTER_AUTH_SECRET || "development-secret-change-in-production";
+  })(),
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",

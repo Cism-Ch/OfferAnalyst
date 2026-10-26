@@ -121,64 +121,64 @@ export default function AdminPage() {
                 <motion.div {...staggerContainerProps} className="space-y-6">
                     {/* System Stats */}
                     <motion.div {...staggerItemProps}>
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                             <Card>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         Total Users
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{systemStats.totalUsers.toLocaleString()}</div>
+                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.totalUsers.toLocaleString()}</div>
                                 </CardContent>
                             </Card>
 
                             <Card>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Activity className="w-4 h-4" />
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         Active Users
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{systemStats.activeUsers.toLocaleString()}</div>
+                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.activeUsers.toLocaleString()}</div>
                                 </CardContent>
                             </Card>
 
                             <Card>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <TrendingUp className="w-4 h-4" />
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         Total Searches
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{systemStats.totalSearches.toLocaleString()}</div>
+                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.totalSearches.toLocaleString()}</div>
                                 </CardContent>
                             </Card>
 
                             <Card>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Key className="w-4 h-4" />
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         BYOK Active
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{systemStats.byokActivations.toLocaleString()}</div>
+                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.byokActivations.toLocaleString()}</div>
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Database className="w-4 h-4" />
+                            <Card className="col-span-2 sm:col-span-1">
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         Avg Response
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{systemStats.avgResponseTime}ms</div>
+                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.avgResponseTime}ms</div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -211,7 +211,7 @@ export default function AdminPage() {
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
                                                 <div>
                                                     <p className="text-muted-foreground">Free Tier</p>
                                                     <p className="font-semibold">{provider.freeRequests.toLocaleString()} requests</p>
@@ -248,12 +248,12 @@ export default function AdminPage() {
                                 <CardContent>
                                     <div className="space-y-3">
                                         {recentUsers.map((user) => (
-                                            <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                                <div>
-                                                    <h4 className="font-medium">{user.name}</h4>
-                                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                            <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="font-medium truncate">{user.name}</h4>
+                                                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                                                 </div>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 shrink-0">
                                                     <Badge variant="outline">{user.role}</Badge>
                                                     <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>
                                                         {user.status}
@@ -262,7 +262,7 @@ export default function AdminPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    <Button variant="outline" className="w-full mt-4">
+                                    <Button variant="outline" className="w-full mt-4 min-h-[44px]">
                                         View All Users
                                     </Button>
                                 </CardContent>

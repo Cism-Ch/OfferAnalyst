@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
     Dialog,
     DialogContent,
@@ -22,7 +22,6 @@ import {
     Clock,
     Pin,
     Trash2,
-    ArrowLeft,
     Calendar,
     ArrowRight,
     Search,
@@ -73,52 +72,37 @@ export default function HistoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">
-            <header className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
+        <SimpleLayout
+            title="Search History"
+            description={`${pinnedCount > 0 ? `${pinnedCount} pinned • ` : ''}${unpinnedCount} recent searches`}
+            maxWidth="6xl"
+        >
+            <div className="space-y-6">
+                {/* Search and Actions Bar */}
+                {history.length > 0 && (
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by domain, criteria, or results..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowClearDialog(true)}
+                            disabled={unpinnedCount === 0}
+                            className="gap-2 shrink-0"
+                        >
+                            <Eraser className="h-4 w-4" />
+                            Clear Unpinned
                         </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold">Search History</h1>
-                        <p className="text-muted-foreground">
-                            {pinnedCount > 0 && `${pinnedCount} pinned • `}
-                            {unpinnedCount} recent searches
-                        </p>
                     </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                </div>
-            </header>
+                )}
 
-            {/* Search and Actions Bar */}
-            {history.length > 0 && (
-                <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search by domain, criteria, or results..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9"
-                        />
-                    </div>
-                    <Button
-                        variant="outline"
-                        onClick={() => setShowClearDialog(true)}
-                        disabled={unpinnedCount === 0}
-                        className="gap-2"
-                    >
-                        <Eraser className="h-4 w-4" />
-                        Clear Unpinned
-                    </Button>
-                </div>
-            )}
-
-            <main className="max-w-6xl mx-auto space-y-8">
+                <div className="space-y-6">
 
                 {isLoading ? (
                     <div className="text-center py-20 text-muted-foreground">
@@ -146,7 +130,7 @@ export default function HistoryPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredHistory.map((item) => (
-                            <Card key={item.id} className={`flex flex-col relative transition-all duration-200 border-none shadow-sm hover:shadow-md ${item.pinned ? 'ring-2 ring-primary/20 bg-amber-50/50 dark:bg-amber-900/10' : 'bg-white dark:bg-zinc-900'}`}>
+                            <Card key={item.id} className={`flex flex-col relative transition-all duration-200 border shadow-sm hover:shadow-md ${item.pinned ? 'ring-2 ring-primary/30 bg-primary/5' : 'bg-card text-card-foreground'}`}>
                                 <div className="absolute top-3 right-3 flex gap-1">
                                     <Button
                                         variant="ghost"
@@ -187,7 +171,7 @@ export default function HistoryPage() {
                                         </Badge>
                                     </div>
 
-                                    <ScrollArea className="h-32 rounded-md border bg-slate-50 dark:bg-zinc-950 p-3 text-sm">
+                                    <ScrollArea className="h-32 rounded-md border border-border bg-muted/40 p-3 text-sm">
                                         <ul className="space-y-2">
                                             {item.results.topOffers.slice(0, 3).map((offer, idx) => (
                                                 <li key={idx} className="flex justify-between items-start gap-2 text-xs">
@@ -216,29 +200,30 @@ export default function HistoryPage() {
                         ))}
                     </div>
                 )}
-            </main>
+                </div>
 
-            {/* Clear Confirmation Dialog */}
-            <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Clear Unpinned History?</DialogTitle>
-                        <DialogDescription>
-                            This will remove all {unpinnedCount} unpinned search{unpinnedCount !== 1 ? 'es' : ''} from your history. 
-                            Pinned items will be preserved. This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowClearDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button variant="destructive" onClick={handleClearUnpinned}>
-                            <Eraser className="h-4 w-4 mr-2" />
-                            Clear {unpinnedCount} Item{unpinnedCount !== 1 ? 's' : ''}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+                {/* Clear Confirmation Dialog */}
+                <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Clear Unpinned History?</DialogTitle>
+                            <DialogDescription>
+                                This will remove all {unpinnedCount} unpinned search{unpinnedCount !== 1 ? 'es' : ''} from your history. 
+                                Pinned items will be preserved. This action cannot be undone.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setShowClearDialog(false)}>
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" onClick={handleClearUnpinned}>
+                                <Eraser className="h-4 w-4 mr-2" />
+                                Clear {unpinnedCount} Item{unpinnedCount !== 1 ? 's' : ''}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </SimpleLayout>
     );
 }

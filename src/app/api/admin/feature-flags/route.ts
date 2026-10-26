@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFeatureFlags, updateFeatureFlag, FeatureFlags } from "@/lib/feature-flags";
 import { log } from "@/lib/logger";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { z } from "zod";
 
 const UpdateFlagSchema = z.object({
@@ -18,12 +20,36 @@ const UpdateFlagSchema = z.object({
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function ensureAdmin(): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    return !!(session?.user && (session.user as { role?: string }).role === "ADMIN");
+  } catch {
+    return false;
+  }
+}
+
 export async function GET() {
+  if (!(await ensureAdmin())) {
+    return NextResponse.json(
+      { error: "Accès refusé. Privilèges administrateur requis." },
+      { status: 403 }
+    );
+  }
   const flags = getFeatureFlags();
   return NextResponse.json({ flags });
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await ensureAdmin())) {
+    return NextResponse.json(
+      { error: "Accès refusé. Privilèges administrateur requis." },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await request.json();
     const validation = UpdateFlagSchema.safeParse(body);

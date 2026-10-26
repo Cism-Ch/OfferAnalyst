@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-26
+
+### 🛡️ Audit & Durcissement de Sécurité Fullstack (Sprint 6 - Octobre 2026)
+
+- **Authentification & Contrôle d'Accès** :
+  - **Middleware** (`middleware.ts`) : Correction d'une faille critique de contournement (`startsWith('/')` matchant toutes les requêtes) ; protection stricte des routes privées et ajout de `/admin` dans les préfixes protégés.
+  - **RBAC Administrateur** (`src/app/actions/db/admin.ts`, `src/app/api/admin/feature-flags/route.ts`) : Vérification systématique du rôle `ADMIN` via session Better-Auth sur les actions de monitoring et de feature flags.
+  - **Sécurité Better-Auth** (`src/lib/auth.ts`) : Validation fail-closed stricte de `BETTER_AUTH_SECRET` en production empêchant l'usage de secrets par défaut.
+
+- **Fermeture des Surfaces d'Attaque RPC ('use server') & Secrets** :
+  - **Déclassification `api-key-provider.ts`** : Retrait de `'use server'` convertissant la méthode `getAPIKey()` en utilitaire serveur interne hermétique, éliminant la fuite publique de `OPENROUTER_API_KEY`.
+  - **Déclassification `email-notifications.ts`** : Retrait de `'use server'` empêchant l'usurpation publique d'envoi d'alertes email par requête HTTP directe.
+  - **Élimination de l'action `getDecryptedAPIKey`** : Suppression de l'exposition publique en clair des clés API BYOK utilisateur via Server Action RPC.
+
+- **Protection Anti-IDOR (Insecure Direct Object Reference)** :
+  - **Gestion des Clés API** (`src/app/actions/db/api-keys.ts`, `api-key-rotation.ts`) : Écrasement forcé du `userId` fourni par le client par le `session.user.id` authentifié.
+  - **Alertes de Sécurité** (`src/app/actions/db/security-alerts.ts`) : Sécurisation de la consultation, lecture, résolution et suppression par session utilisateur.
+  - **Analytiques & Métriques** (`src/app/actions/db/analytics.ts`, `api-key-analytics.ts`) : Sécurisation de toutes les requêtes de reporting et métriques d'usage par session.
+
+- **Protection Anti-SSRF & Sécurité des Webhooks** :
+  - **Validateur Anti-SSRF** (`src/lib/webhooks.ts`) : Validation préalable de toutes les URLs cibles bloquant les protocoles non HTTP(S), les adresses de boucle locale (`localhost`, `127.0.0.1`), les réseaux privés (RFC 1918) et les métadonnées d'instance cloud (`169.254.169.254`).
+  - **Webhook Worker QStash** (`src/app/api/jobs/route.ts`) : Mode fail-closed en production avec rejet HTTP 503 si les clés de signature cryptographique ne sont pas initialisées.
+
+- **Durcissement des En-têtes HTTP (Content-Security-Policy)** :
+  - **Next.js Config** (`next.config.ts`) : Ajout de la directive `Content-Security-Policy` avec restriction des sources de scripts, styles, polices et `frame-ancestors 'none'` anti-clickjacking.
+
+### 🧠 Recursive Self-Improvement (RSI) & AI Meta-Governance (Sprint 6 - October 2026)
+
+- **Protocole RSI (Recursive Self-Improvement) & Méta-Gouvernance** :
+  - Mise en place de l'arborescence `.agents/rules/` (`system_core.md`, `fullstack_playbook.md`) pour l'apprentissage continu des agents IA.
+  - Ajout des prompts spécialisés pour agents autonomes : `worker_fullstack.md` (développeur de bout en bout) et `meta_optimizer.md` (méta-analyste d'échecs et mutation procédurale).
+  - Implémentation du Juge Déterministe (`evals/run_fullstack_eval.py`) remplaçant le jugement subjectif par une évaluation binaire (Types, Lint, Prisma MongoDB, Build).
+  - Création de l'Orchestrateur de Cycle RSI (`evals/rsi_orchestrator.py`) avec Git guardrail et compaction anti-bloat (< 150 lignes de playbook).
+  - Création de l'outil de skill `db_schema_validator.py` pour valider l'intégrité MongoDB Atlas et les singletons Prisma.
+  - Définition du workflow exécutable `/rsi-feature` dans `.agents/workflows/rsi-feature.md`.
+  - Nouveaux scripts npm dédiés (`eval:fullstack`, `eval:quick`, `rsi:orchestrate`, `rsi:guardrail`, `db:validate`).
+  - Documentation officielle mise à jour dans `Agent.md` (Section 12) et `AGENTS.md`.
+
 ### ⚡ Infrastructure & Distributed Scalability (Sprint 5 - October 2026)
 
 - **Upstash QStash Async Worker**:

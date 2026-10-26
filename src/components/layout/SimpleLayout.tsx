@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react';
 import { ModernSidebar } from './ModernSidebar';
+import { PremiumThemeSelector } from '@/components/theme-selector';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -83,27 +84,39 @@ export function SimpleLayout({
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Simple Header */}
                 <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
-                    <div className="px-6 py-4">
-                        {/* Breadcrumbs */}
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                            {pageInfo.breadcrumbs.map((crumb, index) => (
-                                <React.Fragment key={crumb}>
-                                    {index > 0 && <ChevronRight className="h-4 w-4" />}
-                                    <span className={cn(
-                                        index === pageInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
-                                    )}>
-                                        {crumb}
-                                    </span>
-                                </React.Fragment>
-                            ))}
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 pl-16 md:pl-6">
+                        {/* Top Row: Breadcrumbs & Theme Selector */}
+                        <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
+                                {/* Mobile Single Crumb */}
+                                <span className="sm:hidden text-xs text-foreground font-semibold truncate max-w-[160px]">
+                                    {pageInfo.breadcrumbs[pageInfo.breadcrumbs.length - 1]}
+                                </span>
+                                {/* Desktop Full Trail */}
+                                <div className="hidden sm:flex items-center gap-2">
+                                    {pageInfo.breadcrumbs.map((crumb, index) => (
+                                        <React.Fragment key={crumb}>
+                                            {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />}
+                                            <span className={cn(
+                                                index === pageInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
+                                            )}>
+                                                {crumb}
+                                            </span>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="shrink-0">
+                                <PremiumThemeSelector />
+                            </div>
                         </div>
 
                         {/* Page Title */}
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                                 {title || pageInfo.title}
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                                 {description || pageInfo.description}
                             </p>
                         </div>
@@ -113,7 +126,7 @@ export function SimpleLayout({
                 {/* Page Content */}
                 <main className="flex-1 overflow-auto">
                     <div className={cn(
-                        'mx-auto w-full px-6 py-6',
+                        'mx-auto w-full px-4 sm:px-6 py-4 sm:py-6',
                         maxWidthClasses[maxWidth]
                     )}>
                         {children}

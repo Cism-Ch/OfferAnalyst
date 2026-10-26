@@ -1,9 +1,8 @@
-'use server';
-
 /**
- * API Key Provider Utility
+ * API Key Provider Utility (Server-only module - NOT a Server Action)
  * 
- * Provides API keys for server actions with BYOK support.
+ * Provides API keys internally for server operations with BYOK support.
+ * Must NOT be exposed as a public Server Action endpoint.
  * Priority:
  * 1. User's BYOK key from database (authenticated users)
  * 2. Client-provided temporary key (unauthenticated users)

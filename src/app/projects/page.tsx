@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useProjects } from '@/hooks/use-projects';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from 'next/link';
 import {
     Plus,
-    ArrowLeft,
     Sparkles,
     Bot,
     Check,
@@ -67,26 +66,13 @@ export default function ProjectsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">
-            <header className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold">Projects</h1>
-                        <p className="text-muted-foreground">Manage and combine your research agents</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto">
-                <div className="mb-8 flex justify-end">
+        <SimpleLayout
+            title="Projects"
+            description="Manage and combine your research agents"
+            maxWidth="6xl"
+        >
+            <div className="space-y-6">
+                <div className="flex justify-end">
                     <Dialog open={isWizardOpen} onOpenChange={setIsWizardOpen}>
                         <DialogTrigger asChild>
                             <Button className="gap-2">
@@ -180,7 +166,7 @@ export default function ProjectsPage() {
                                 {/* Step 3: Review */}
                                 {step === 3 && (
                                     <div className="space-y-4">
-                                        <div className="bg-slate-50 dark:bg-zinc-900 p-4 rounded-lg border space-y-3">
+                                        <div className="bg-muted/40 p-4 rounded-lg border border-border space-y-3">
                                             <div>
                                                 <h4 className="text-sm font-semibold text-muted-foreground">Project</h4>
                                                 <p className="font-medium">{newProjectName}</p>
@@ -196,8 +182,8 @@ export default function ProjectsPage() {
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded text-sm">
-                                            <Sparkles className="h-4 w-4" />
+                                        <div className="flex items-center gap-2 p-3 bg-primary/10 text-primary border border-primary/20 rounded-lg text-sm">
+                                            <Sparkles className="h-4 w-4 shrink-0" />
                                             AI Agent will allow you to query across these combined sources.
                                         </div>
                                     </div>
@@ -270,7 +256,7 @@ export default function ProjectsPage() {
                         ))
                     )}
                 </div>
-            </main>
-        </div>
+            </div>
+        </SimpleLayout>
     );
 }

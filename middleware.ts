@@ -16,6 +16,8 @@ const publicRoutes = [
   "/auth/signup",
   "/auth/reset",
   "/auth/verify",
+  "/help",
+  "/changelog",
 ];
 
 // Routes that require authentication
@@ -28,28 +30,33 @@ const protectedRoutes = [
   "/settings",
   "/profile",
   "/dashboard",
+  "/admin",
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow all API routes to pass through (handled by API routes themselves)
+  // Allow all API routes to pass through (handled by API route handlers themselves)
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  // Allow public routes
-  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route))) {
+  // Allow public routes with exact match for "/" and prefix match for other routes
+  const isPublicRoute = publicRoutes.some(route => 
+    route === "/" ? pathname === "/" : (pathname === route || pathname.startsWith(route + "/"))
+  );
+
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 
   // Check if route requires authentication
   const isProtectedRoute = protectedRoutes.some(route => 
-    pathname === route || pathname.startsWith(route)
+    pathname === route || pathname.startsWith(route + "/")
   );
 
   if (isProtectedRoute) {
-    // Check for session cookie
+    // Check for Better-Auth session cookie
     const sessionCookie = request.cookies.get("offeranalyst.session_token");
     
     if (!sessionCookie) {

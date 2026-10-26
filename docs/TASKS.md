@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 26 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Phase 6 (Sprints 1 à 5 Complétés — Sprint 6 Expansion & Monétisation Actif)
+**Statut Global :** Phase 6 (Sprints 1 à 5 Archivés — Sprint 6 Expansion & Monétisation Actif)
 
 ---
 
@@ -15,183 +15,153 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │   🔴 SPRINT 6 (ACTIF)   │  │    🟢 BACKLOG FUTUR     │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-INFRA-01(QStash│
-│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │ [x] TASK-INFRA-02(Tigris│
-│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-INFRA-03(E2E/CI│
-│     (Stripe Billing)    │  │     Automatisées        │  │ [x] TASK-ADMIN-01(Flags)│
-│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-AUTH-01(Verify)│
-│     (Realtime Collab)   │  │                         │  │ [x] TASK-DATA-01(MongoDB│
-│                         │  │                         │  │ [x] TASK-LINT-01 (React)│
+│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-BRAND-02       │
+│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │     (Lisibilité Logo/Th)│
+│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-BRAND-01       │
+│     (Stripe Billing)    │  │     Automatisées        │  │     (Offan, Emojis, UI) │
+│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-THEME-01       │
+│     (Realtime Collab)   │  │                         │  │     (Audit & Fix Thèmes)│
+│                         │  │                         │  │ [x] TASK-UX-01 (UI/UX)  │
+│                         │  │                         │  │ [x] TASK-REL-01 (SemVer)│
+│                         │  │                         │  │ [x] TASK-SEC-02 (Sécu)  │
+│                         │  │                         │  │ [x] TASK-RSI-01(RSI/IA) │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 6 — Expansion & Monétisation
+## 🚀 Sprint Actif : Sprint 6 — Expansion, RSI & Monétisation
+
+### 💎 Identité de Marque 'Offan', Tracking Emojis & Refonte UI des Sélecteurs
+> 📄 **Rapport d'Audit Marque & UI :** [Consulter le Rapport d'Audit & Tracking Emojis/Design (AUDIT_EMOJI_BRAND_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_EMOJI_BRAND_2026-10-26.md)
+
+- [x] **`TASK-BRAND-02` — Perfectionnement Esthétique : Cercles de Thème avec Contraste Optimal (Noir/Blanc) & Lisibilité Multi-Thèmes du Logo Offan**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/components/theme-selector.tsx`, `src/components/brand/OffanBrand.tsx`, `src/components/layout/ModernSidebar.tsx`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-BRAND-02.01` : Correction de la syntaxe CSS du SVG Offan (`var(--primary)` au lieu de `hsl(#...)`, tracé transparent découpé `fillRule="evenodd"` sans faux fond opaque, adaptation de contraste).
+    - [x] `TASK-BRAND-02.02` : Refonte des pastilles du sélecteur de thème en cercles colorés (`rounded-full`) contenant l'icône dans la couleur de contraste idéale (noir sur thèmes clairs : Light, Silver ; blanc sur thèmes sombres/colorés : Dark, Gold, Neon, Ocean, Forest, System).
+    - [x] `TASK-BRAND-02.03` : Harmonisation du bouton déclencheur avec mini-cercle et icône assortie.
+    - [x] `TASK-BRAND-02.04` : Validation déterministe (`npm run eval:quick` 100/100).
+
+- [x] **`TASK-BRAND-01` — Identité de Marque 'Offan', Élimination des Emojis OS & Refonte des Sélecteurs (Thème & IA)**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/components/brand/OffanBrand.tsx`, `src/components/theme-selector.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/components/onboarding/`, `src/components/api-keys/`, `src/app/help/page.tsx`, `src/app/dashboard/support/page.tsx`, `src/app/data-source/page.tsx`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-BRAND-01.01` : Tracking et élimination des emojis natifs OS dans l'UI au profit d'icônes Lucide sémantiques.
+    - [x] `TASK-BRAND-01.02` : Création du logo vectoriel géométrique typographique 'Offan' (`src/components/brand/OffanBrand.tsx`) & génération de l'icône raster 2026.
+    - [x] `TASK-BRAND-01.03` : Intégration de l'icône 'Offan' dans `ModernSidebar.tsx`, `Sidebar.tsx` et métadonnées d'en-tête.
+    - [x] `TASK-BRAND-01.04` : Refonte visuelle et interactive du sélecteur de thème avec glassmorphism, sections et pastilles de prévisualisation vivantes (`theme-selector.tsx`).
+    - [x] `TASK-BRAND-01.05` : Refonte visuelle du sélecteur d'IA avec badges providers, indicateurs de tier (Free/Pro/BYOK) et onglets de filtrage (`ModernHeader.tsx`).
+    - [x] `TASK-BRAND-01.06` : Rapport d'audit exhaustif, mise à jour méta-cognitive et validation déterministe (`npm run eval:quick` 100/100).
+
+### 🎨 Audit & Restructuration du Moteur Multi-Thèmes
+> 📄 **Rapport d'Audit Thèmes :** [Consulter le Rapport d'Audit & Tracking Thèmes (AUDIT_THEMES_ENGINE_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_THEMES_ENGINE_2026-10-26.md)
+
+- [x] **`TASK-THEME-01` — Audit & Restructuration Complète du Moteur de Thèmes (Next-Themes, HSL, Tailwind v4)**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/app/layout.tsx`, `src/app/globals.css`, `src/components/theme-selector.tsx`, `src/components/theme-toggle.tsx`, `src/components/layout/SimpleLayout.tsx`, `src/app/history/page.tsx`, `src/app/projects/page.tsx`, `src/app/saved/page.tsx`, `src/app/compare/page.tsx`, `src/components/layout/Sidebar.tsx`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-THEME-01.01` : Fournir la liste explicite des thèmes supportés à `ThemeProvider` pour garantir la persistance et l'hydratation SSR (`src/app/layout.tsx`).
+    - [x] `TASK-THEME-01.02` : Compléter intégralement les tokens HSL manquants pour le thème `.gold` et affiner la palette `.silver` dans `src/app/globals.css`.
+    - [x] `TASK-THEME-01.03` : Étendre `@custom-variant dark` pour inclure `.neon` et les thèmes sombres afin que les classes `dark:...` fonctionnent sous Tailwind v4.
+    - [x] `TASK-THEME-01.04` : Supprimer les classes en dur résiduelles (`bg-white dark:bg-zinc-900`, `bg-slate-50`) au profit des tokens sémantiques `bg-card`, `text-card-foreground`, `bg-muted`.
+    - [x] `TASK-THEME-01.05` : Intégrer `PremiumThemeSelector` dans `SimpleLayout.tsx` et fiabiliser `src/components/theme-toggle.tsx`.
+    - [x] `TASK-THEME-01.06` : Rédiger le rapport d'audit exhaustif et valider par `npm run eval:quick` (score 100/100).
+
+### 📱 Audit & Remédiation UI/UX & Responsive Mobile-First (2026)
+> 📄 **Rapport d'Audit UI/UX :** [Consulter le Rapport d'Audit & Tracking d'Inconformités (AUDIT_UIUX_RESPONSIVE_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_UIUX_RESPONSIVE_2026-10-26.md)
+
+- [x] **`TASK-UX-01` — Audit Exhaustif & Refonte Responsive Mobile-First des Interfaces**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/components/layout/`, `src/components/offers/`, `src/components/ui/`, `src/app/`, `src/app/globals.css`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-UX-01.01` : Élimination du chevauchement hamburger/breadcrumbs et refonte barre d'actions responsive (`ModernSidebar.tsx`, `ModernHeader.tsx`, `SimpleLayout.tsx`).
+    - [x] `TASK-UX-01.02` : Harmonisation des vues secondaires avec `SimpleLayout` et design tokens dynamiques (`history`, `saved`, `compare`, `projects`).
+    - [x] `TASK-UX-01.03` : Cibles tactiles >= 44px et grilles adaptatives mobile-first (`OfferCard.tsx`, `ConfigurationCard.tsx`).
+    - [x] `TASK-UX-01.04` : Sécurisation anti-débordement des flux et barres d'actions (`search-context`, `data-source`, modals `dialog.tsx`).
+    - [x] `TASK-UX-01.05` : Wrap des clés API & adaptation des graphiques Recharts aux écrans étroits (`ScoreChart.tsx`, `AnalyticsDashboard.tsx`, `admin/page.tsx`).
+    - [x] `TASK-UX-01.06` : Support Safe-Area Insets iOS et hygiène CSS mobile (`globals.css`, `CookieConsent.tsx`, `onboarding`).
+    - [x] `TASK-UX-01.07` : Publication du rapport d'audit exhaustif et consolidation méta-cognitive dans `fullstack_playbook.md`.
+
+### 📦 Release Management & Versioning Automatique
+
+- [x] **`TASK-REL-01` — Système Automatisé de Release & Versioning SemVer**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `evals/version_manager.py`, `package.json`, `.agents/workflows/rsi-feature.md`, `.github/workflows/ci.yml`, `CHANGELOG.md`
+  - **Critères d'acceptation :**
+    - [x] Script autonome `evals/version_manager.py` (détection `auto`/`patch`/`minor`/`major`, scellement CHANGELOG, git tag).
+    - [x] Scripts npm dans `package.json` (`version:bump`, `version:check`).
+    - [x] Intégration dans la Phase 4 du protocole RSI (`rsi-feature.md`).
+    - [x] Intégration CI GitHub Actions (`.github/workflows/ci.yml`) pour validation des tags de release.
+    - [x] Exécution et validation du premier bump officiel (v1.0.0 scellée avec succès).
+
+### 🛡️ Audit & Durcissement de Sécurité (Fullstack)
+> 📄 **Rapport d'Audit Complet :** [Consulter le Rapport Exhaustif des 10 Vulnérabilités (AUDIT_SECURITE_FULLSTACK_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_SECURITE_FULLSTACK_2026-10-26.md)
+
+- [x] **`TASK-SEC-02` — Audit Complet de Sécurité & Remédiation Fullstack (10 Vulnérabilités)**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `middleware.ts`, `src/lib/auth.ts`, `src/lib/webhooks.ts`, `src/app/actions/`, `src/app/api/`, `next.config.ts`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-SEC-02.01` : Bypassing middleware `startsWith('/')` corrigé & `/admin` protégé ([middleware.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/middleware.ts)).
+    - [x] `TASK-SEC-02.02` : Fuite RPC `OPENROUTER_API_KEY` supprimée (déclassification serveur de [api-key-provider.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/shared/api-key-provider.ts)).
+    - [x] `TASK-SEC-02.03` : Action publique `getDecryptedAPIKey` supprimée de la surface RPC ([api-keys.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/api-keys.ts)).
+    - [x] `TASK-SEC-02.04` : Vérification RBAC admin sur feature flags et actions d'administration ([admin.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/admin.ts), `/api/admin/feature-flags`).
+    - [x] `TASK-SEC-02.05` : Usurpation d'alertes emails bloquée (déclassification serveur de [email-notifications.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/lib/email-notifications.ts)).
+    - [x] `TASK-SEC-02.06` : Faille IDOR éliminée sur les clés API et rotations ([api-keys.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/api-keys.ts), [api-key-rotation.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/api-key-rotation.ts)).
+    - [x] `TASK-SEC-02.07` : Faille IDOR éliminée sur les alertes de sécurité ([security-alerts.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/security-alerts.ts)).
+    - [x] `TASK-SEC-02.08` : Faille IDOR éliminée sur les métriques et KPIs ([analytics.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/analytics.ts), [api-key-analytics.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/actions/db/api-key-analytics.ts)).
+    - [x] `TASK-SEC-02.09` : Validateur Anti-SSRF strict implémenté pour les webhooks sortants ([webhooks.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/lib/webhooks.ts)).
+    - [x] `TASK-SEC-02.10` : CSP Next.js configurée & mode fail-closed en production ([next.config.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/next.config.ts), `/api/jobs`, [auth.ts](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/lib/auth.ts)).
+
+### 🧠 Protocole RSI & Méta-Gouvernance IA
+
+- [x] **`TASK-RSI-01` — Implémentation du Protocole RSI & Méta-Gouvernance IA**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Livrables :** `.agents/rules/`, `.agents/prompts/`, `.agents/workflows/`, `evals/`, `Agent.md`, `AGENTS.md`, `package.json`
 
 ### 🌐 Extension Web, Facturation Stripe & Collaboration
 
 - [ ] **`TASK-GROWTH-01` — Extension Navigateur Chrome / Edge (Manifest V3)**
   - **Priorité :** 🟡 HAUTE
   - **Fichiers cibles :** `extension/manifest.json`, `extension/src/content.ts`, `extension/src/popup.tsx`
-  - **Description :** Extension de navigateur permettant à l'utilisateur de capturer en 1 clic une offre d'emploi, immobilière ou freelance directement depuis des sites tiers (LinkedIn, Indeed, SeLoger, Malt, Upwork) et de la transmettre instantanément à son compte OfferAnalyst pour analyse immédiate.
-  - **Critères d'acceptation :**
-    - [ ] Manifest V3 valide pour le Chrome Web Store.
-    - [ ] Content script d'extraction automatique du titre, prix, description et URL source.
-    - [ ] Popup UI connectée via token de session ou clé API utilisateur pour expédition directe vers `/api/offers/import`.
 
 - [ ] **`TASK-GROWTH-02` — Facturation Stripe, Quotas & Plans Freemium/Pro**
   - **Priorité :** 🟡 HAUTE
   - **Fichiers cibles :** `src/lib/stripe.ts`, `src/app/api/billing/webhook/route.ts`, `src/app/dashboard/billing/page.tsx`
-  - **Description :** Monétisation SaaS : modèle Freemium (10 analyses offertes / mois), formule Pro illimitée (accès aux modèles DeepSeek R1, GPT-4o, Claude 3.5 Sonnet) et formule BYOK illimitée sans coût d'inférence. Webhook Stripe pour provisionnement automatique du statut d'abonnement dans `Subscription`.
-  - **Critères d'acceptation :**
-    - [ ] Session Stripe Checkout fonctionnelle pour abonnement mensuel/annuel.
-    - [ ] Webhook Stripe sécurisé validant la signature (`stripe.webhooks.constructEvent`).
-    - [ ] Portail client Stripe (`stripe.billingPortal.sessions.create`) pour gestion des cartes et annulations.
-    - [ ] Blocage et incitation à l'upgrade lors du dépassement du quota gratuit.
 
 - [ ] **`TASK-GROWTH-03` — Collaboration Temps Réel & Partage de Projets Multi-Utilisateurs**
   - **Priorité :** 🟢 MOYENNE
   - **Fichiers cibles :** `src/app/projects/[id]/page.tsx`, `src/lib/realtime.ts`
-  - **Description :** Transformer la recherche individuelle en travail d'équipe : partage de dossiers d'analyses avec des collègues, recruteurs ou co-acheteurs, annotations partagées sur les offres scorées et synchronisation en direct des sélections.
-  - **Critères d'acceptation :**
-    - [ ] Invitation par lien d'accès ou par email avec permissions lecture/écriture.
-    - [ ] Système d'annotations et commentaires sur chaque carte d'offre.
-    - [ ] Synchronisation optimiste et alertes de mise à jour collaborative.
 
 ---
 
-## 🛠️ Tâches Récemment Complétées
+## 📚 Archives & Historique Détaillé
 
-### ⚡ Infrastructure Distribuée & Scalabilité (Sprint 5)
-
-- [x] **`TASK-INFRA-01` — Délégation Asynchrone Upstash QStash & Receiver Verify**
-  - **Fichiers cibles :** `src/lib/qstash.ts`, `src/app/api/jobs/route.ts`, `src/lib/email-notifications.ts`
-  - **Critères d'acceptation :**
-    - [x] Client singleton QStash (`@/lib/qstash`) initialisé avec `QSTASH_TOKEN`.
-    - [x] Route webhook `/api/jobs` sécurisée par `Receiver` vérifiant la signature HMAC QStash.
-    - [x] Déchargement des emails de réinitialisation/vérification via file QStash (zéro blocage du thread HTTP).
-    - [x] Mécanisme d'idempotence basé sur l'identifiant de message (`messageId` ou hash d'opération).
-
-- [x] **`TASK-INFRA-02` — Stockage Cloud d'Objets Tigris S3 & URLs Pré-signées**
-  - **Fichiers cibles :** `src/lib/storage.ts`, `src/app/actions/organizeV2.ts`, `src/lib/export/`
-  - **Critères d'acceptation :**
-    - [x] Client S3 compatible Tigris configuré dans `@/lib/storage.ts` via `@aws-sdk/client-s3`.
-    - [x] Fonction `uploadExportDocument(fileName, content, contentType)` retournant la clé d'objet.
-    - [x] Fonction `getPresignedDownloadUrl(fileKey, expiresInSeconds=900)` fournissant un lien direct sécurisé.
-    - [x] Action `exportOrganizedOffersAction` enrichie avec option `uploadToCloud: true` et retour de lien signé.
-
-- [x] **`TASK-INFRA-03` — Suite de Tests E2E Automatisés & Pipeline CI/CD**
-  - **Fichiers cibles :** `tests/e2e/workflow.spec.ts`, `.github/workflows/ci.yml`, `package.json`, `playwright.config.ts`
-  - **Critères d'acceptation :**
-    - [x] Script `npm run test:e2e` exécutable en local et en intégration continue.
-    - [x] Test E2E validant la chaîne complète du workflow multi-agents sans régression.
-    - [x] Workflow GitHub Actions bloquant toute PR échouant au linter ou au typage strict.
+Pour préserver la compacité et la clarté du document SSOT, les tâches antérieures sont archivées :
+- 👉 **[Consulter l'Archive Complète des Tâches des Sprints 1 à 5 (TASKS_HISTORY_S1_S5.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S1_S5.md)**
+- 👉 **[Consulter le Rapport d'Audit UI/UX & Responsive (AUDIT_UIUX_RESPONSIVE_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_UIUX_RESPONSIVE_2026-10-26.md)**
+- 👉 **[Consulter le Rapport d'Audit de Sécurité Approfondi (AUDIT_SECURITE_FULLSTACK_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_SECURITE_FULLSTACK_2026-10-26.md)**
 
 ---
 
-## 🛠️ Tâches Récemment Complétées
-
-### 🔐 Authentification & Espace Utilisateur (Sprint 3)
-
-- [x] **`TASK-AUTH-01` — Vérification des Adresses Email (Resend)**
-  - **Fichiers cibles :** `src/app/auth/verify/page.tsx`, `src/app/api/auth/verify-email/route.ts`, `src/app/api/auth/resend-verification/route.ts`
-  - **Critères d'acceptation :**
-    - [x] Token vérifié et invalidé après usage (expiration 24h).
-    - [x] Bouton de réexpédition avec cooldown de 60s et rate limiting (3 requêtes / 15 min).
-    - [x] Prise en charge des emails Resend et logs de développement.
-
-- [x] **`TASK-AUTH-02` — Réinitialisation de Mot de Passe**
-  - **Fichiers cibles :** `src/app/auth/reset/page.tsx`, `src/app/api/auth/reset-password/route.ts`
-  - **Critères d'acceptation :**
-    - [x] Token cryptographiquement sécurisé à usage unique (durée 1h).
-    - [x] Mise à jour sécurisée du hash avec `bcryptjs` dans MongoDB / Prisma.
-    - [x] Interface 2-étapes (demande de lien + nouveau mot de passe avec confirmation).
-    - [x] Protection contre l'énumération d'adresses email.
-
-- [x] **`TASK-AUTH-03` — Persistance du Profil Onboarding**
-  - **Fichiers cibles :** `src/app/onboarding/page.tsx`, `src/app/api/profile/onboarding/route.ts`
-  - **Critères d'acceptation :**
-    - [x] Sauvegarde du cas d'usage dans `Profile` avec `onboardingComplete: true`.
-    - [x] Chiffrement AES-256-GCM des clés BYOK fournies lors de l'onboarding.
-    - [x] Support transparent du mode invité (guest session).
-
-### 🎨 Administration & Améliorations de Confort (Sprint 4)
-
-- [x] **`TASK-ADMIN-01` — API de Gestion Dynamique des Feature Flags**
-  - **Fichiers :** `src/app/admin/page.tsx`, `src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts`
-  - **Critères d'acceptation :**
-    - [x] Module `feature-flags.ts` avec support de `fetchV2`, `organizeV2`, `dualWorkflow`, `newAnalytics`, `enableWebhooks`, `enableCache`.
-    - [x] Endpoints `GET` et `POST` `/api/admin/feature-flags`.
-    - [x] Console admin interactive avec interrupteurs dynamiques et mise à jour temps réel.
-
-- [x] **`TASK-UI-01` — Dashboard Analytics Dédié (`/dashboard/analytics`)**
-  - **Fichiers :** `src/app/dashboard/analytics/page.tsx`
-  - **Critères d'acceptation :**
-    - [x] KPI cards (recherches totales, résultats trouvés, score moyen, offres sauvegardées).
-    - [x] Graphiques Recharts complets (LineChart, BarChart, PieChart, score distribution).
-
-- [x] **`TASK-UI-02` — Paramètres d'Espace de Travail (`/dashboard/workspace`)**
-  - **Fichiers :** `src/app/dashboard/workspace/page.tsx`
-  - **Critères d'acceptation :**
-    - [x] Gestion des membres d'équipe, rôles (Admin, Editor, Viewer), et préférences régionales.
-
-- [x] **`TASK-UI-03` — Thèmes Visuels Étendus**
-  - **Fichiers :** `src/components/theme-selector.tsx`
-  - **Critères d'acceptation :**
-    - [x] Palette complète (Light, Dark, Gold Luxury, Ocean Blue, Forest Green, Sunset Orange, Midnight Purple).
-    - [x] Synchronisation fluide sans hydration mismatch via `useSyncExternalStore`.
-
----
-
-## 🛠️ Tâches Complétées (Sprint 1 & Sprint 2)
-
-### 🔴 Qualité & Linter React 19 (Sprint 1)
-- [x] **`TASK-LINT-01`** — 11 Erreurs ESLint React 19 résolues (hooks & hydratation).
-- [x] **`TASK-AI-01`** — Modernisation Fetch Agent V1 (Zod, zéro mock, retries).
-- [x] **`TASK-AI-02`** — Couche de Caching TTL 3600s pour Fetch V2.
-- [x] **`TASK-AI-03`** — Persistance et Polling temps réel du workflow IA.
-
-### 🟡 Données & Fonctionnalités Avancées (Sprint 2)
-- [x] **`TASK-DATA-01`** — Enregistrement des Analyses en Base de Données MongoDB (modèle `AnalysisResult` et actions CRUD).
-- [x] **`TASK-DATA-02`** — Webhooks de Notification Asynchrones (HMAC SHA-256 et backoff exponentiel).
-- [x] **`TASK-DATA-03`** — Modules d'Exportation CSV (RFC 4180) & PDF structuré.
-
----
-
-## ✅ Historique des Tâches Terminées
+## ✅ Historique Récent des Tâches Terminées (Sprint 6)
 
 | Date | ID | Intitulé & Description | Livrables / PR |
 | :--- | :--- | :--- | :--- |
-| **2026-10-26** | `TASK-ADMIN-01` | API de feature flags dynamiques et console admin connectée | `src/lib/feature-flags.ts`, `/api/admin/feature-flags`, `src/app/admin/page.tsx` |
-| **2026-10-26** | `TASK-AUTH-03` | Route de persistance du profil onboarding et chiffrement BYOK | `src/app/api/profile/onboarding/route.ts`, `src/app/onboarding/page.tsx` |
-| **2026-10-26** | `TASK-AUTH-02` | Endpoint et page de réinitialisation de mot de passe (token 1h, bcryptjs) | `src/app/api/auth/reset-password/route.ts`, `src/app/auth/reset/page.tsx` |
-| **2026-10-26** | `TASK-AUTH-01` | Handlers de vérification d'email et réexpédition avec cooldown | `src/app/api/auth/verify-email/route.ts`, `src/app/api/auth/resend-verification/route.ts`, `src/app/auth/verify/page.tsx` |
-| **2026-10-26** | `TASK-DATA-03` | Modules d'export CSV RFC 4180 et PDF structuré avec server action | `src/lib/export/csv.ts`, `src/lib/export/pdf.ts`, `src/app/actions/organizeV2.ts` |
-| **2026-10-26** | `TASK-DATA-02` | Système de webhooks asynchrones avec HMAC SHA-256 et backoff | `src/lib/webhooks.ts`, `src/app/actions/analyzeV2.ts` |
-| **2026-10-26** | `TASK-DATA-01` | Modèle Prisma `AnalysisResult` et actions CRUD d'historique MongoDB | `prisma/schema.prisma`, `src/app/actions/analyzeV2.ts` |
-| **2026-10-26** | `TASK-AI-03` | Persistance et polling temps réel de progression du workflow IA | `src/app/actions/workflow/orchestrator.ts` |
-| **2026-10-26** | `TASK-AI-02` | Couche de cache in-memory avec TTL et hash déterministe pour Fetch V2 | `src/lib/cache.ts`, `src/app/actions/fetchV2.ts` |
-| **2026-10-26** | `TASK-AI-01` | Modernisation de l'Agent Fetch V1 (Zod, zéro mock, retries) | `src/app/actions/fetch.ts` |
-| **2026-10-26** | `TASK-LINT-01` | Résolution complète des 11 erreurs ESLint React 19 (hooks & hydration) | 8 composants & hooks nettoyés |
-| **2026-10-25** | `TASK-SYS-01` | Création de `Agent.md` et `AGENTS.md` pour l'encadrement des agents IA | [Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md) |
-| **2026-01-23** | `TASK-SEC-01` | Refonte de la sécurité BYOK avec chiffrement AES-256-GCM et alertes | `src/lib/api-key-encryption.ts`, `docs/API_KEY_SECURITY.md` |
-| **2026-01-22** | `TASK-DEP-01` | Correction de la configuration de déploiement Vercel (suppression secrets syntax) | `vercel.json`, `DEPLOYMENT_FIX_SUMMARY.md` |
-| **2026-01-20** | `TASK-UI-TOAST` | Intégration des notifications Toast Sonner pour les actions clés API | `src/components/ui/sonner.tsx` |
+| **2026-10-26** | `TASK-BRAND-02` | Perfectionnement Cercles de Thème (Noir/Blanc) & Lisibilité Logo Offan | theme-selector.tsx, OffanBrand.tsx, ModernSidebar.tsx |
+| **2026-10-26** | `TASK-BRAND-01` | Identité de Marque 'Offan', Élimination Emojis OS & Refonte Sélecteurs | [Rapport Brand & UI](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_EMOJI_BRAND_2026-10-26.md), OffanBrand.tsx, theme-selector, ModernHeader |
+| **2026-10-26** | `TASK-THEME-01` | Audit & Restructuration du Moteur Multi-Thèmes (Next-Themes, HSL, Tailwind v4) | [Rapport Thèmes](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_THEMES_ENGINE_2026-10-26.md), layout.tsx, globals.css, theme-selector |
+| **2026-10-26** | `TASK-UX-01` | Audit & Refonte Responsive Mobile-First (WCAG 2.1 AA, 44px, Grilles, Insets) | [Rapport UI/UX](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_UIUX_RESPONSIVE_2026-10-26.md), Layouts, Recharts, globals.css |
+| **2026-10-26** | `TASK-REL-01` | Système Automatisé de Release & Versioning SemVer (v1.0.0 scellée) | `evals/version_manager.py`, `package.json`, `.github/workflows/ci.yml`, `rsi-feature.md` |
+| **2026-10-26** | `TASK-SEC-02` | Audit & Remédiation Fullstack de 10 vulnérabilités (Auth, RPC, IDOR, SSRF, CSP) | [Rapport Détaillé](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_SECURITE_FULLSTACK_2026-10-26.md), `middleware.ts`, `auth.ts`, `webhooks.ts`, etc. |
+| **2026-10-26** | `TASK-RSI-01` | Protocole RSI : juge déterministe, orchestrateur, méta-prompts et playbook évolutif | `.agents/rules/`, `.agents/prompts/`, `.agents/workflows/`, `evals/`, `Agent.md`, `AGENTS.md`, `package.json` |
 
 ---
 
-## 📜 Protocole de Mise à Jour pour les Agents IA
+## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-Tout agent intervenant sur le repository **DOIT SUIVRE CE RITUEL** :
-
-1. **Avant d'intervenir :**
-   - Consulter `docs/TASKS.md` pour identifier l'ID de la tâche et ses critères d'acceptation.
-   - Si la tâche n'existe pas, l'ajouter dans la section appropriée avec un ID formaté (`TASK-DOMAIN-XX`).
-2. **Pendant l'intervention :**
-   - Marquer la tâche avec `[-]` (En cours) si l'exécution implique plusieurs étapes documentées.
-3. **Après validation technique (`tsc --noEmit` & `npm run lint`) :**
-   - Cocher les critères d'acceptation et marquer `[x]`.
-   - Transférer la tâche dans le tableau **Historique des Tâches Terminées** en spécifiant la date et les fichiers livrés.
-   - Ne créer **AUCUN nouveau document de suivi séparé** : TOUT centraliser dans `docs/TASKS.md` !
-
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** afin d'éviter l'épuisement de contexte des agents.
+2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées et son historique sont transférés dans `docs/archive/tasks/TASKS_HISTORY_SX.md`.
+3. **Traçabilité des Audits :** Tout diagnostic ou audit découvrant plus de 3 sous-points DOIT produire un rapport complet dans `docs/archive/reports/` et détailler ses sous-identifiants (`TASK-DOM-XX.01`, etc.) dans la tâche mère.
+4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.

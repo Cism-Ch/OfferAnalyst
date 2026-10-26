@@ -42,27 +42,30 @@ export function ScoreChart({ offers }: ScoreChartProps) {
             <CardHeader>
                 <CardTitle>Score Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="h-50">
-                <ResponsiveContainer width="100%" height={200}>
+            <CardContent className="h-[220px] p-2 sm:p-6">
+                <ResponsiveContainer width="100%" height={180}>
                     <BarChart 
                         data={offers} 
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
                     >
                         <XAxis 
                             dataKey="title" 
-                            fontSize={12} 
+                            fontSize={11} 
                             tickLine={false} 
                             axisLine={false} 
+                            tickFormatter={(val: string) => (typeof val === 'string' && val.length > 10 ? `${val.slice(0, 8)}…` : val)}
                         />
                         <YAxis 
-                            fontSize={12} 
+                            fontSize={11} 
                             tickLine={false} 
                             axisLine={false} 
                         />
                         <Tooltip
                             contentStyle={{ 
+                                backgroundColor: 'hsl(var(--card))',
+                                color: 'hsl(var(--card-foreground))',
                                 borderRadius: '8px', 
-                                border: 'none', 
+                                border: '1px solid hsl(var(--border))', 
                                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
                             }}
                             cursor={{ fill: 'transparent' }}

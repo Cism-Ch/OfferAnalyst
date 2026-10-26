@@ -7,6 +7,8 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface SecurityAlertData {
     id: string;
@@ -21,11 +23,22 @@ export interface SecurityAlertData {
     apiKeyName?: string;
 }
 
+async function getAuthenticatedUserId(): Promise<string | null> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return session?.user?.id || null;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Get security alerts for a user
  */
 export async function getUserSecurityAlerts(
-    userId: string,
+    providedUserId: string,
     options?: {
         unreadOnly?: boolean;
         unresolvedOnly?: boolean;
@@ -33,6 +46,12 @@ export async function getUserSecurityAlerts(
     }
 ): Promise<SecurityAlertData[]> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return [];
+        }
+        const userId = sessionUserId;
+
         const whereClause: {
             userId: string;
             isRead?: boolean;
@@ -111,10 +130,16 @@ export async function getUserSecurityAlerts(
  * Mark alert as read
  */
 export async function markAlertAsRead(
-    userId: string,
+    providedUserId: string,
     alertId: string
 ): Promise<{ success: boolean; message: string }> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return { success: false, message: 'Non authentifié' };
+        }
+        const userId = sessionUserId;
+
         await prisma.securityAlert.updateMany({
             where: {
                 id: alertId,
@@ -142,10 +167,16 @@ export async function markAlertAsRead(
  * Resolve alert
  */
 export async function resolveAlert(
-    userId: string,
+    providedUserId: string,
     alertId: string
 ): Promise<{ success: boolean; message: string }> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return { success: false, message: 'Non authentifié' };
+        }
+        const userId = sessionUserId;
+
         await prisma.securityAlert.updateMany({
             where: {
                 id: alertId,
@@ -174,8 +205,14 @@ export async function resolveAlert(
 /**
  * Get unread alert count
  */
-export async function getUnreadAlertCount(userId: string): Promise<number> {
+export async function getUnreadAlertCount(providedUserId: string): Promise<number> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return 0;
+        }
+        const userId = sessionUserId;
+
         return await prisma.securityAlert.count({
             where: {
                 userId,
@@ -192,9 +229,15 @@ export async function getUnreadAlertCount(userId: string): Promise<number> {
  * Delete all resolved alerts
  */
 export async function deleteResolvedAlerts(
-    userId: string
+    providedUserId: string
 ): Promise<{ success: boolean; message: string; count: number }> {
     try {
+        const sessionUserId = await getAuthenticatedUserId();
+        if (!sessionUserId) {
+            return { success: false, message: 'Non authentifié', count: 0 };
+        }
+        const userId = sessionUserId;
+
         const result = await prisma.securityAlert.deleteMany({
             where: {
                 userId,

@@ -23,6 +23,58 @@ export interface WebhookDeliveryResult {
 }
 
 /**
+ * Anti-SSRF URL validator for webhooks.
+ * Blocks non-HTTP(S) protocols, private IP ranges, localhost (in production), and cloud metadata endpoints.
+ */
+export function isValidWebhookUrl(urlStr: string): { valid: boolean; reason?: string } {
+  try {
+    const url = new URL(urlStr);
+
+    // Require HTTP or HTTPS protocol
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return { valid: false, reason: 'Protocole non supporté (seuls http: et https: sont autorisés)' };
+    }
+
+    const hostname = url.hostname.toLowerCase();
+    const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+    // Loopback / localhost checks
+    if (
+      hostname === 'localhost' ||
+      hostname.endsWith('.localhost') ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname === '::1'
+    ) {
+      if (!isDevelopment) {
+        return { valid: false, reason: 'Les adresses de boucle locale (localhost) sont interdites en production' };
+      }
+    }
+
+    // Cloud metadata endpoints (AWS, GCP, Azure, DigitalOcean, etc.)
+    if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal' || hostname === 'instance-data') {
+      return { valid: false, reason: 'Accès interdit aux métadonnées d’instance cloud (Anti-SSRF)' };
+    }
+
+    // Check IPv4 private networks (RFC 1918 & RFC 3927 link-local)
+    const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const ipMatch = hostname.match(ipv4Regex);
+    if (ipMatch) {
+      const [, o1, o2] = ipMatch.map(Number);
+      if (o1 === 10) return { valid: false, reason: 'Adresses privées 10.0.0.0/8 interdites' };
+      if (o1 === 172 && o2 >= 16 && o2 <= 31) return { valid: false, reason: 'Adresses privées 172.16.0.0/12 interdites' };
+      if (o1 === 192 && o2 === 168) return { valid: false, reason: 'Adresses privées 192.168.0.0/16 interdites' };
+      if (o1 === 169 && o2 === 254) return { valid: false, reason: 'Adresses de lien local (169.254.0.0/16) interdites' };
+      if (o1 === 127 && !isDevelopment) return { valid: false, reason: 'Adresses de boucle locale (127.0.0.0/8) interdites' };
+    }
+
+    return { valid: true };
+  } catch {
+    return { valid: false, reason: 'URL malformée' };
+  }
+}
+
+/**
  * Computes an HMAC SHA-256 signature for the given webhook body.
  */
 export function generateWebhookSignature(body: string, secret: string): string {
@@ -37,6 +89,20 @@ export async function sendWebhook<T = unknown>(
   payload: WebhookPayload<T>,
   options: WebhookOptions = {}
 ): Promise<WebhookDeliveryResult> {
+  const urlCheck = isValidWebhookUrl(webhookUrl);
+  if (!urlCheck.valid) {
+    log.warn('Tentative d’envoi de webhook vers une URL non sécurisée (SSRF)', {
+      url: webhookUrl,
+      reason: urlCheck.reason
+    });
+    return {
+      success: false,
+      attempts: 0,
+      durationMs: 0,
+      error: `URL de webhook rejetée (Anti-SSRF) : ${urlCheck.reason}`
+    };
+  }
+
   const {
     secret = process.env.WEBHOOK_SECRET,
     maxRetries = 3,

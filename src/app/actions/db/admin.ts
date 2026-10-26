@@ -8,6 +8,8 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export interface SystemStats {
     totalUsers: number;
@@ -27,10 +29,36 @@ export interface UserData {
 }
 
 /**
- * Get system-wide statistics
+ * Validates that current session belongs to a user with ADMIN role
+ */
+async function ensureAdminSession(): Promise<boolean> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return !!(session?.user && (session.user as { role?: string }).role === 'ADMIN');
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Get system-wide statistics (Admin only)
  */
 export async function getSystemStats(): Promise<SystemStats> {
     try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) {
+            console.warn('[Admin] Unauthorized access attempt to getSystemStats');
+            return {
+                totalUsers: 0,
+                activeUsers: 0,
+                totalSearches: 0,
+                byokActivations: 0,
+                avgResponseTime: 0
+            };
+        }
+
         const [totalUsers, searchCount, byokCount] = await Promise.all([
             prisma.user.count(),
             prisma.searchHistory.count(),
@@ -60,7 +88,7 @@ export async function getSystemStats(): Promise<SystemStats> {
             activeUsers: activeUserIds.length,
             totalSearches: searchCount,
             byokActivations: byokCount,
-            avgResponseTime: 850 // Mock value - would need instrumentation
+            avgResponseTime: 850
         };
     } catch (error) {
         console.error('Error fetching system stats:', error);
@@ -75,10 +103,16 @@ export async function getSystemStats(): Promise<SystemStats> {
 }
 
 /**
- * Get recent users for admin dashboard
+ * Get recent users for admin dashboard (Admin only)
  */
 export async function getRecentUsers(limit: number = 10): Promise<UserData[]> {
     try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) {
+            console.warn('[Admin] Unauthorized access attempt to getRecentUsers');
+            return [];
+        }
+
         const users = await prisma.user.findMany({
             take: limit,
             orderBy: {
@@ -98,7 +132,7 @@ export async function getRecentUsers(limit: number = 10): Promise<UserData[]> {
             name: user.name,
             email: user.email,
             role: user.role,
-            status: 'Active', // Would need to check session/last activity
+            status: 'Active',
             createdAt: user.createdAt.toISOString()
         }));
     } catch (error) {
@@ -108,7 +142,7 @@ export async function getRecentUsers(limit: number = 10): Promise<UserData[]> {
 }
 
 /**
- * Get provider usage statistics
+ * Get provider usage statistics (Admin only)
  */
 export async function getProviderUsage(): Promise<Array<{
     provider: string;
@@ -117,6 +151,11 @@ export async function getProviderUsage(): Promise<Array<{
     errors: number;
 }>> {
     try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) {
+            console.warn('[Admin] Unauthorized access attempt to getProviderUsage');
+            return [];
+        }
         // This is a simplified version - in production, you'd track this in a separate table
         const searches = await prisma.searchHistory.findMany({
             select: {

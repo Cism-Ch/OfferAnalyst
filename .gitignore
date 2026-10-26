@@ -45,5 +45,11 @@ next-env.d.ts
 ./docs
 
 # agent files
-.agent
+.agents/*
+!.agents/rules/
+!.agents/prompts/
+!.agents/workflows/
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/db_schema_validator.py
 /src/generated/prisma

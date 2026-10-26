@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
+import { Loader2, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
-import { ThemeToggle } from "@/components/theme-toggle";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,44 +58,30 @@ export default function SavedOffersPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-6 font-sans text-neutral-900 dark:text-zinc-100">
-            <header className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold">Saved Offers</h1>
-                        <p className="text-muted-foreground">Your personal collection</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto space-y-6">
-
+        <SimpleLayout
+            title="Saved Offers"
+            description="Your personal collection of bookmarked offers"
+            maxWidth="6xl"
+        >
+            <div className="space-y-6">
                 {/* Actions */}
-                <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-lg border shadow-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-card text-card-foreground p-4 rounded-xl border shadow-xs">
                     <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-base px-3 py-1">
+                        <Badge variant="outline" className="text-sm px-3 py-1">
                             {savedOffers.length} {savedOffers.length === 1 ? 'Item' : 'Items'}
                         </Badge>
                         {selectedIds.size > 0 && (
-                            <Badge variant="secondary" className="text-base px-3 py-1">
+                            <Badge variant="secondary" className="text-sm px-3 py-1">
                                 {selectedIds.size} Selected
                             </Badge>
                         )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                             onClick={handleCompare}
                             disabled={selectedIds.size < 2}
                             variant="outline"
-                            className="gap-2"
+                            className="gap-2 w-full sm:w-auto"
                         >
                             <GitCompare className="h-4 w-4" />
                             Compare ({selectedIds.size}/3)
@@ -103,7 +89,7 @@ export default function SavedOffersPage() {
                         <Button
                             onClick={handleOrganize}
                             disabled={savedOffers.length === 0 || organizing}
-                            className="gap-2"
+                            className="gap-2 w-full sm:w-auto"
                         >
                             {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
                             Smart Organize
@@ -187,7 +173,7 @@ export default function SavedOffersPage() {
                                         </h3>
                                         <div className="space-y-3">
                                             {cat.offers.map(offer => (
-                                                <Card key={offer.id} className="bg-slate-50 dark:bg-zinc-900 border-none shadow-sm">
+                                                <Card key={offer.id} className="bg-card text-card-foreground border shadow-sm">
                                                     <CardHeader className="p-4 pb-2">
                                                         <CardTitle className="text-sm">{offer.title}</CardTitle>
                                                     </CardHeader>
@@ -225,7 +211,7 @@ export default function SavedOffersPage() {
                         </TabsContent>
                     </Tabs>
                 )}
-            </main>
-        </div>
+            </div>
+        </SimpleLayout>
     );
 }

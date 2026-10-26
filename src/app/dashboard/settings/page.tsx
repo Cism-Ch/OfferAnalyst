@@ -26,7 +26,15 @@ import {
     Shield,
     Trash2,
     CheckCircle2,
-    AlertTriangle
+    AlertTriangle,
+    User,
+    Bot,
+    Sparkles,
+    Cpu,
+    Zap,
+    Terminal,
+    Flame,
+    Brain
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
@@ -36,8 +44,17 @@ export default function SettingsPage() {
     const [pushNotifications, setPushNotifications] = useState(false);
     const [weeklyDigest, setWeeklyDigest] = useState(true);
 
-    const avatarPresets = ['👤', '🧑', '👨', '👩', '🦸', '🧙', '🤖', '👾'];
-    const [selectedAvatar, setSelectedAvatar] = useState('👤');
+    const avatarPresets = [
+        { id: 'user', icon: User, label: 'User' },
+        { id: 'bot', icon: Bot, label: 'AI Agent' },
+        { id: 'sparkles', icon: Sparkles, label: 'Pro' },
+        { id: 'brain', icon: Brain, label: 'Analyst' },
+        { id: 'shield', icon: Shield, label: 'Guardian' },
+        { id: 'cpu', icon: Cpu, label: 'Tech' },
+        { id: 'terminal', icon: Terminal, label: 'Dev' },
+        { id: 'flame', icon: Flame, label: 'Flame' }
+    ];
+    const [selectedAvatar, setSelectedAvatar] = useState('user');
 
     const connectedProviders = [
         { name: 'Google', connected: true, email: 'user@gmail.com' },
@@ -68,20 +85,27 @@ export default function SettingsPage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label>Avatar</Label>
-                                    <div className="flex gap-2 mt-2">
-                                        {avatarPresets.map((avatar) => (
-                                            <button
-                                                key={avatar}
-                                                onClick={() => setSelectedAvatar(avatar)}
-                                                className={`w-12 h-12 text-2xl rounded-full border-2 transition-all ${
-                                                    selectedAvatar === avatar
-                                                        ? 'border-primary scale-110'
-                                                        : 'border-transparent hover:border-muted'
-                                                }`}
-                                            >
-                                                {avatar}
-                                            </button>
-                                        ))}
+                                    <div className="flex flex-wrap gap-2.5 mt-2">
+                                        {avatarPresets.map((preset) => {
+                                            const Icon = preset.icon;
+                                            const isSelected = selectedAvatar === preset.id;
+                                            return (
+                                                <button
+                                                    key={preset.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedAvatar(preset.id)}
+                                                    title={preset.label}
+                                                    aria-label={`Select avatar ${preset.label}`}
+                                                    className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                        isSelected
+                                                            ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
+                                                            : 'border-border/60 bg-muted/40 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                                                    }`}
+                                                >
+                                                    <Icon className="w-5 h-5" />
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-2">
                                         Choose from preset avatars (no file upload required)

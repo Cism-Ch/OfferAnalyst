@@ -105,7 +105,10 @@ export default function SupportPage() {
                         <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
                             <CardContent className="pt-8 text-center">
                                 <Coffee className="w-16 h-16 mx-auto mb-4 text-primary" />
-                                <h2 className="text-2xl font-bold mb-2">Buy Me a Coffee ☕</h2>
+                                <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                                    Buy Me a Coffee
+                                    <Coffee className="w-6 h-6 text-primary inline" />
+                                </h2>
                                 <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                                     If you find OfferAnalyst helpful, consider supporting its development with a voluntary donation.
                                     Every coffee helps keep the servers running!

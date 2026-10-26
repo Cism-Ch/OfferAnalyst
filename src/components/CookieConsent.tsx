@@ -102,10 +102,10 @@ export function CookieConsent() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md"
+        className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 pb-safe sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md max-h-[90vh] flex flex-col"
       >
-        <PremiumCard className="shadow-2xl" animation="none">
-          <div className="p-6">
+        <PremiumCard className="shadow-2xl max-h-[85vh] flex flex-col overflow-hidden" animation="none">
+          <div className="p-4 sm:p-6 overflow-y-auto momentum-scroll">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export function CookieConsent() {
               </div>
               <button
                 onClick={() => setIsVisible(false)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Close cookie banner"
               >
                 <X className="h-5 w-5" />
@@ -131,16 +131,16 @@ export function CookieConsent() {
 
                 {/* Actions */}
                 <div className="mt-4 flex flex-col gap-2">
-                  <Button onClick={acceptAll} className="w-full">
+                  <Button onClick={acceptAll} className="w-full min-h-[44px]">
                     Accept All
                   </Button>
-                  <Button onClick={acceptNecessary} variant="outline" className="w-full">
+                  <Button onClick={acceptNecessary} variant="outline" className="w-full min-h-[44px]">
                     Necessary Only
                   </Button>
                   <Button
                     onClick={() => setShowSettings(true)}
                     variant="ghost"
-                    className="w-full"
+                    className="w-full min-h-[44px]"
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Customize
@@ -257,13 +257,13 @@ export function CookieConsent() {
 
                 {/* Actions */}
                 <div className="mt-4 flex gap-2">
-                  <Button onClick={saveCustom} className="flex-1">
+                  <Button onClick={saveCustom} className="flex-1 min-h-[44px]">
                     Save Preferences
                   </Button>
                   <Button
                     onClick={() => setShowSettings(false)}
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                   >
                     Back
                   </Button>

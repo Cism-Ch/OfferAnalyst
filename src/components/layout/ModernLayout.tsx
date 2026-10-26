@@ -65,7 +65,7 @@ export function ModernLayout({
                 {/* Page Content */}
                 <main className="flex-1 overflow-auto">
                     <div className={cn(
-                        'mx-auto w-full px-6 py-6',
+                        'mx-auto w-full px-4 sm:px-6 py-4 sm:py-6',
                         maxWidthClasses[maxWidth]
                     )}>
                         {children}

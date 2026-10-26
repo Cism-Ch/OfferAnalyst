@@ -125,16 +125,16 @@ export default function SearchContextPage() {
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center justify-between pt-4 border-t">
-                            <p className="text-sm text-muted-foreground">
+                        {/* Action Buttons - Responsive Mobile-First */}
+                        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                                 Ready to configure your data source?
                             </p>
-                            <div className="flex gap-3">
-                                <Button variant="outline" asChild>
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
                                     <Link href="/">Cancel</Link>
                                 </Button>
-                                <Button asChild>
+                                <Button className="w-full sm:w-auto min-h-[44px]" asChild>
                                     <Link href="/data-source" className="gap-2">
                                         Next: Data Source
                                         <ArrowRight className="h-4 w-4" />

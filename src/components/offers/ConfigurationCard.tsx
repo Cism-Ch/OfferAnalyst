@@ -104,8 +104,8 @@ export function ConfigurationCard({
 
             {/* Card Content - Form Fields */}
             <CardContent className="space-y-4">
-                {/* Domain and Limit Row */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Domain and Limit Row - Mobile-First Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Domain Input */}
                     <div className="space-y-2">
                         <Label>Domain</Label>
@@ -155,10 +155,10 @@ export function ConfigurationCard({
                     />
                 </div>
 
-{/* Auto-Fetch Toggle */}
-                <div className="flex items-center justify-between rounded-lg border p-3 bg-slate-50 dark:bg-zinc-900">
+                {/* Auto-Fetch Toggle */}
+                <div className="flex items-center justify-between rounded-xl border p-3.5 bg-muted/40">
                     <div className="space-y-0.5">
-                        <Label className="text-base">Auto-Fetch Offers</Label>
+                        <Label className="text-sm sm:text-base font-semibold">Auto-Fetch Offers</Label>
                         <p className="text-xs text-muted-foreground">
                             AI will search the web for live offers
                         </p>
@@ -171,7 +171,7 @@ export function ConfigurationCard({
                     </ClientOnlySwitch>
                 </div>
 
-{/* Offers JSON Input */}
+                {/* Offers JSON Input */}
                 <div className="space-y-2">
                     <Label>
                         Offers (JSON) {autoFetch && (
@@ -191,11 +191,11 @@ export function ConfigurationCard({
             </CardContent>
 
             {/* Card Footer - Action Button */}
-            <CardFooter className="justify-end bg-slate-50/50 dark:bg-zinc-900/50 p-4 rounded-b-lg">
+            <CardFooter className="justify-end bg-muted/20 border-t p-4 rounded-b-xl">
                 <Button 
                     onClick={onAnalyze} 
                     disabled={loading} 
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto min-h-[44px]"
                 >
                     {loading ? (
                         <>

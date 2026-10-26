@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { ClientOnlySwitch } from '@/components/ClientOnlySwitch';
-import { Database, Bot, Loader2, ArrowRight, Info, ArrowLeft } from 'lucide-react';
+import { Database, Bot, Loader2, ArrowRight, Info, ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
@@ -139,22 +139,22 @@ export default function DataSourcePage() {
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center justify-between pt-4 border-t">
-                            <Button variant="outline" asChild>
+                        {/* Action Buttons - Responsive Mobile-First */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+                            <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
                                 <Link href="/search-context" className="gap-2">
                                     <ArrowLeft className="h-4 w-4" />
                                     Back to Context
                                 </Link>
                             </Button>
-                            <div className="flex gap-3">
-                                <Button variant="outline" asChild>
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
                                     <Link href="/">Cancel</Link>
                                 </Button>
                                 <Button 
                                     onClick={onAnalyze} 
                                     disabled={dashboardState.loading || (!dashboardState.autoFetch && !dashboardState.offersInput)}
-                                    className="gap-2"
+                                    className="gap-2 w-full sm:w-auto min-h-[44px]"
                                 >
                                     {dashboardState.loading ? (
                                         <>
@@ -185,16 +185,16 @@ export default function DataSourcePage() {
                         <CardContent className="space-y-2 text-sm">
                             <p className="text-muted-foreground">Perfect for:</p>
                             <div className="space-y-1">
-                                <div className="flex gap-2">
-                                    <span className="text-blue-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-blue-500 shrink-0" />
                                     <p>Real-time market data</p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className="text-blue-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-blue-500 shrink-0" />
                                     <p>Discovering new offers</p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className="text-blue-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-blue-500 shrink-0" />
                                     <p>Automated data collection</p>
                                 </div>
                             </div>
@@ -211,16 +211,16 @@ export default function DataSourcePage() {
                         <CardContent className="space-y-2 text-sm">
                             <p className="text-muted-foreground">Perfect for:</p>
                             <div className="space-y-1">
-                                <div className="flex gap-2">
-                                    <span className="text-purple-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-purple-500 shrink-0" />
                                     <p>Pre-collected data</p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className="text-purple-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-purple-500 shrink-0" />
                                     <p>Specific offer comparison</p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className="text-purple-500">✓</span>
+                                <div className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-purple-500 shrink-0" />
                                     <p>Custom data sources</p>
                                 </div>
                             </div>

@@ -82,16 +82,16 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                             {isSaved ? "Sauvegardé" : "Sauvegarder"}
                         </Button>
                         
-                        {/* Save Button - Mobile */}
+                        {/* Save Button - Mobile (Accessible Touch Target 44x44px) */}
                         <Button
                             variant="outline"
                             size="icon"
                             onClick={() => onSave(offer)}
                             disabled={isSaved}
                             aria-label={isSaved ? "Offre déjà sauvegardée" : "Sauvegarder cette offre"}
-                            className="sm:hidden h-8 w-8"
+                            className="sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl"
                         >
-                            {isSaved ? <CheckCircle2 className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
+                            {isSaved ? <CheckCircle2 className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
                         </Button>
                     </div>
                 </div>
@@ -115,9 +115,9 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
 
                 {/* Web Insights */}
                 {offer.webInsights && offer.webInsights.length > 0 && (
-                    <div className="bg-slate-50 dark:bg-zinc-800 p-2 rounded text-xs text-muted-foreground mt-2 border">
+                    <div className="bg-muted/40 p-2.5 rounded-lg text-xs text-muted-foreground mt-2 border border-border/60">
                         <span className="font-semibold flex items-center gap-1 text-primary mb-1">
-                            <Search size={10} /> Web Insight
+                            <Search size={12} /> Web Insight
                         </span>
                         {offer.webInsights[0]}
                     </div>
