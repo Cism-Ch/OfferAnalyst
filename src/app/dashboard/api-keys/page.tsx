@@ -31,7 +31,11 @@ import {
     CheckCircle2,
     AlertCircle,
     Clock,
-    ShieldAlert
+    ShieldAlert,
+    Activity,
+    RefreshCw,
+    Zap,
+    DollarSign
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
@@ -39,7 +43,7 @@ import { useSession } from '@/lib/auth-client';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { AddAPIKeyDialog } from '@/components/api-keys/AddAPIKeyDialog';
 import { SecurityMigrationBanner, UnauthenticatedSecurityWarning } from '@/components/api-keys/SecurityMigrationBanner';
-import { getUserAPIKeys, addAPIKey, deleteAPIKey, getAPIKeyStats } from '@/app/actions/db/api-keys';
+import { getUserAPIKeys, addAPIKey, deleteAPIKey, getAPIKeyStats, testAPIKeyHealth } from '@/app/actions/db/api-keys';
 import type { APIKeyData } from '@/app/actions/db/api-keys';
 
 interface DisplayAPIKey {
@@ -54,6 +58,62 @@ interface DisplayAPIKey {
     isTemporary?: boolean;
     expiresAt?: string;
     isExpired?: boolean;
+    healthStatus?: string;
+    lastChecked?: string | null;
+    lastPingLatency?: number | null;
+    lastError?: string | null;
+    creditsRemaining?: number | null;
+    creditsLimit?: number | null;
+    totalTokensUsed?: number;
+    totalCostUsd?: number;
+}
+
+function HealthBadge({ status, latency, error }: { status?: string; latency?: number | null; error?: string | null }) {
+    const s = (status || 'UNCHECKED').toUpperCase();
+    if (s === 'OPERATIONAL') {
+        return (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/25" title={latency ? `Latence: ${latency}ms` : 'Opérationnel'}>
+                <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Opérationnel</span>
+                {latency !== null && latency !== undefined && (
+                    <span className="text-[10px] font-mono opacity-80">({latency}ms)</span>
+                )}
+            </div>
+        );
+    }
+    if (s === 'QUOTA_EXCEEDED') {
+        return (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/25" title={error || 'Crédits ou quota dépassé'}>
+                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                <span>Quota atteint</span>
+            </div>
+        );
+    }
+    if (s === 'RATE_LIMITED' || s === 'DEGRADED') {
+        return (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/25" title={error || 'Dégradé / Ralenti'}>
+                <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
+                <span>Dégradé</span>
+            </div>
+        );
+    }
+    if (s === 'INVALID') {
+        return (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-500 border border-rose-500/25" title={error || 'Clé API révoquée ou invalide'}>
+                <span className="h-2 w-2 rounded-full bg-rose-500"></span>
+                <span>Invalide</span>
+            </div>
+        );
+    }
+    return (
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/40"></span>
+            <span>Non testé</span>
+        </div>
+    );
 }
 
 export default function APIKeysPage() {
@@ -69,14 +129,37 @@ export default function APIKeysPage() {
     const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const showToast = useCallback((message: string, type: 'success' | 'error') => {
         setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
+        setTimeout(() => setToast(null), 3500);
     }, []);
 
     const isAuthenticated = !!session?.user && !isPending;
+
+    const mapDbKeyToDisplay = useCallback((k: APIKeyData): DisplayAPIKey => ({
+        id: k.id,
+        name: k.name,
+        provider: k.provider,
+        key: k.keyPreview,
+        createdAt: k.createdAt,
+        lastUsed: k.lastUsed,
+        usageCount: k.usageCount,
+        rateLimit: k.rateLimit,
+        expiresAt: k.expiresAt || undefined,
+        isExpired: k.isExpired,
+        isTemporary: false,
+        healthStatus: k.healthStatus,
+        lastChecked: k.lastChecked,
+        lastPingLatency: k.lastPingLatency,
+        lastError: k.lastError,
+        creditsRemaining: k.creditsRemaining,
+        creditsLimit: k.creditsLimit,
+        totalTokensUsed: k.totalTokensUsed,
+        totalCostUsd: k.totalCostUsd
+    }), []);
 
     // Load keys based on authentication status
     useEffect(() => {
@@ -90,21 +173,7 @@ export default function APIKeysPage() {
                         getAPIKeyStats(session.user.id)
                     ]);
                     
-                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
-                        id: k.id,
-                        name: k.name,
-                        provider: k.provider,
-                        key: k.keyPreview,
-                        createdAt: k.createdAt,
-                        lastUsed: k.lastUsed,
-                        usageCount: k.usageCount,
-                        rateLimit: k.rateLimit,
-                        expiresAt: k.expiresAt || undefined,
-                        isExpired: k.isExpired,
-                        isTemporary: false
-                    }));
-                    
-                    setDisplayKeys(keys);
+                    setDisplayKeys(dbKeys.map(mapDbKeyToDisplay));
                     setStats(dbStats);
                 } else if (temporaryKeys.isLoaded) {
                     // Load temporary keys from localStorage
@@ -117,7 +186,8 @@ export default function APIKeysPage() {
                         lastUsed: null,
                         usageCount: 0,
                         isTemporary: true,
-                        expiresAt: k.expiresAt
+                        expiresAt: k.expiresAt,
+                        healthStatus: 'UNCHECKED'
                     }));
                     
                     setDisplayKeys(keys);
@@ -138,7 +208,7 @@ export default function APIKeysPage() {
         if (!isPending) {
             loadKeys();
         }
-    }, [isAuthenticated, session?.user?.id, temporaryKeys.isLoaded, temporaryKeys.keys, isPending, showToast]);
+    }, [isAuthenticated, session?.user?.id, temporaryKeys.isLoaded, temporaryKeys.keys, isPending, showToast, mapDbKeyToDisplay]);
 
     const maskKey = (key: string) => {
         if (key.length <= 8) return '••••••••';
@@ -162,34 +232,47 @@ export default function APIKeysPage() {
         }
     };
 
+    const handleTestKey = async (keyId: string) => {
+        setTestingKeyId(keyId);
+        try {
+            const res = await testAPIKeyHealth(keyId);
+            if (res.success && res.data) {
+                const check = res.data;
+                const creditInfo = check.creditsRemaining !== null && check.creditsRemaining !== undefined 
+                    ? ` • Solde: $${check.creditsRemaining.toFixed(2)}` 
+                    : '';
+                showToast(
+                    `Diagnostic OpenRouter : ${check.status} (${check.latencyMs}ms)${creditInfo}`,
+                    check.isValid ? 'success' : 'error'
+                );
+                if (session?.user?.id) {
+                    const dbKeys = await getUserAPIKeys(session.user.id);
+                    setDisplayKeys(dbKeys.map(mapDbKeyToDisplay));
+                }
+            } else {
+                showToast(res.error || 'Échec du diagnostic de la clé.', 'error');
+            }
+        } catch {
+            showToast('Erreur inattendue pendant le diagnostic.', 'error');
+        } finally {
+            setTestingKeyId(null);
+        }
+    };
+
     const handleAddKey = async (name: string, provider: string, key: string, expiresAt?: Date | null, rateLimit?: number | null) => {
         try {
             if (isAuthenticated && session.user?.id) {
                 // Add to database
                 const result = await addAPIKey(session.user.id, name, provider, key, expiresAt, rateLimit);
                 if (result.success) {
-                    showToast('API key added successfully', 'success');
+                    showToast('API key added and verified successfully', 'success');
                     // Reload keys
                     const [dbKeys, dbStats] = await Promise.all([
                         getUserAPIKeys(session.user.id),
                         getAPIKeyStats(session.user.id)
                     ]);
                     
-                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
-                        id: k.id,
-                        name: k.name,
-                        provider: k.provider,
-                        key: k.keyPreview,
-                        createdAt: k.createdAt,
-                        lastUsed: k.lastUsed,
-                        usageCount: k.usageCount,
-                        rateLimit: k.rateLimit,
-                        expiresAt: k.expiresAt || undefined,
-                        isExpired: k.isExpired,
-                        isTemporary: false
-                    }));
-                    
-                    setDisplayKeys(keys);
+                    setDisplayKeys(dbKeys.map(mapDbKeyToDisplay));
                     setStats(dbStats);
                 } else {
                     throw new Error(result.message);
@@ -224,18 +307,7 @@ export default function APIKeysPage() {
                         getAPIKeyStats(session.user.id)
                     ]);
                     
-                    const keys: DisplayAPIKey[] = dbKeys.map((k: APIKeyData) => ({
-                        id: k.id,
-                        name: k.name,
-                        provider: k.provider,
-                        key: k.keyPreview,
-                        createdAt: k.createdAt,
-                        lastUsed: k.lastUsed,
-                        usageCount: k.usageCount,
-                        isTemporary: false
-                    }));
-                    
-                    setDisplayKeys(keys);
+                    setDisplayKeys(dbKeys.map(mapDbKeyToDisplay));
                     setStats(dbStats);
                 } else {
                     throw new Error(result.message);
@@ -441,12 +513,14 @@ export default function APIKeysPage() {
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <Key className="w-5 h-5 text-primary" />
                                                         <div>
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex flex-wrap items-center gap-2">
                                                                 <h3 className="font-semibold">{apiKey.name}</h3>
-                                                                {apiKey.isTemporary && (
+                                                                {apiKey.isTemporary ? (
                                                                     <Badge variant="outline" className="text-yellow-500 border-yellow-500">
                                                                         Temporary
                                                                     </Badge>
+                                                                ) : (
+                                                                    <HealthBadge status={apiKey.healthStatus} latency={apiKey.lastPingLatency} error={apiKey.lastError} />
                                                                 )}
                                                             </div>
                                                             <Badge variant="outline" className="mt-1">
@@ -496,13 +570,31 @@ export default function APIKeysPage() {
                                                             </div>
                                                             {apiKey.lastUsed && (
                                                                 <div className="flex items-center gap-1">
-                                                                    <CheckCircle2 className="w-3 h-3" />
-                                                                    Last used {new Date(apiKey.lastUsed).toLocaleDateString()}
+                                                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                                                    Dernier appel {new Date(apiKey.lastUsed).toLocaleDateString()}
                                                                 </div>
                                                             )}
                                                             {!apiKey.isTemporary && (
                                                                 <div>
-                                                                    {apiKey.usageCount} requests
+                                                                    {apiKey.usageCount} requêtes
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && (
+                                                                <div className="flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                                                                    <Zap className="w-3 h-3 text-emerald-500" />
+                                                                    {(apiKey.totalTokensUsed || 0).toLocaleString()} tokens
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && (
+                                                                <div className="flex items-center gap-1 font-mono text-sky-600 dark:text-sky-400 font-medium">
+                                                                    <DollarSign className="w-3 h-3 text-sky-500" />
+                                                                    ${(apiKey.totalCostUsd || 0).toFixed(4)} USD
+                                                                </div>
+                                                            )}
+                                                            {!apiKey.isTemporary && apiKey.creditsLimit !== null && apiKey.creditsLimit !== undefined && (
+                                                                <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-medium">
+                                                                    <Activity className="w-3 h-3" />
+                                                                    Solde: ${apiKey.creditsRemaining !== null && apiKey.creditsRemaining !== undefined ? apiKey.creditsRemaining.toFixed(2) : '--'} / ${apiKey.creditsLimit.toFixed(2)}
                                                                 </div>
                                                             )}
                                                             {!apiKey.isTemporary && apiKey.rateLimit && (
@@ -533,14 +625,30 @@ export default function APIKeysPage() {
                                                     </div>
                                                 </div>
 
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteKey(apiKey.id, apiKey.isTemporary)}
-                                                    className="text-destructive hover:text-destructive"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                <div className="flex items-center gap-1.5 ml-2">
+                                                    {!apiKey.isTemporary && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleTestKey(apiKey.id)}
+                                                            disabled={testingKeyId === apiKey.id}
+                                                            className="h-8 gap-1.5 text-xs"
+                                                            title="Tester le statut et le solde OpenRouter en direct"
+                                                        >
+                                                            <RefreshCw className={`w-3.5 h-3.5 ${testingKeyId === apiKey.id ? 'animate-spin text-primary' : ''}`} />
+                                                            <span className="hidden sm:inline">Diagnostic</span>
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteKey(apiKey.id, apiKey.isTemporary)}
+                                                        className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                                                        aria-label="Supprimer la clé"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </motion.div>
                                     ))}

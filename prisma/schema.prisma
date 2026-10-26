@@ -128,11 +128,19 @@ model APIKey {
   lastUsed     DateTime?
   usageCount   Int       @default(0)
   rateLimit    Int?      // Optional: max requests per hour (null = unlimited)
-  isActive     Boolean   @default(true)
-  isPrimary    Boolean   @default(false) // Mark as primary/default key for provider
-  expiresAt    DateTime? // Optional: expiration date for the key
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  isActive         Boolean   @default(true)
+  isPrimary        Boolean   @default(false) // Mark as primary/default key for provider
+  expiresAt        DateTime? // Optional: expiration date for the key
+  healthStatus     String    @default("UNKNOWN") // OPERATIONAL, DEGRADED, ERROR, RATE_LIMITED, UNKNOWN
+  lastChecked      DateTime?
+  lastPingLatency  Int?      // Response time in ms during health check
+  lastError        String?
+  creditsRemaining Float?    // Real-time balance from provider API in USD ($)
+  creditsLimit     Float?    // Configured hard/soft limit in USD ($)
+  totalTokensUsed  Int       @default(0)
+  totalCostUsd     Float     @default(0.0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -281,14 +289,18 @@ model APIKeyUsageLog {
   apiKeyId      String   @db.ObjectId
   provider      String   // openrouter, openai, etc.
   action        String   // fetch, analyze, organize
-  model         String?  // AI model used
-  tokensUsed    Int?     // Tokens consumed
-  success       Boolean  @default(true)
-  errorMessage  String?  @db.String
-  responseTime  Int?     // Response time in ms
-  ipAddress     String?
-  userAgent     String?  @db.String
-  timestamp     DateTime @default(now())
+  model            String?  // AI model used
+  tokensUsed       Int?     // Total tokens consumed
+  promptTokens     Int?     // Input prompt tokens
+  completionTokens Int?     // Output completion tokens
+  costUsd          Float?   // Estimated cost in USD ($)
+  statusCode       Int?     // HTTP Status Code (200, 429, 401, 503)
+  success          Boolean  @default(true)
+  errorMessage     String?  @db.String
+  responseTime     Int?     // Response time in ms
+  ipAddress        String?
+  userAgent        String?  @db.String
+  timestamp        DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

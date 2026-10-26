@@ -20,6 +20,7 @@ export interface APIKeyResult {
     source: 'byok' | 'temp' | 'env';
     provider: string;
     keyId?: string;
+    userId?: string;
 }
 
 /**
@@ -100,7 +101,8 @@ export async function getAPIKey(
                     key: decryptedKey,
                     source: 'byok',
                     provider,
-                    keyId: keyRecord.id
+                    keyId: keyRecord.id,
+                    userId: session.user.id
                 };
             }
 
@@ -181,3 +183,80 @@ export async function trackBYOKUsage(keyId: string): Promise<void> {
         // Don't throw - tracking failures shouldn't break the main operation
     }
 }
+
+/**
+ * Unified FinOps telemetry and health tracking recorder for AI actions.
+ * Logs tokens, latency, cost and updates live health status of the API key.
+ */
+export async function recordAITelemetry(params: {
+    apiKeyResult?: APIKeyResult | null;
+    model: string;
+    action: string;
+    promptTokens?: number;
+    completionTokens?: number;
+    tokensUsed?: number;
+    responseTimeMs?: number;
+    success?: boolean;
+    errorMessage?: string;
+    statusCode?: number;
+}): Promise<void> {
+    try {
+        const { logAPIKeyUsage } = await import('@/app/actions/db/api-key-analytics');
+        
+        let userId = params.apiKeyResult?.userId;
+        if (!userId) {
+            try {
+                const session = await auth.api.getSession({ headers: await headers() });
+                userId = session?.user?.id || 'system';
+            } catch {
+                userId = 'system';
+            }
+        }
+
+        const apiKeyId = params.apiKeyResult?.keyId || 'system';
+        const provider = params.apiKeyResult?.provider || 'openrouter';
+
+        await logAPIKeyUsage(userId, apiKeyId, provider, params.action, {
+            model: params.model,
+            promptTokens: params.promptTokens,
+            completionTokens: params.completionTokens,
+            tokensUsed: params.tokensUsed,
+            responseTime: params.responseTimeMs,
+            success: params.success ?? true,
+            errorMessage: params.errorMessage,
+            statusCode: params.statusCode
+        });
+
+        // If key is BYOK and had an error, update health state
+        if (apiKeyId && apiKeyId.length === 24) {
+            if (params.success === false) {
+                const isQuota = params.statusCode === 402 || params.errorMessage?.toLowerCase().includes('quota');
+                const isAuth = params.statusCode === 401 || params.errorMessage?.toLowerCase().includes('auth') || params.errorMessage?.toLowerCase().includes('invalid');
+                const newStatus = isQuota ? 'QUOTA_EXCEEDED' : isAuth ? 'INVALID' : 'DEGRADED';
+
+                await prisma.aPIKey.update({
+                    where: { id: apiKeyId },
+                    data: {
+                        healthStatus: newStatus,
+                        lastError: params.errorMessage?.slice(0, 200) || 'Erreur lors de l\'exécution IA',
+                        lastChecked: new Date()
+                    }
+                }).catch(() => {});
+            } else {
+                // If it succeeded, mark operational
+                await prisma.aPIKey.update({
+                    where: { id: apiKeyId },
+                    data: {
+                        healthStatus: 'OPERATIONAL',
+                        lastChecked: new Date(),
+                        lastPingLatency: params.responseTimeMs ?? null,
+                        lastError: null
+                    }
+                }).catch(() => {});
+            }
+        }
+    } catch (telemetryErr) {
+        console.error('[recordAITelemetry] Failed to record telemetry:', telemetryErr);
+    }
+}
+

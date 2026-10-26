@@ -29,7 +29,7 @@ export async function fetchOffersAction(
     let userId: string | undefined;
     
     // Try to get API key with BYOK support
-    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
     const { logAPIKeyUsage, checkForSuspiciousActivity } = await import('./db/api-key-analytics');
     const { auth } = await import('@/lib/auth');
     const { headers } = await import('next/headers');
@@ -95,6 +95,8 @@ export async function fetchOffersAction(
     CONTEXT: ${context}
   `;
 
+    let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
+
     const operation = async () => {
         const response = await openrouter.chat.send({
             model: modelName,
@@ -104,6 +106,14 @@ export async function fetchOffersAction(
             ],
             responseFormat: { type: "json_object" }
         });
+
+        if (response?.usage) {
+            capturedUsage = {
+                prompt_tokens: response.usage.promptTokens,
+                completion_tokens: response.usage.completionTokens,
+                total_tokens: response.usage.totalTokens
+            };
+        }
 
         const content = response.choices[0]?.message?.content;
         if (!content) {
@@ -146,16 +156,21 @@ export async function fetchOffersAction(
             );
         }
         
-        // Log usage for analytics
+        const responseTime = Date.now() - startTime;
+        // Log telemetry and FinOps accounting
+        await recordAITelemetry({
+            apiKeyResult,
+            model: modelName,
+            action: 'fetch_offers',
+            promptTokens: capturedUsage?.prompt_tokens,
+            completionTokens: capturedUsage?.completion_tokens,
+            tokensUsed: capturedUsage?.total_tokens,
+            responseTimeMs: responseTime,
+            success: true
+        }).catch(err => console.error('Failed to record AI telemetry:', err));
+
+        // Check for suspicious activity
         if (userId && apiKeyResult.keyId) {
-            const responseTime = Date.now() - startTime;
-            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
-                model: modelName,
-                success: true,
-                responseTime
-            }).catch(err => console.error('Failed to log usage:', err));
-            
-            // Check for suspicious activity
             await checkForSuspiciousActivity(userId, apiKeyResult.keyId).catch(err =>
                 console.error('Failed to check suspicious activity:', err)
             );
@@ -165,22 +180,22 @@ export async function fetchOffersAction(
             success: true,
             data: offers,
             meta: {
-                model: modelName
+                model: modelName,
+                latencyMs: responseTime
             }
         };
     } catch (error) {
         console.error('Fetch offers failed', error);
+        const responseTime = Date.now() - startTime;
         
-        // Log failed request
-        if (userId && apiKeyResult.keyId) {
-            const responseTime = Date.now() - startTime;
-            await logAPIKeyUsage(userId, apiKeyResult.keyId, 'openrouter', 'fetch', {
-                model: modelName,
-                success: false,
-                errorMessage: error instanceof Error ? error.message : 'Unknown error',
-                responseTime
-            }).catch(err => console.error('Failed to log usage:', err));
-        }
+        await recordAITelemetry({
+            apiKeyResult,
+            model: modelName,
+            action: 'fetch_offers',
+            responseTimeMs: responseTime,
+            success: false,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error'
+        }).catch(() => {});
         
         return {
             success: false,

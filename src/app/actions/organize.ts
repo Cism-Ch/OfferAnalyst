@@ -38,7 +38,7 @@ export async function organizeOffersAction(
     clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<OrganizedOffers> {
     // Try to get API key with BYOK support
-    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
     const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
     
     if (!apiKeyResult) {
@@ -98,6 +98,9 @@ export async function organizeOffersAction(
     }
     `;
 
+    const startedAt = Date.now();
+    let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
+
     const operation = async () => {
         const response = await openrouter.chat.send({
             model: MODEL_NAME,
@@ -107,6 +110,14 @@ export async function organizeOffersAction(
             ],
             responseFormat: { type: "json_object" }
         });
+
+        if (response?.usage) {
+            capturedUsage = {
+                prompt_tokens: response.usage.promptTokens,
+                completion_tokens: response.usage.completionTokens,
+                total_tokens: response.usage.totalTokens
+            };
+        }
 
         const content = response.choices[0]?.message?.content;
         if (!content) {
@@ -143,6 +154,20 @@ export async function organizeOffersAction(
 
         console.log(`Organize: Successfully organized into ${hydratedCategories.length} categories`);
 
+        const latencyMs = Date.now() - startedAt;
+
+        // Record granular telemetry and token FinOps
+        await recordAITelemetry({
+            apiKeyResult,
+            model: MODEL_NAME,
+            action: 'organize_offers',
+            promptTokens: capturedUsage?.prompt_tokens,
+            completionTokens: capturedUsage?.completion_tokens,
+            tokensUsed: capturedUsage?.total_tokens,
+            responseTimeMs: latencyMs,
+            success: true
+        }).catch(err => console.error('Failed to record AI telemetry:', err));
+
         // Track BYOK usage if using a user's key
         if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
             await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
@@ -156,5 +181,18 @@ export async function organizeOffersAction(
         } as OrganizedOffers;
     };
 
-    return retryWithBackoff(operation, 2, 'organize offers');
+    try {
+        return await retryWithBackoff(operation, 2, 'organize offers');
+    } catch (error) {
+        const latencyMs = Date.now() - startedAt;
+        await recordAITelemetry({
+            apiKeyResult,
+            model: MODEL_NAME,
+            action: 'organize_offers',
+            responseTimeMs: latencyMs,
+            success: false,
+            errorMessage: error instanceof Error ? error.message : String(error)
+        }).catch(() => {});
+        throw error;
+    }
 }

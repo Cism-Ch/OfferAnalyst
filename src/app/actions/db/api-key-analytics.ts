@@ -45,8 +45,10 @@ async function getAuthenticatedUserId(): Promise<string | null> {
     }
 }
 
+import { calculateTokenCostUSD } from '@/lib/ai-pricing';
+
 /**
- * Log API key usage
+ * Log API key usage with FinOps token telemetry and cost accounting
  */
 export async function logAPIKeyUsage(
     userId: string,
@@ -56,6 +58,10 @@ export async function logAPIKeyUsage(
     data: {
         model?: string;
         tokensUsed?: number;
+        promptTokens?: number;
+        completionTokens?: number;
+        costUsd?: number;
+        statusCode?: number;
         success?: boolean;
         errorMessage?: string;
         responseTime?: number;
@@ -64,6 +70,17 @@ export async function logAPIKeyUsage(
     }
 ): Promise<void> {
     try {
+        const promptTokens = data.promptTokens ?? 0;
+        const completionTokens = data.completionTokens ?? 0;
+        const totalTokens = data.tokensUsed ?? (promptTokens + completionTokens);
+
+        // Compute FinOps cost in USD if not directly provided
+        let costUsd = data.costUsd;
+        if (costUsd === undefined && data.model) {
+            costUsd = calculateTokenCostUSD(data.model, promptTokens, completionTokens);
+        }
+
+        // 1. Create granular telemetry log entry
         await prisma.aPIKeyUsageLog.create({
             data: {
                 userId,
@@ -71,7 +88,11 @@ export async function logAPIKeyUsage(
                 provider,
                 action,
                 model: data.model,
-                tokensUsed: data.tokensUsed,
+                tokensUsed: totalTokens > 0 ? totalTokens : null,
+                promptTokens: promptTokens > 0 ? promptTokens : null,
+                completionTokens: completionTokens > 0 ? completionTokens : null,
+                costUsd: costUsd !== undefined ? costUsd : null,
+                statusCode: data.statusCode ?? (data.success === false ? 500 : 200),
                 success: data.success ?? true,
                 errorMessage: data.errorMessage,
                 responseTime: data.responseTime,
@@ -79,6 +100,21 @@ export async function logAPIKeyUsage(
                 userAgent: data.userAgent
             }
         });
+
+        // 2. Atomically update parent APIKey counters if valid apiKeyId
+        if (apiKeyId && apiKeyId !== 'system' && apiKeyId.length === 24) {
+            await prisma.aPIKey.update({
+                where: { id: apiKeyId },
+                data: {
+                    lastUsed: new Date(),
+                    usageCount: { increment: 1 },
+                    totalTokensUsed: { increment: totalTokens },
+                    totalCostUsd: { increment: costUsd || 0 }
+                }
+            }).catch((err) => {
+                console.warn('Could not update parent apiKey metrics:', err?.message);
+            });
+        }
     } catch (error) {
         console.error('Error logging API key usage:', error);
         // Don't throw - logging failures shouldn't break main operations
@@ -400,5 +436,194 @@ async function createSecurityAlert(
         }
     } catch (error) {
         console.error('Error creating security alert:', error);
+    }
+}
+
+export interface AdminTelemetryStats {
+    totalRequests: number;
+    successfulRequests: number;
+    failedRequests: number;
+    successRate: number;
+    totalTokens: number;
+    totalPromptTokens: number;
+    totalCompletionTokens: number;
+    totalCostUsd: number;
+    avgLatencyMs: number;
+    keysHealthSummary: {
+        total: number;
+        operational: number;
+        degraded: number;
+        quotaExceeded: number;
+        invalid: number;
+        unchecked: number;
+    };
+    modelsBreakdown: {
+        model: string;
+        requests: number;
+        tokens: number;
+        costUsd: number;
+        avgLatencyMs: number;
+    }[];
+    recentLogs: {
+        id: string;
+        timestamp: string;
+        model: string;
+        provider: string;
+        action: string;
+        tokensUsed: number;
+        costUsd: number;
+        responseTime: number | null;
+        success: boolean;
+        errorMessage: string | null;
+    }[];
+}
+
+/**
+ * Get aggregated FinOps and model telemetry for the Admin Observatory
+ */
+export async function getAdminTelemetryStats(): Promise<AdminTelemetryStats> {
+    try {
+        const [logs, allKeys] = await Promise.all([
+            prisma.aPIKeyUsageLog.findMany({
+                orderBy: { timestamp: 'desc' },
+                take: 1000,
+                select: {
+                    id: true,
+                    timestamp: true,
+                    action: true,
+                    provider: true,
+                    model: true,
+                    tokensUsed: true,
+                    promptTokens: true,
+                    completionTokens: true,
+                    costUsd: true,
+                    responseTime: true,
+                    success: true,
+                    errorMessage: true
+                }
+            }),
+            prisma.aPIKey.findMany({
+                where: { isActive: true },
+                select: {
+                    healthStatus: true
+                }
+            })
+        ]);
+
+        const totalRequests = logs.length;
+        const successfulRequests = logs.filter((l) => l.success).length;
+        const failedRequests = totalRequests - successfulRequests;
+        const successRate = totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 100;
+
+        let totalTokens = 0;
+        let totalPromptTokens = 0;
+        let totalCompletionTokens = 0;
+        let totalCostUsd = 0;
+        let latencySum = 0;
+        let latencyCount = 0;
+
+        const modelStatsMap: Record<string, { requests: number; tokens: number; costUsd: number; latencySum: number; latencyCount: number }> = {};
+
+        for (const log of logs) {
+            const tokens = log.tokensUsed || 0;
+            const prompt = log.promptTokens || 0;
+            const completion = log.completionTokens || 0;
+            const cost = log.costUsd || 0;
+
+            totalTokens += tokens;
+            totalPromptTokens += prompt;
+            totalCompletionTokens += completion;
+            totalCostUsd += cost;
+
+            if (log.responseTime !== null) {
+                latencySum += log.responseTime;
+                latencyCount += 1;
+            }
+
+            const modelName = log.model || 'Non spécifié';
+            if (!modelStatsMap[modelName]) {
+                modelStatsMap[modelName] = { requests: 0, tokens: 0, costUsd: 0, latencySum: 0, latencyCount: 0 };
+            }
+            modelStatsMap[modelName].requests += 1;
+            modelStatsMap[modelName].tokens += tokens;
+            modelStatsMap[modelName].costUsd += cost;
+            if (log.responseTime !== null) {
+                modelStatsMap[modelName].latencySum += log.responseTime;
+                modelStatsMap[modelName].latencyCount += 1;
+            }
+        }
+
+        const avgLatencyMs = latencyCount > 0 ? Math.round(latencySum / latencyCount) : 0;
+
+        const modelsBreakdown = Object.entries(modelStatsMap).map(([model, stats]) => ({
+            model,
+            requests: stats.requests,
+            tokens: stats.tokens,
+            costUsd: Number(stats.costUsd.toFixed(6)),
+            avgLatencyMs: stats.latencyCount > 0 ? Math.round(stats.latencySum / stats.latencyCount) : 0
+        })).sort((a, b) => b.requests - a.requests);
+
+        // Keys health tally
+        const healthCounts = {
+            total: allKeys.length,
+            operational: 0,
+            degraded: 0,
+            quotaExceeded: 0,
+            invalid: 0,
+            unchecked: 0
+        };
+
+        for (const key of allKeys) {
+            const status = (key.healthStatus || 'UNCHECKED').toUpperCase();
+            if (status === 'OPERATIONAL') healthCounts.operational++;
+            else if (status === 'DEGRADED') healthCounts.degraded++;
+            else if (status === 'QUOTA_EXCEEDED') healthCounts.quotaExceeded++;
+            else if (status === 'INVALID') healthCounts.invalid++;
+            else healthCounts.unchecked++;
+        }
+
+        const recentLogs = logs.slice(0, 20).map((l) => ({
+            id: l.id,
+            timestamp: l.timestamp.toISOString(),
+            model: l.model || 'Inconnu',
+            provider: l.provider,
+            action: l.action,
+            tokensUsed: l.tokensUsed || 0,
+            costUsd: Number((l.costUsd || 0).toFixed(6)),
+            responseTime: l.responseTime,
+            success: l.success,
+            errorMessage: l.errorMessage
+        }));
+
+        return {
+            totalRequests,
+            successfulRequests,
+            failedRequests,
+            successRate: Math.round(successRate * 10) / 10,
+            totalTokens,
+            totalPromptTokens,
+            totalCompletionTokens,
+            totalCostUsd: Number(totalCostUsd.toFixed(6)),
+            avgLatencyMs,
+            keysHealthSummary: healthCounts,
+            modelsBreakdown,
+            recentLogs
+        };
+    } catch (error) {
+        console.error('Error computing admin telemetry:', error);
+        return {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            successRate: 100,
+            totalTokens: 0,
+            totalPromptTokens: 0,
+            totalCompletionTokens: 0,
+            totalCostUsd: 0,
+            avgLatencyMs: 0,
+            keysHealthSummary: { total: 0, operational: 0, degraded: 0, quotaExceeded: 0, invalid: 0, unchecked: 0 },
+            modelsBreakdown: [],
+            recentLogs: []
+        };
     }
 }

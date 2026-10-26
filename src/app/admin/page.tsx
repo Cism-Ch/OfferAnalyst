@@ -14,7 +14,7 @@
  * Note: This page should be protected by Better-Auth role check
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,14 +25,18 @@ import {
     Users,
     Key,
     Activity,
-    TrendingUp,
     Database,
     Flag,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Zap,
+    DollarSign,
+    RefreshCw,
+    Cpu
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
+import { getAdminTelemetryStats, type AdminTelemetryStats } from '@/app/actions/db/api-key-analytics';
 
 export default function AdminPage() {
     const [featureFlags, setFeatureFlags] = useState({
@@ -44,8 +48,43 @@ export default function AdminPage() {
         enableCache: true
     });
 
-    React.useEffect(() => {
+    const [telemetry, setTelemetry] = useState<AdminTelemetryStats | null>(null);
+    const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const recentUsers = [
+        { id: '1', name: 'Administrateur Principal', email: 'admin@offeranalyst.com', role: 'Superadmin', status: 'Active' },
+        { id: '2', name: 'Analyste Recrutement', email: 'analyst@offeranalyst.com', role: 'Editor', status: 'Active' },
+        { id: '3', name: 'Utilisateur Démo', email: 'demo@offeranalyst.com', role: 'Viewer', status: 'Active' }
+    ];
+
+    const loadTelemetry = useCallback(async () => {
+        try {
+            const stats = await getAdminTelemetryStats();
+            setTelemetry(stats);
+        } catch (err) {
+            console.error('Failed to load admin telemetry:', err);
+        } finally {
+            setIsLoadingTelemetry(false);
+            setIsRefreshing(false);
+        }
+    }, []);
+
+    useEffect(() => {
         let isMounted = true;
+        
+        getAdminTelemetryStats()
+            .then(stats => {
+                if (isMounted) {
+                    setTelemetry(stats);
+                    setIsLoadingTelemetry(false);
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load admin telemetry:', err);
+                if (isMounted) setIsLoadingTelemetry(false);
+            });
+
         const timer = setTimeout(async () => {
             try {
                 const res = await fetch('/api/admin/feature-flags');
@@ -66,25 +105,10 @@ export default function AdminPage() {
         };
     }, []);
 
-    const systemStats = {
-        totalUsers: 1247,
-        activeUsers: 834,
-        totalSearches: 15632,
-        byokActivations: 342,
-        avgResponseTime: 850
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await loadTelemetry();
     };
-
-    const recentUsers = [
-        { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Editor', status: 'Active' },
-        { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Viewer', status: 'Active' },
-        { id: '3', name: 'Bob Wilson', email: 'bob@example.com', role: 'Admin', status: 'Suspended' }
-    ];
-
-    const providerUsage = [
-        { provider: 'OpenRouter', freeRequests: 5234, byokRequests: 8921, errors: 12 },
-        { provider: 'Google Gemini', freeRequests: 3421, byokRequests: 1234, errors: 5 },
-        { provider: 'DeepSeek', freeRequests: 2145, byokRequests: 567, errors: 2 }
-    ];
 
     const toggleFeature = async (feature: keyof typeof featureFlags) => {
         const nextValue = !featureFlags[feature];
@@ -107,66 +131,101 @@ export default function AdminPage() {
         <ModernLayout>
             <div className="container mx-auto py-8 px-4 max-w-7xl">
                 {/* Header */}
-                <motion.div {...fadeInUpProps} className="mb-8">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Shield className="w-8 h-8 text-red-500" />
-                        <h1 className="text-3xl font-bold">Admin Console</h1>
-                        <Badge variant="destructive">Admin Only</Badge>
+                <motion.div {...fadeInUpProps} className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <Shield className="w-8 h-8 text-primary" />
+                            <h1 className="text-3xl font-bold">Observatoire Plateforme & IA</h1>
+                            <Badge variant="destructive">Admin Only</Badge>
+                        </div>
+                        <p className="text-muted-foreground">
+                            Télémétrie en temps réel, FinOps des modèles IA et gouvernance système.
+                        </p>
                     </div>
-                    <p className="text-muted-foreground">
-                        System administration and monitoring dashboard
-                    </p>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleRefresh} 
+                        disabled={isRefreshing}
+                        className="gap-2 self-start sm:self-auto"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
+                        <span>Actualiser la télémétrie</span>
+                    </Button>
                 </motion.div>
 
                 <motion.div {...staggerContainerProps} className="space-y-6">
-                    {/* System Stats */}
+                    {/* Real-time KPI Stats */}
                     <motion.div {...staggerItemProps}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-                            <Card>
+                            <Card className="border-primary/20">
                                 <CardHeader className="pb-2 sm:pb-3">
                                     <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
-                                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                        Total Users
+                                        <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                                        Requêtes IA
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.totalUsers.toLocaleString()}</div>
+                                    <div className="text-xl sm:text-2xl font-bold">
+                                        {isLoadingTelemetry ? '...' : (telemetry?.totalRequests ?? 0).toLocaleString()}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Succès : {telemetry?.successRate ?? 100}%
+                                    </p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-emerald-500/20">
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                                        Tokens Consommés
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-xl sm:text-2xl font-bold font-mono">
+                                        {isLoadingTelemetry ? '...' : (telemetry?.totalTokens ?? 0).toLocaleString()}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Prompt: {(telemetry?.totalPromptTokens ?? 0).toLocaleString()} • Compl: {(telemetry?.totalCompletionTokens ?? 0).toLocaleString()}
+                                    </p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-sky-500/20">
+                                <CardHeader className="pb-2 sm:pb-3">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                        <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-500" />
+                                        Dépenses FinOps
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-xl sm:text-2xl font-bold font-mono text-sky-600 dark:text-sky-400">
+                                        {isLoadingTelemetry ? '...' : `$${(telemetry?.totalCostUsd ?? 0).toFixed(4)}`}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Coût cumulé en USD
+                                    </p>
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardHeader className="pb-2 sm:pb-3">
                                     <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
-                                        <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                        Active Users
+                                        <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+                                        Santé des Clés
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.activeUsers.toLocaleString()}</div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2 sm:pb-3">
-                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
-                                        <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                        Total Searches
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.totalSearches.toLocaleString()}</div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2 sm:pb-3">
-                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
-                                        <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                        BYOK Active
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.byokActivations.toLocaleString()}</div>
+                                    <div className="flex items-center gap-1.5 text-xl sm:text-2xl font-bold">
+                                        <span>{telemetry?.keysHealthSummary.operational ?? 0}</span>
+                                        <span className="text-sm font-normal text-muted-foreground">/ {telemetry?.keysHealthSummary.total ?? 0}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 text-[11px]">
+                                        <span className="text-emerald-500 font-medium">🟢 {telemetry?.keysHealthSummary.operational ?? 0}</span>
+                                        <span className="text-amber-500 font-medium">🟡 {(telemetry?.keysHealthSummary.degraded ?? 0) + (telemetry?.keysHealthSummary.quotaExceeded ?? 0)}</span>
+                                        <span className="text-rose-500 font-medium">🔴 {telemetry?.keysHealthSummary.invalid ?? 0}</span>
+                                    </div>
                                 </CardContent>
                             </Card>
 
@@ -174,60 +233,84 @@ export default function AdminPage() {
                                 <CardHeader className="pb-2 sm:pb-3">
                                     <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
                                         <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                        Avg Response
+                                        Latence P50
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-xl sm:text-2xl font-bold">{systemStats.avgResponseTime}ms</div>
+                                    <div className="text-xl sm:text-2xl font-bold font-mono">
+                                        {isLoadingTelemetry ? '...' : `${telemetry?.avgLatencyMs ?? 0}ms`}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Temps de réponse moyen
+                                    </p>
                                 </CardContent>
                             </Card>
                         </div>
                     </motion.div>
 
-                    {/* Provider Usage */}
+                    {/* Breakdown by Model & Provider */}
                     <motion.div {...staggerItemProps}>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Provider Usage & Quotas</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Cpu className="w-5 h-5 text-primary" />
+                                    <span>Performances & Consommation par Modèle</span>
+                                </CardTitle>
                                 <CardDescription>
-                                    API consumption breakdown by provider
+                                    Ventilation en temps réel des requêtes, tokens et coûts par modèle d&apos;IA.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-4">
-                                    {providerUsage.map((provider) => (
-                                        <div key={provider.provider} className="border rounded-lg p-4">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <h4 className="font-semibold">{provider.provider}</h4>
-                                                {provider.errors > 10 ? (
-                                                    <Badge variant="destructive">
-                                                        <AlertCircle className="w-3 h-3 mr-1" />
-                                                        High Errors
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="outline" className="text-green-500">
+                                {isLoadingTelemetry ? (
+                                    <div className="text-center py-8 text-muted-foreground">Chargement des données de télémétrie...</div>
+                                ) : !telemetry?.modelsBreakdown || telemetry.modelsBreakdown.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        Aucun appel IA enregistré pour le moment. Lancez une analyse ou une recherche pour générer des données.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {telemetry.modelsBreakdown.map((item) => (
+                                            <div key={item.model} className="border rounded-lg p-4 hover:bg-accent/30 transition-colors">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="font-mono text-xs">
+                                                            {item.model}
+                                                        </Badge>
+                                                        <span className="text-xs text-muted-foreground font-mono">
+                                                            (~{item.avgLatencyMs}ms)
+                                                        </span>
+                                                    </div>
+                                                    <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
                                                         <CheckCircle2 className="w-3 h-3 mr-1" />
-                                                        Healthy
+                                                        Actif
                                                     </Badge>
-                                                )}
+                                                </div>
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Requêtes</p>
+                                                        <p className="font-semibold">{item.requests.toLocaleString()}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Volume Tokens</p>
+                                                        <p className="font-semibold font-mono">{item.tokens.toLocaleString()}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Dépenses USD</p>
+                                                        <p className="font-semibold font-mono text-sky-600 dark:text-sky-400">
+                                                            ${item.costUsd.toFixed(4)}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Coût moyen / req</p>
+                                                        <p className="font-semibold font-mono text-xs">
+                                                            ${item.requests > 0 ? (item.costUsd / item.requests).toFixed(6) : '0.000000'}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
-                                                <div>
-                                                    <p className="text-muted-foreground">Free Tier</p>
-                                                    <p className="font-semibold">{provider.freeRequests.toLocaleString()} requests</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-muted-foreground">BYOK</p>
-                                                    <p className="font-semibold">{provider.byokRequests.toLocaleString()} requests</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-muted-foreground">Errors</p>
-                                                    <p className="font-semibold text-red-500">{provider.errors}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -364,26 +447,79 @@ export default function AdminPage() {
                         </motion.div>
                     </div>
 
-                    {/* System Health */}
+                    {/* Live AI Telemetry Logs */}
                     <motion.div {...staggerItemProps}>
                         <Card>
                             <CardHeader>
-                                <CardTitle>System Health & Logs</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-primary" />
+                                    <span>Flux de Télémétrie en Direct</span>
+                                </CardTitle>
                                 <CardDescription>
-                                    Local observability and error tracking
+                                    Historique des dernières exécutions IA avec volumétrie de tokens et latence.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="p-4 bg-muted/50 rounded-lg">
-                                    <p className="text-sm text-muted-foreground mb-2">
-                                        System logs are managed via Pino locally. No external logging services are used to maintain privacy.
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <Button variant="outline" size="sm">View Error Logs</Button>
-                                        <Button variant="outline" size="sm">View Latency Reports</Button>
-                                        <Button variant="outline" size="sm">Export Logs</Button>
+                                {isLoadingTelemetry ? (
+                                    <div className="text-center py-6 text-muted-foreground text-sm">Chargement des logs récents...</div>
+                                ) : !telemetry?.recentLogs || telemetry.recentLogs.length === 0 ? (
+                                    <div className="p-4 bg-muted/40 rounded-lg text-center text-sm text-muted-foreground">
+                                        Aucun journal d&apos;activité récent.
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="text-muted-foreground border-b uppercase font-mono">
+                                                <tr>
+                                                    <th className="py-2.5 px-3">Date</th>
+                                                    <th className="py-2.5 px-3">Action</th>
+                                                    <th className="py-2.5 px-3">Modèle</th>
+                                                    <th className="py-2.5 px-3">Tokens</th>
+                                                    <th className="py-2.5 px-3">Coût</th>
+                                                    <th className="py-2.5 px-3">Latence</th>
+                                                    <th className="py-2.5 px-3">Statut</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y font-mono">
+                                                {telemetry.recentLogs.map((log) => (
+                                                    <tr key={log.id} className="hover:bg-muted/30">
+                                                        <td className="py-2 px-3 text-muted-foreground whitespace-nowrap">
+                                                            {new Date(log.timestamp).toLocaleTimeString()}
+                                                        </td>
+                                                        <td className="py-2 px-3 font-sans font-medium">
+                                                            {log.action}
+                                                        </td>
+                                                        <td className="py-2 px-3 text-muted-foreground truncate max-w-[150px]">
+                                                            {log.model}
+                                                        </td>
+                                                        <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                            {log.tokensUsed > 0 ? log.tokensUsed.toLocaleString() : '-'}
+                                                        </td>
+                                                        <td className="py-2 px-3 text-sky-600 dark:text-sky-400">
+                                                            ${log.costUsd > 0 ? log.costUsd.toFixed(5) : '0.00'}
+                                                        </td>
+                                                        <td className="py-2 px-3 text-muted-foreground">
+                                                            {log.responseTime ? `${log.responseTime}ms` : '-'}
+                                                        </td>
+                                                        <td className="py-2 px-3">
+                                                            {log.success ? (
+                                                                <span className="inline-flex items-center text-emerald-500 text-[11px] font-sans">
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                                                    200 OK
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center text-rose-500 text-[11px] font-sans" title={log.errorMessage || 'Erreur'}>
+                                                                    <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                                                                    Erreur
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </motion.div>

@@ -2,14 +2,12 @@
 
 import React, { useMemo, useEffect, Suspense } from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, MapPin, DollarSign, Star } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { ScoredOffer } from '@/types';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function ComparePageContent() {

@@ -9,6 +9,7 @@
 - [R-DB-02] Toujours exécuter `npx prisma validate` et `npx prisma generate` après toute modification de schéma avant de modifier le code applicatif.
 - [R-DB-03] Ne jamais stocker de gros blocs HTML ou payloads bruts (> 50 Ko) dans MongoDB ; décharger vers Tigris S3 et stocker uniquement la clé ou l'URL signée.
 - [R-DB-04] Utiliser systématiquement le singleton `prisma` de `@/lib/prisma` pour éviter l'épuisement des connexions du pool MongoDB Atlas en serverless.
+- [R-DB-05] Sous Windows avec Next dev actif, `prisma generate` échoue par verrouillage du DLL moteur (`EPERM`). Utiliser `pnpm exec prisma generate --no-engine` pour régénérer le client TypeScript sans collision binaire.
 
 ## [BACKEND & SERVER ACTIONS / QSTASH]
 - [R-API-01] Dans Next.js 16, `headers()` et `cookies()` sont des Promises asynchrones : toujours utiliser `await headers()` et `await cookies()`.
@@ -38,3 +39,4 @@
 - [R-INT-05] Middleware Routing : Ne jamais utiliser `pathname.startsWith(route)` avec la route racine `'/'` dans une liste de routes publiques (cela valide aveuglément toutes les requêtes). Utiliser `pathname === route`.
 - [R-INT-06] Anti-SSRF : Valider systématiquement toute URL externe de webhook avant dispatch HTTP (bloquer localhost, IP privées RFC 1918 et métadonnées d'instance cloud `169.254.169.254`).
 - [R-INT-07] Principe Fail-Closed : En production (`NODE_ENV === 'production'`), rejeter immédiatement les requêtes (HTTP 503) ou lever une exception si les clés de signature (QStash) ou secrets d'auth manquent.
+- [R-INT-08] FinOps & Télémétrie AI : Interroger `GET https://openrouter.ai/api/v1/auth/key` pour auditer le statut, solde $ et limites d'une clé sans coût d'inférence. Avec `@openrouter/sdk`, les métriques d'usage sont strictement en camelCase (`promptTokens`, `completionTokens`, `totalTokens`).

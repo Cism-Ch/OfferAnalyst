@@ -39,7 +39,7 @@ export async function analyzeOffersAction(
     const startedAt = Date.now();
     
     // Try to get API key with BYOK support
-    const { getAPIKey, trackBYOKUsage } = await import('./shared/api-key-provider');
+    const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
     const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
     
     if (!apiKeyResult) {
@@ -117,6 +117,8 @@ export async function analyzeOffersAction(
     LIMIT: Top ${limit} offers
   `;
 
+    let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
+
     const operation = async () => {
         const response = await openrouter.chat.send({
             model: modelName,
@@ -126,6 +128,14 @@ export async function analyzeOffersAction(
             ],
             responseFormat: { type: "json_object" }
         });
+
+        if (response?.usage) {
+            capturedUsage = {
+                prompt_tokens: response.usage.promptTokens,
+                completion_tokens: response.usage.completionTokens,
+                total_tokens: response.usage.totalTokens
+            };
+        }
 
         const content = response.choices[0]?.message?.content;
         if (!content) {
@@ -168,6 +178,19 @@ export async function analyzeOffersAction(
     };
     try {
         const data = await retryWithBackoff(operation, 3, 'analyze offers');
+        const latencyMs = Date.now() - startedAt;
+
+        // Record granular telemetry and token FinOps
+        await recordAITelemetry({
+            apiKeyResult,
+            model: modelName,
+            action: 'analyze_offers',
+            promptTokens: capturedUsage?.prompt_tokens,
+            completionTokens: capturedUsage?.completion_tokens,
+            tokensUsed: capturedUsage?.total_tokens,
+            responseTimeMs: latencyMs,
+            success: true
+        }).catch(err => console.error('Failed to record AI telemetry:', err));
 
         // Track BYOK usage if using a user's key
         if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
@@ -181,11 +204,22 @@ export async function analyzeOffersAction(
             data,
             meta: {
                 model: modelName,
-                latencyMs: Date.now() - startedAt
+                latencyMs
             }
         };
     } catch (error) {
         console.error('Analyze offers failed', error);
+        const latencyMs = Date.now() - startedAt;
+
+        await recordAITelemetry({
+            apiKeyResult,
+            model: modelName,
+            action: 'analyze_offers',
+            responseTimeMs: latencyMs,
+            success: false,
+            errorMessage: error instanceof Error ? error.message : String(error)
+        }).catch(() => {});
+
         return {
             success: false,
             error: toAgentActionError(error, 'analyze offers')

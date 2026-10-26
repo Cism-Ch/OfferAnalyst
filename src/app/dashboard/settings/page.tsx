@@ -31,7 +31,6 @@ import {
     Bot,
     Sparkles,
     Cpu,
-    Zap,
     Terminal,
     Flame,
     Brain

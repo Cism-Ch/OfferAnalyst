@@ -9,9 +9,11 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { encryptAPIKey } from '@/lib/api-key-encryption';
+import { encryptAPIKey, decryptAPIKey } from '@/lib/api-key-encryption';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
+import { checkOpenRouterKey, type KeyCheckResult } from '@/lib/openrouter-telemetry';
 
 export interface APIKeyData {
     id: string;
@@ -27,6 +29,14 @@ export interface APIKeyData {
     expiresAt: string | null;
     isActive: boolean;
     isExpired?: boolean;
+    healthStatus: string;
+    lastChecked: string | null;
+    lastPingLatency: number | null;
+    lastError: string | null;
+    creditsRemaining: number | null;
+    creditsLimit: number | null;
+    totalTokensUsed: number;
+    totalCostUsd: number;
 }
 
 /**
@@ -65,25 +75,20 @@ export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyDat
                 priority: true,
                 isPrimary: true,
                 expiresAt: true,
-                isActive: true
+                isActive: true,
+                healthStatus: true,
+                lastChecked: true,
+                lastPingLatency: true,
+                lastError: true,
+                creditsRemaining: true,
+                creditsLimit: true,
+                totalTokensUsed: true,
+                totalCostUsd: true
             }
         });
 
         const now = new Date();
-        return keys.map((key: { 
-            id: string; 
-            name: string; 
-            provider: string; 
-            keyPreview: string; 
-            createdAt: Date; 
-            lastUsed: Date | null; 
-            usageCount: number;
-            rateLimit: number | null;
-            priority: number;
-            isPrimary: boolean;
-            expiresAt: Date | null;
-            isActive: boolean 
-        }): APIKeyData => ({
+        return keys.map((key) => ({
             id: key.id,
             name: key.name,
             provider: key.provider,
@@ -96,7 +101,15 @@ export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyDat
             isPrimary: key.isPrimary,
             expiresAt: key.expiresAt?.toISOString() || null,
             isActive: key.isActive,
-            isExpired: key.expiresAt ? key.expiresAt < now : false
+            isExpired: key.expiresAt ? key.expiresAt < now : false,
+            healthStatus: key.healthStatus || 'UNCHECKED',
+            lastChecked: key.lastChecked?.toISOString() || null,
+            lastPingLatency: key.lastPingLatency,
+            lastError: key.lastError,
+            creditsRemaining: key.creditsRemaining,
+            creditsLimit: key.creditsLimit,
+            totalTokensUsed: key.totalTokensUsed || 0,
+            totalCostUsd: key.totalCostUsd || 0
         }));
     } catch (error) {
         console.error('Error fetching API keys:', error);
@@ -105,7 +118,8 @@ export async function getUserAPIKeys(providedUserId?: string): Promise<APIKeyDat
 }
 
 /**
- * Add a new API key for the current authenticated user
+ * Add a new API key for the current authenticated user.
+ * Automatically performs an initial health check if provider is OpenRouter.
  */
 export async function addAPIKey(
     providedUserId: string,
@@ -116,7 +130,7 @@ export async function addAPIKey(
     rateLimit?: number | null,
     priority?: number,
     isPrimary?: boolean
-): Promise<{ success: boolean; message: string; keyId?: string }> {
+): Promise<{ success: boolean; message: string; keyId?: string; checkResult?: KeyCheckResult }> {
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -151,6 +165,27 @@ export async function addAPIKey(
             });
         }
 
+        // Perform immediate health telemetry check via OpenRouter API
+        let checkResult: KeyCheckResult | undefined;
+        let initialHealthStatus = 'UNCHECKED';
+        let initialLatency: number | null = null;
+        let initialCreditsRemaining: number | null = null;
+        let initialCreditsLimit: number | null = null;
+        let initialError: string | null = null;
+
+        if (provider.toLowerCase().includes('openrouter')) {
+            try {
+                checkResult = await checkOpenRouterKey(apiKey);
+                initialHealthStatus = checkResult.status;
+                initialLatency = checkResult.latencyMs;
+                initialCreditsRemaining = checkResult.creditsRemaining ?? null;
+                initialCreditsLimit = checkResult.limitUsd ?? null;
+                initialError = checkResult.error ?? null;
+            } catch (checkErr) {
+                console.warn('Initial key check skipped or failed:', checkErr);
+            }
+        }
+
         const newKey = await prisma.aPIKey.create({
             data: {
                 userId,
@@ -162,14 +197,23 @@ export async function addAPIKey(
                 priority: priority ?? 0,
                 isPrimary: isPrimary ?? false,
                 expiresAt,
-                rateLimit
+                rateLimit,
+                healthStatus: initialHealthStatus,
+                lastChecked: checkResult ? new Date() : null,
+                lastPingLatency: initialLatency,
+                creditsRemaining: initialCreditsRemaining,
+                creditsLimit: initialCreditsLimit,
+                lastError: initialError
             }
         });
+
+        revalidatePath('/dashboard/api-keys');
 
         return {
             success: true,
             message: 'API key added successfully',
-            keyId: newKey.id
+            keyId: newKey.id,
+            checkResult
         };
     } catch (error) {
         console.error('Error adding API key:', error);
@@ -208,6 +252,8 @@ export async function deleteAPIKey(
             }
         });
 
+        revalidatePath('/dashboard/api-keys');
+
         return {
             success: true,
             message: 'API key deleted successfully'
@@ -217,6 +263,95 @@ export async function deleteAPIKey(
         return {
             success: false,
             message: 'Failed to delete API key'
+        };
+    }
+}
+
+/**
+ * Perform a live health and quota diagnostic check on a specific API key.
+ * Decrypts key strictly server-side and calls real-time OpenRouter telemetry API.
+ */
+export async function testAPIKeyHealth(apiKeyId: string): Promise<{
+    success: boolean;
+    data?: KeyCheckResult;
+    error?: string;
+}> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                error: 'Non autorisé : session utilisateur requise.'
+            };
+        }
+
+        const userId = session.user.id;
+
+        // Fetch encrypted key securely (must belong to this user)
+        const keyRecord = await prisma.aPIKey.findFirst({
+            where: {
+                id: apiKeyId,
+                userId
+            }
+        });
+
+        if (!keyRecord) {
+            return {
+                success: false,
+                error: 'Clé API introuvable ou accès non autorisé.'
+            };
+        }
+
+        // Decrypt key strictly on server
+        let rawKey: string;
+        try {
+            rawKey = decryptAPIKey(keyRecord.keyEncrypted);
+        } catch {
+            await prisma.aPIKey.update({
+                where: { id: apiKeyId },
+                data: {
+                    healthStatus: 'INVALID',
+                    lastChecked: new Date(),
+                    lastError: 'Échec de déchiffrement interne.'
+                }
+            });
+            revalidatePath('/dashboard/api-keys');
+            return {
+                success: false,
+                error: 'Impossible de déchiffrer la clé enregistrée.'
+            };
+        }
+
+        // Execute real-time OpenRouter telemetry check
+        const result = await checkOpenRouterKey(rawKey);
+
+        // Update database with latest telemetry
+        await prisma.aPIKey.update({
+            where: { id: apiKeyId },
+            data: {
+                healthStatus: result.status,
+                lastChecked: new Date(),
+                lastPingLatency: result.latencyMs,
+                creditsRemaining: result.creditsRemaining ?? null,
+                creditsLimit: result.limitUsd ?? null,
+                lastError: result.error ?? null
+            }
+        });
+
+        revalidatePath('/dashboard/api-keys');
+
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error('Error running API key diagnostic:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Erreur inconnue lors du diagnostic.'
         };
     }
 }

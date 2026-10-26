@@ -15,12 +15,14 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │   🔴 SPRINT 6 (ACTIF)   │  │    🟢 BACKLOG FUTUR     │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-BRAND-02       │
-│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │     (Lisibilité Logo/Th)│
-│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-BRAND-01       │
-│     (Stripe Billing)    │  │     Automatisées        │  │     (Offan, Emojis, UI) │
-│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-THEME-01       │
-│     (Realtime Collab)   │  │                         │  │     (Audit & Fix Thèmes)│
+│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-AI-01          │
+│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │     (FinOps & Health AI)│
+│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-BRAND-02       │
+│     (Stripe Billing)    │  │     Automatisées        │  │     (Lisibilité Logo/Th)│
+│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-BRAND-01       │
+│     (Realtime Collab)   │  │                         │  │     (Offan, Emojis, UI) │
+│                         │  │                         │  │ [x] TASK-THEME-01       │
+│                         │  │                         │  │     (Audit & Fix Thèmes)│
 │                         │  │                         │  │ [x] TASK-UX-01 (UI/UX)  │
 │                         │  │                         │  │ [x] TASK-REL-01 (SemVer)│
 │                         │  │                         │  │ [x] TASK-SEC-02 (Sécu)  │
@@ -31,6 +33,20 @@
 ---
 
 ## 🚀 Sprint Actif : Sprint 6 — Expansion, RSI & Monétisation
+
+### 📊 Observabilité FinOps, Télémétrie Tokens & Diagnostic de Santé des Modèles
+> 📄 **Rapport d'Audit Télémétrie :** [Consulter le Rapport d'Audit & Télémétrie IA (AUDIT_TELEMETRIE_AI_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_TELEMETRIE_AI_2026-10-26.md)
+
+- [x] **`TASK-AI-01` — Observabilité FinOps, Télémétrie Tokens en Temps Réel & Diagnostic de Santé des Clés/Modèles**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `prisma/schema.prisma`, `src/lib/ai-pricing.ts`, `src/lib/openrouter-telemetry.ts`, `src/app/actions/shared/`, `src/app/actions/db/`, `src/components/api-keys/`, `src/app/dashboard/api-keys/`, `src/app/admin/page.tsx`
+  - **Sous-tâches unitaires vérifiées :**
+    - [x] `TASK-AI-01.01` : Schéma Prisma & Service API OpenRouter (`/auth/key` & `/models` pour fetch temps réel du quota, solde $ et tarification dynamique des tokens).
+    - [x] `TASK-AI-01.02` : Pipeline de capture unifié (`captureAITelemetry`) dans `src/app/actions/fetch.ts`, `organize.ts` et `organizeV2.ts` extrayant `usage.prompt_tokens` et `usage.completion_tokens`.
+    - [x] `TASK-AI-01.03` : Server Actions de diagnostic de santé (`testAPIKeyHealth`) sans fuite de secrets avec signalétique d'état (🟢 Opérationnel, 🟡 Dégradé/Quota, 🔴 Invalide).
+    - [x] `TASK-AI-01.04` : Interface Utilisateur BYOK (`/dashboard/api-keys`) : pastilles d'état lumineuses, bouton "Diagnostiquer", indicateur de solde OpenRouter en $ en temps réel, dashboard de tokens par modèle.
+    - [x] `TASK-AI-01.05` : Interface Admin (`/admin`) connectée aux données réelles : KPIs plateforme, volume global de tokens (Shared vs BYOK), matrice de disponibilité et latence des modèles.
+    - [x] `TASK-AI-01.06` : Rapport d'audit de télémétrie, mise à jour méta-cognitive et validation déterministe (`npm run eval:quick` 100/100).
 
 ### 💎 Identité de Marque 'Offan', Tracking Emojis & Refonte UI des Sélecteurs
 > 📄 **Rapport d'Audit Marque & UI :** [Consulter le Rapport d'Audit & Tracking Emojis/Design (AUDIT_EMOJI_BRAND_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_EMOJI_BRAND_2026-10-26.md)
@@ -149,6 +165,7 @@ Pour préserver la compacité et la clarté du document SSOT, les tâches antér
 
 | Date | ID | Intitulé & Description | Livrables / PR |
 | :--- | :--- | :--- | :--- |
+| **2026-10-26** | `TASK-AI-01` | Observabilité FinOps, Télémétrie Tokens en Temps Réel & Diagnostic Santé Clés | [Rapport Télémétrie](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_TELEMETRIE_AI_2026-10-26.md), openrouter-telemetry, ai-pricing, BYOK & Admin |
 | **2026-10-26** | `TASK-BRAND-02` | Perfectionnement Cercles de Thème (Noir/Blanc) & Lisibilité Logo Offan | theme-selector.tsx, OffanBrand.tsx, ModernSidebar.tsx |
 | **2026-10-26** | `TASK-BRAND-01` | Identité de Marque 'Offan', Élimination Emojis OS & Refonte Sélecteurs | [Rapport Brand & UI](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_EMOJI_BRAND_2026-10-26.md), OffanBrand.tsx, theme-selector, ModernHeader |
 | **2026-10-26** | `TASK-THEME-01` | Audit & Restructuration du Moteur Multi-Thèmes (Next-Themes, HSL, Tailwind v4) | [Rapport Thèmes](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_THEMES_ENGINE_2026-10-26.md), layout.tsx, globals.css, theme-selector |

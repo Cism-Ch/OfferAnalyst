@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { PremiumThemeSelector } from "@/components/theme-selector";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Sparkles, ChevronRight, Brain, Zap, Check, Key, ExternalLink, Cpu, Layers } from 'lucide-react';
+import { Search, ChevronRight, Brain, Check, Key, ExternalLink, Cpu, Layers } from 'lucide-react';
 import { AI_MODEL_OPTIONS, getModelOption } from '@/lib/ai-models';
 import { cn } from '@/lib/utils';
 import { fadeInUpProps } from '@/lib/motion';

@@ -26,7 +26,6 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    Sparkles,
     BarChart3,
     Menu,
     X,
