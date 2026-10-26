@@ -16,6 +16,9 @@ import { Offer, UserProfile, AnalysisResponse, AgentActionResult } from "@/types
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+import prisma from "@/lib/prisma";
+import { sendWebhook } from "@/lib/webhooks";
+import { revalidatePath } from "next/cache";
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -52,6 +55,7 @@ interface AnalyzeOptionsV2 {
     async?: boolean;
     storeResults?: boolean;
     webhookUrl?: string;
+    userId?: string;
 }
 
 export async function analyzeOffersActionV2(
@@ -65,8 +69,9 @@ export async function analyzeOffersActionV2(
         criteriaWeights = { relevance: 50, quality: 30, trend: 20 },
         language = 'en',
         async = false,
-        storeResults = false
-        // webhookUrl - future feature
+        storeResults = false,
+        webhookUrl,
+        userId: explicitUserId
     } = options;
 
     const startedAt = Date.now();
@@ -208,15 +213,40 @@ export async function analyzeOffersActionV2(
             searchSources
         };
 
-        // TODO: Store results to MongoDB
-        // if (storeResults) {
-        //     await storeAnalysisResults(profile, result, modelName);
-        // }
+        // Store results to MongoDB if requested
+        let storedResultId: string | undefined;
+        if (storeResults) {
+            const storeRes = await storeAnalysisResults(
+                profile,
+                result,
+                modelName,
+                options,
+                offers.length,
+                explicitUserId
+            );
+            if (storeRes?.id) {
+                storedResultId = storeRes.id;
+            }
+        }
 
-        // TODO: Send webhook notification
-        // if (webhookUrl) {
-        //     await sendWebhook(webhookUrl, { status: 'completed', result });
-        // }
+        // Send webhook notification if webhookUrl is provided
+        if (webhookUrl) {
+            try {
+                await sendWebhook(webhookUrl, {
+                    event: 'analysis.completed',
+                    timestamp: new Date().toISOString(),
+                    data: {
+                        domain: profile.domain,
+                        topOffersCount: result.topOffers.length,
+                        marketSummary: result.marketSummary,
+                        model: modelName,
+                        storedResultId
+                    }
+                });
+            } catch (webhookErr) {
+                console.error('Webhook notification failed:', webhookErr);
+            }
+        }
 
         return result;
     };
@@ -245,3 +275,258 @@ export async function analyzeOffersActionV2(
         };
     }
 }
+
+/**
+ * Persists an analysis result into MongoDB linked to an authenticated user.
+ */
+export async function storeAnalysisResults(
+    profile: UserProfile,
+    result: AnalysisResponse,
+    modelName: string,
+    options: AnalyzeOptionsV2 = {},
+    totalAnalyzed: number = 0,
+    explicitUserId?: string
+): Promise<{ id: string; success: boolean } | null> {
+    try {
+        let userId = explicitUserId;
+
+        if (!userId) {
+            try {
+                const { auth } = await import('@/lib/auth');
+                const { headers } = await import('next/headers');
+                const session = await auth.api.getSession({ headers: await headers() });
+                userId = session?.user?.id;
+            } catch {
+                // Headers/session unavailable outside request context
+            }
+        }
+
+        if (!userId) {
+            console.warn('storeAnalysisResults: skipped because no authenticated user was found');
+            return null;
+        }
+
+        const record = await prisma.analysisResult.create({
+            data: {
+                userId,
+                domain: profile.domain || 'general',
+                criteria: profile.explicitCriteria || null,
+                model: modelName,
+                language: options.language || 'en',
+                marketSummary: result.marketSummary,
+                topOffers: JSON.stringify(result.topOffers),
+                criteriaWeights: options.criteriaWeights ? JSON.stringify(options.criteriaWeights) : null,
+                totalAnalyzed
+            }
+        });
+
+        console.log(`Stored analysis result ${record.id} for user ${userId}`);
+        return { id: record.id, success: true };
+    } catch (err) {
+        console.error('Failed to store analysis results to MongoDB:', err);
+        return null;
+    }
+}
+
+export interface AnalysisHistorySummary {
+    id: string;
+    domain: string;
+    criteria?: string | null;
+    model: string;
+    language: string;
+    marketSummary: string;
+    topOffersCount: number;
+    totalAnalyzed: number;
+    createdAt: string;
+}
+
+/**
+ * Retrieves the history of stored analyses for the current authenticated user.
+ */
+export async function getUserAnalysisHistory(
+    limit: number = 20
+): Promise<AgentActionResult<AnalysisHistorySummary[]>> {
+    try {
+        const { auth } = await import('@/lib/auth');
+        const { headers } = await import('next/headers');
+        const session = await auth.api.getSession({ headers: await headers() });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                error: {
+                    code: 'AUTH_REQUIRED',
+                    message: 'Authentication required to access analysis history'
+                }
+            };
+        }
+
+        const records = await prisma.analysisResult.findMany({
+            where: { userId: session.user.id },
+            orderBy: { createdAt: 'desc' },
+            take: Math.min(limit, 100),
+            select: {
+                id: true,
+                domain: true,
+                criteria: true,
+                model: true,
+                language: true,
+                marketSummary: true,
+                topOffers: true,
+                totalAnalyzed: true,
+                createdAt: true
+            }
+        });
+
+        const history: AnalysisHistorySummary[] = records.map(r => {
+            let topOffersCount = 0;
+            try {
+                const parsed = JSON.parse(r.topOffers);
+                topOffersCount = Array.isArray(parsed) ? parsed.length : 0;
+            } catch {
+                topOffersCount = 0;
+            }
+
+            return {
+                id: r.id,
+                domain: r.domain,
+                criteria: r.criteria,
+                model: r.model,
+                language: r.language,
+                marketSummary: r.marketSummary,
+                topOffersCount,
+                totalAnalyzed: r.totalAnalyzed,
+                createdAt: r.createdAt.toISOString()
+            };
+        });
+
+        return {
+            success: true,
+            data: history
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: toAgentActionError(error, 'getUserAnalysisHistory')
+        };
+    }
+}
+
+/**
+ * Retrieves a single analysis result with complete parsed offer details.
+ */
+export async function getAnalysisResultById(id: string): Promise<AgentActionResult<{
+    id: string;
+    domain: string;
+    criteria?: string | null;
+    model: string;
+    language: string;
+    marketSummary: string;
+    topOffers: unknown[];
+    criteriaWeights?: unknown;
+    totalAnalyzed: number;
+    createdAt: string;
+}>> {
+    try {
+        const { auth } = await import('@/lib/auth');
+        const { headers } = await import('next/headers');
+        const session = await auth.api.getSession({ headers: await headers() });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                error: {
+                    code: 'AUTH_REQUIRED',
+                    message: 'Authentication required'
+                }
+            };
+        }
+
+        const record = await prisma.analysisResult.findUnique({
+            where: { id }
+        });
+
+        if (!record || record.userId !== session.user.id) {
+            return {
+                success: false,
+                error: {
+                    code: 'NOT_FOUND',
+                    message: 'Analysis record not found'
+                }
+            };
+        }
+
+        return {
+            success: true,
+            data: {
+                id: record.id,
+                domain: record.domain,
+                criteria: record.criteria,
+                model: record.model,
+                language: record.language,
+                marketSummary: record.marketSummary,
+                topOffers: JSON.parse(record.topOffers),
+                criteriaWeights: record.criteriaWeights ? JSON.parse(record.criteriaWeights) : undefined,
+                totalAnalyzed: record.totalAnalyzed,
+                createdAt: record.createdAt.toISOString()
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: toAgentActionError(error, 'getAnalysisResultById')
+        };
+    }
+}
+
+/**
+ * Deletes an analysis record belonging to the authenticated user.
+ */
+export async function deleteAnalysisResult(id: string): Promise<AgentActionResult<{ deleted: boolean }>> {
+    try {
+        const { auth } = await import('@/lib/auth');
+        const { headers } = await import('next/headers');
+        const session = await auth.api.getSession({ headers: await headers() });
+
+        if (!session?.user?.id) {
+            return {
+                success: false,
+                error: {
+                    code: 'AUTH_REQUIRED',
+                    message: 'Authentication required'
+                }
+            };
+        }
+
+        const existing = await prisma.analysisResult.findUnique({
+            where: { id }
+        });
+
+        if (!existing || existing.userId !== session.user.id) {
+            return {
+                success: false,
+                error: {
+                    code: 'NOT_FOUND',
+                    message: 'Record not found or unauthorized'
+                }
+            };
+        }
+
+        await prisma.analysisResult.delete({
+            where: { id }
+        });
+
+        revalidatePath('/dashboard');
+
+        return {
+            success: true,
+            data: { deleted: true }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: toAgentActionError(error, 'deleteAnalysisResult')
+        };
+    }
+}
+

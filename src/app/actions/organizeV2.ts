@@ -10,10 +10,12 @@
  */
 
 import { OpenRouter } from "@openrouter/sdk";
-import { Offer } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
+import { Offer, AgentActionResult } from "@/types";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+import { convertToCSV } from "@/lib/export/csv";
+import { preparePDFData, PDFExportData } from "@/lib/export/pdf";
 
 const CategorySchema = z.object({
     name: z.string(),
@@ -51,6 +53,8 @@ export interface OrganizedOffersV2 {
         offers: Offer[];
     }[];
     groupedBy?: string;
+    exportedCsv?: string;
+    exportedPdfData?: PDFExportData;
 }
 
 type TemplateType = 'timeline' | 'grid' | 'kanban';
@@ -70,8 +74,8 @@ export async function organizeOffersActionV2(
 ): Promise<OrganizedOffersV2> {
     const {
         template = 'grid',
-        groupBy = 'category'
-        // exportFormat - future feature
+        groupBy = 'category',
+        exportFormat
     } = options;
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -239,12 +243,12 @@ export async function organizeOffersActionV2(
 
         console.log(`Organize V2: Successfully organized using ${template} template`);
 
-        // TODO: Export handling
-        // if (exportFormat === 'csv') {
-        //     return convertToCSV(result);
-        // } else if (exportFormat === 'pdf-ready') {
-        //     return preparePDFData(result);
-        // }
+        // Handle export formats if requested
+        if (exportFormat === 'csv') {
+            result.exportedCsv = convertToCSV(result);
+        } else if (exportFormat === 'pdf-ready') {
+            result.exportedPdfData = preparePDFData(result);
+        }
 
         return result;
     };
@@ -252,6 +256,51 @@ export async function organizeOffersActionV2(
     return retryWithBackoff(operation, 2, 'organize offers v2');
 }
 
-// TODO: Export functions
-// function convertToCSV(data: OrganizedOffersV2): string { ... }
-// function preparePDFData(data: OrganizedOffersV2): any { ... }
+export { convertToCSV, preparePDFData };
+
+/**
+ * Server Action for exporting organized offers or offer lists to CSV or structured PDF formats.
+ */
+export async function exportOrganizedOffersAction(
+    data: OrganizedOffersV2 | Offer[],
+    format: 'csv' | 'pdf-ready',
+    options?: { title?: string; domain?: string }
+): Promise<AgentActionResult<{ format: 'csv' | 'pdf-ready'; content: string | PDFExportData }>> {
+    try {
+        if (!data) {
+            return {
+                success: false,
+                error: {
+                    code: 'INVALID_INPUT',
+                    message: 'No data provided for export'
+                }
+            };
+        }
+
+        if (format === 'csv') {
+            const csvContent = convertToCSV(data);
+            return {
+                success: true,
+                data: {
+                    format: 'csv',
+                    content: csvContent
+                }
+            };
+        }
+
+        const pdfData = preparePDFData(data, options);
+        return {
+            success: true,
+            data: {
+                format: 'pdf-ready',
+                content: pdfData
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: toAgentActionError(error, 'exportOrganizedOffersAction')
+        };
+    }
+}
+
