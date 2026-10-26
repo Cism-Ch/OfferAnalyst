@@ -207,13 +207,13 @@ export async function recordAITelemetry(params: {
         if (!userId) {
             try {
                 const session = await auth.api.getSession({ headers: await headers() });
-                userId = session?.user?.id || 'system';
+                userId = session?.user?.id;
             } catch {
-                userId = 'system';
+                userId = undefined;
             }
         }
 
-        const apiKeyId = params.apiKeyResult?.keyId || 'system';
+        const apiKeyId = params.apiKeyResult?.keyId || null;
         const provider = params.apiKeyResult?.provider || 'openrouter';
 
         await logAPIKeyUsage(userId, apiKeyId, provider, params.action, {
@@ -231,7 +231,10 @@ export async function recordAITelemetry(params: {
         if (apiKeyId && apiKeyId.length === 24) {
             if (params.success === false) {
                 const isQuota = params.statusCode === 402 || params.errorMessage?.toLowerCase().includes('quota');
-                const isAuth = params.statusCode === 401 || params.errorMessage?.toLowerCase().includes('auth') || params.errorMessage?.toLowerCase().includes('invalid');
+                const isAuth = params.statusCode === 401 ||
+                    params.errorMessage?.toLowerCase().includes('auth') ||
+                    params.errorMessage?.toLowerCase().includes('invalid') ||
+                    params.errorMessage?.toLowerCase().includes('expired');
                 const newStatus = isQuota ? 'QUOTA_EXCEEDED' : isAuth ? 'INVALID' : 'DEGRADED';
 
                 await prisma.aPIKey.update({

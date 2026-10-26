@@ -284,11 +284,11 @@ model PerformanceMetric {
 
 // API Key Usage Logs for detailed analytics
 model APIKeyUsageLog {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  apiKeyId      String   @db.ObjectId
-  provider      String   // openrouter, openai, etc.
-  action        String   // fetch, analyze, organize
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String?  @db.ObjectId
+  apiKeyId         String?  // Optional: BYOK key ObjectId or null for system key
+  provider         String   // openrouter, openai, etc.
+  action           String   // fetch, analyze, organize
   model            String?  // AI model used
   tokensUsed       Int?     // Total tokens consumed
   promptTokens     Int?     // Input prompt tokens
@@ -302,7 +302,7 @@ model APIKeyUsageLog {
   userAgent        String?  @db.String
   timestamp        DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([apiKeyId])

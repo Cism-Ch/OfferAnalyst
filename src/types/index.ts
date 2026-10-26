@@ -42,6 +42,7 @@ export interface AnalysisResponse {
 
 export type AgentErrorCode =
   | 'API_KEY_MISSING'
+  | 'API_KEY_EXPIRED'
   | 'NO_RESPONSE'
   | 'INVALID_JSON'
   | 'VALIDATION_FAILED'

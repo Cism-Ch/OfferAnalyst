@@ -77,9 +77,19 @@ export async function retryWithBackoff<T>(
       lastError = error as Error;
       console.error(`${context} - Attempt ${attempt} failed:`, error);
 
-      // Ne pas retry sur certaines erreurs
-      if (error instanceof AgentError &&
-        (error.code === 'VALIDATION_FAILED' || error.code === 'API_KEY_MISSING' || error.code === 'API_ERROR')) {
+      // Ne pas retry sur certaines erreurs non récupérables (validation, clé invalide, expirée)
+      const isAuthOrExpired = error instanceof Error && (
+        error.message.toLowerCase().includes('expired') ||
+        error.message.toLowerCase().includes('unauthorized') ||
+        error.message.toLowerCase().includes('invalid api key') ||
+        error.message.toLowerCase().includes('401')
+      );
+
+      if (
+        isAuthOrExpired ||
+        (error instanceof AgentError &&
+        (error.code === 'VALIDATION_FAILED' || error.code === 'API_KEY_MISSING' || error.code === 'API_ERROR'))
+      ) {
         break;
       }
 
@@ -92,9 +102,13 @@ export async function retryWithBackoff<T>(
     }
   }
 
+  const isAuthError = lastError?.message.toLowerCase().includes('expired') ||
+    lastError?.message.toLowerCase().includes('unauthorized') ||
+    lastError?.message.toLowerCase().includes('invalid api key');
+
   throw new AgentError(
-    `${context} failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`,
-    'SEARCH_FAILED'
+    `${context} failed: ${lastError?.message || 'Unknown error'}`,
+    isAuthError ? 'API_KEY_EXPIRED' : 'SEARCH_FAILED'
   );
 }
 

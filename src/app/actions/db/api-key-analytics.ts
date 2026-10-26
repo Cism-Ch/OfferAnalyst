@@ -51,10 +51,10 @@ import { calculateTokenCostUSD } from '@/lib/ai-pricing';
  * Log API key usage with FinOps token telemetry and cost accounting
  */
 export async function logAPIKeyUsage(
-    userId: string,
-    apiKeyId: string,
-    provider: string,
-    action: string,
+    userId?: string | null,
+    apiKeyId?: string | null,
+    provider: string = 'openrouter',
+    action: string = 'unknown',
     data: {
         model?: string;
         tokensUsed?: number;
@@ -67,7 +67,7 @@ export async function logAPIKeyUsage(
         responseTime?: number;
         ipAddress?: string;
         userAgent?: string;
-    }
+    } = {}
 ): Promise<void> {
     try {
         const promptTokens = data.promptTokens ?? 0;
@@ -80,11 +80,19 @@ export async function logAPIKeyUsage(
             costUsd = calculateTokenCostUSD(data.model, promptTokens, completionTokens);
         }
 
+        // Validate MongoDB ObjectId (24 hex characters) to prevent P2023 malformed errors
+        const isValidObjectId = (val?: string | null): boolean => {
+            return typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
+        };
+
+        const safeUserId = isValidObjectId(userId) ? userId! : null;
+        const safeApiKeyId = isValidObjectId(apiKeyId) ? apiKeyId! : null;
+
         // 1. Create granular telemetry log entry
         await prisma.aPIKeyUsageLog.create({
             data: {
-                userId,
-                apiKeyId,
+                userId: safeUserId,
+                apiKeyId: safeApiKeyId,
                 provider,
                 action,
                 model: data.model,
@@ -101,10 +109,10 @@ export async function logAPIKeyUsage(
             }
         });
 
-        // 2. Atomically update parent APIKey counters if valid apiKeyId
-        if (apiKeyId && apiKeyId !== 'system' && apiKeyId.length === 24) {
+        // 2. Atomically update parent APIKey counters if valid BYOK key
+        if (safeApiKeyId) {
             await prisma.aPIKey.update({
-                where: { id: apiKeyId },
+                where: { id: safeApiKeyId },
                 data: {
                     lastUsed: new Date(),
                     usageCount: { increment: 1 },
