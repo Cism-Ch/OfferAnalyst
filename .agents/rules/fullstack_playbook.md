@@ -9,7 +9,7 @@
 - [R-DB-02] Toujours exécuter `npx prisma validate` et `npx prisma generate` après toute modification de schéma avant de modifier le code applicatif.
 - [R-DB-03] Ne jamais stocker de gros blocs HTML ou payloads bruts (> 50 Ko) dans MongoDB ; décharger vers Tigris S3 et stocker uniquement la clé ou l'URL signée.
 - [R-DB-04] Utiliser systématiquement le singleton `prisma` de `@/lib/prisma` pour éviter l'épuisement des connexions du pool MongoDB Atlas en serverless.
-- [R-DB-05] Sous Windows avec Next dev actif, `prisma generate` échoue par verrouillage du DLL moteur (`EPERM`). Utiliser `pnpm run db:sync` (`evals/sync_prisma_types.py`) pour synchroniser proprement les types `node_modules/.prisma/client` sans collision binaire.
+- [R-DB-05] Sous Windows avec Next dev actif, `prisma generate` échoue par verrouillage du DLL moteur (`EPERM`). Arrêter brièvement le serveur dev (`Ctrl+C`) avant de lancer `pnpm exec prisma generate` pour une génération native propre.
 
 ## [BACKEND & SERVER ACTIONS / QSTASH]
 - [R-API-01] Dans Next.js 16, `headers()` et `cookies()` sont des Promises asynchrones : toujours utiliser `await headers()` et `await cookies()`.

@@ -13,7 +13,7 @@
     "rsi:orchestrate": "python evals/rsi_orchestrator.py",
     "rsi:guardrail": "python evals/rsi_orchestrator.py --guardrail",
     "db:validate": "python .agents/skills/db_schema_validator.py",
-    "db:sync": "python evals/sync_prisma_types.py",
+    "db:generate": "prisma generate",
     "version:bump": "python evals/version_manager.py",
     "version:check": "python evals/version_manager.py --dry-run"
   },
