@@ -17,7 +17,7 @@
  * For true security, users should authenticate and store keys server-side.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface TemporaryAPIKey {
     id: string;
@@ -70,42 +70,7 @@ export function useTemporaryApiKeys() {
     const [keys, setKeys] = useState<TemporaryAPIKey[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load keys from localStorage on mount
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        try {
-            const stored = window.localStorage.getItem(STORAGE_KEY);
-            if (!stored) {
-                setIsLoaded(true);
-                return;
-            }
-
-            const data = JSON.parse(deobfuscate(stored));
-            const fingerprint = getBrowserFingerprint();
-
-            // Filter out expired keys and keys from other browsers
-            const validKeys = data.filter((key: TemporaryAPIKey & { fingerprint?: string }) => {
-                const expiresAt = new Date(key.expiresAt);
-                const isExpired = expiresAt < new Date();
-                const isCorrectBrowser = !key.fingerprint || key.fingerprint === fingerprint;
-                return !isExpired && isCorrectBrowser;
-            });
-
-            setKeys(validKeys);
-            
-            // Save back filtered keys if any were removed
-            if (validKeys.length !== data.length) {
-                saveKeys(validKeys);
-            }
-        } catch (error) {
-            console.error('Failed to load temporary API keys:', error);
-        } finally {
-            setIsLoaded(true);
-        }
-    }, []);
-
-    const saveKeys = (keysToSave: TemporaryAPIKey[]) => {
+    const saveKeys = useCallback((keysToSave: TemporaryAPIKey[]) => {
         if (typeof window === 'undefined') return;
         
         try {
@@ -119,7 +84,46 @@ export function useTemporaryApiKeys() {
         } catch (error) {
             console.error('Failed to save temporary API keys:', error);
         }
-    };
+    }, []);
+
+    // Load keys from localStorage on mount
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const timer = setTimeout(() => {
+            try {
+                const stored = window.localStorage.getItem(STORAGE_KEY);
+                if (!stored) {
+                    setIsLoaded(true);
+                    return;
+                }
+
+                const data = JSON.parse(deobfuscate(stored));
+                const fingerprint = getBrowserFingerprint();
+
+                // Filter out expired keys and keys from other browsers
+                const validKeys = data.filter((key: TemporaryAPIKey & { fingerprint?: string }) => {
+                    const expiresAt = new Date(key.expiresAt);
+                    const isExpired = expiresAt < new Date();
+                    const isCorrectBrowser = !key.fingerprint || key.fingerprint === fingerprint;
+                    return !isExpired && isCorrectBrowser;
+                });
+
+                setKeys(validKeys);
+                
+                // Save back filtered keys if any were removed
+                if (validKeys.length !== data.length) {
+                    saveKeys(validKeys);
+                }
+            } catch (error) {
+                console.error('Failed to load temporary API keys:', error);
+            } finally {
+                setIsLoaded(true);
+            }
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [saveKeys]);
 
     const addKey = (name: string, provider: string, key: string): string => {
         const now = new Date();

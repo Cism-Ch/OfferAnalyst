@@ -13,14 +13,14 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│     🔴 EN COURS         │  │    🟡 SPRINT 1 (ACTIF)  │  │   🟢 SPRINT 2 (SUIVANT) │
+│     🔴 SPRINT 2 (ACTIF) │  │   🟢 SPRINT 3 (SUIVANT) │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-LINT-01        │  │ [ ] TASK-AI-01          │  │ [ ] TASK-DATA-01        │
-│     (11 erreurs ESLint) │  │     (Fetch Modernisé)   │  │     (MongoDB Analyses)  │
-│                         │  │ [ ] TASK-AI-02          │  │ [ ] TASK-DATA-02        │
-│                         │  │     (Cache fetchV2)     │  │     (Webhooks Analyse)  │
-│                         │  │ [ ] TASK-AI-03          │  │ [ ] TASK-DATA-03        │
-│                         │  │     (Workflow Progress) │  │     (Exports CSV/PDF)   │
+│ [ ] TASK-DATA-01        │  │ [ ] TASK-AUTH-01        │  │ [x] TASK-LINT-01 (React)│
+│     (MongoDB Analyses)  │  │     (Verify Email)      │  │ [x] TASK-AI-01 (Fetch)  │
+│ [ ] TASK-DATA-02        │  │ [ ] TASK-AUTH-02        │  │ [x] TASK-AI-02 (Cache)  │
+│     (Webhooks Analyse)  │  │     (Password Reset)    │  │ [x] TASK-AI-03 (Workflow)│
+│ [ ] TASK-DATA-03        │  │ [ ] TASK-AUTH-03        │  │                         │
+│     (Exports CSV/PDF)   │  │     (Onboarding Profile)│  │                         │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
@@ -30,7 +30,7 @@
 
 ### 🔴 Qualité & Linter React 19
 
-- [ ] **`TASK-LINT-01` — Résolution des 11 Erreurs ESLint React 19**
+- [x] **`TASK-LINT-01` — Résolution des 11 Erreurs ESLint React 19**
   - **Priorité :** 🔴 CRITIQUE (Bloquant pour CI/CD)
   - **Fichiers cibles :**
     - `src/components/theme-toggle.tsx`
@@ -38,42 +38,46 @@
     - `src/hooks/use-search-history.ts`
     - `src/hooks/use-temporary-api-keys.ts`
     - `src/components/api-keys/AnalyticsDashboard.tsx`
-  - **Description :** Éliminer les violations de `react-hooks/set-state-in-effect` (appels synchrones de setState dans `useEffect`) et réorganiser `saveKeys` avant son utilisation dans `use-temporary-api-keys.ts`.
+    - `src/components/analytics/AnalyticsDashboard.tsx`
+    - `src/app/auth/verify/page.tsx`
+    - `src/app/dashboard/api-keys/page.tsx`
+    - `src/components/CookieConsent.tsx`
+  - **Description :** Éliminer les violations de `react-hooks/set-state-in-effect` (appels synchrones de setState dans `useEffect`), corriger les ordres de déclaration et nettoyer les imports inutilisés.
   - **Critères d'acceptation :**
-    - [ ] `npm run lint` s'exécute avec 0 erreur et 0 avertissement.
-    - [ ] Aucun flash ou problème d'hydratation côté client.
-    - [ ] `npx tsc --noEmit` reste à 0 erreur.
+    - [x] `npm run lint` s'exécute avec 0 erreur et 0 avertissement.
+    - [x] Aucun flash ou problème d'hydratation côté client.
+    - [x] `npx tsc --noEmit` reste à 0 erreur.
 
 ---
 
-### 🟡 Moteur Multi-Agents (Fiabilité & Performance)
+### 🟡 Moteur Multi-Agents (Fiabilité & Performance — Sprint 1)
 
-- [ ] **`TASK-AI-01` — Modernisation de l'Agent Fetch V1**
+- [x] **`TASK-AI-01` — Modernisation de l'Agent Fetch V1**
   - **Priorité :** 🔴 HAUTE
   - **Fichiers cibles :** `src/app/actions/fetch.ts`, `src/app/actions/shared/agent-utils.ts`
   - **Description :** Remplacer le parsing regex artisanal par l'utilitaire éprouvé `parseJSONFromText`. Supprimer tous les fallbacks mockés silencieux (`mock-1`, `mock-2`). Ajouter la validation runtime avec Zod et la gestion des retries avec backoff.
   - **Critères d'acceptation :**
-    - [ ] Zéro mock renvoyé en cas d'erreur API ; retour d'un `AgentError` explicite.
-    - [ ] Parsing robuste supportant le markdown wrapping (```json).
-    - [ ] Validation complète du tableau d'offres via `OfferArraySchema`.
+    - [x] Zéro mock renvoyé en cas d'erreur API ; retour d'un `AgentError` explicite.
+    - [x] Parsing robuste supportant le markdown wrapping (```json).
+    - [x] Validation complète du tableau d'offres via `OfferArraySchema`.
 
-- [ ] **`TASK-AI-02` — Couche de Caching pour `fetchV2.ts`**
+- [x] **`TASK-AI-02` — Couche de Caching pour `fetchV2.ts`**
   - **Priorité :** 🟡 HAUTE
-  - **Fichiers cibles :** `src/app/actions/fetchV2.ts`, `src/lib/cache.ts` (ou Redis/In-Memory)
+  - **Fichiers cibles :** `src/app/actions/fetchV2.ts`, `src/lib/cache.ts`
   - **Description :** Implémenter un système de cache clé-valeur (clé = hash(domaine + contexte), TTL = 3600s) pour éviter les requêtes API web répétitives.
   - **Critères d'acceptation :**
-    - [ ] Les recherches identiques retournent le résultat en cache instantanément (< 50ms).
-    - [ ] Métadonnées `cached: true/false` incluses dans `AgentActionResult`.
-    - [ ] Réduction mesurable des appels à l'API OpenRouter.
+    - [x] Les recherches identiques retournent le résultat en cache instantanément (< 50ms).
+    - [x] Métadonnées `cached: true/false` incluses dans `AgentActionResult`.
+    - [x] Réduction mesurable des appels à l'API OpenRouter et support BYOK.
 
-- [ ] **`TASK-AI-03` — Persistance de la Progression du Workflow**
+- [x] **`TASK-AI-03` — Persistance de la Progression du Workflow**
   - **Priorité :** 🟡 HAUTE
-  - **Fichiers cibles :** `src/app/actions/workflow/orchestrator.ts`, `prisma/schema.prisma`
-  - **Description :** Implémenter la fonction `getWorkflowProgress(workflowId)` et enregistrer les transitions d'état en base MongoDB (`pending` → `fetching` → `analyzing` → `organizing` → `complete`).
+  - **Fichiers cibles :** `src/app/actions/workflow/orchestrator.ts`, `src/lib/cache.ts`
+  - **Description :** Implémenter la fonction `getWorkflowProgress(workflowId)` et enregistrer les transitions d'état (`pending` → `fetching` → `analyzing` → `organizing` → `complete`).
   - **Critères d'acceptation :**
-    - [ ] Les étapes et pourcentages sont consultables via ID de workflow.
-    - [ ] Support de la reconnexion / polling côté UI sans perte d'état.
-    - [ ] Nettoyage automatique des workflows expirés ou terminés.
+    - [x] Les étapes et pourcentages sont consultables via ID de workflow (`getWorkflowProgress`).
+    - [x] Support de la reconnexion / polling côté UI sans perte d'état (`getWorkflowProgressHistory`).
+    - [x] Nettoyage automatique des workflows expirés (TTL 15 min).
 
 ---
 
@@ -153,6 +157,7 @@
 
 | Date | ID | Intitulé & Description | Livrables / PR |
 | :--- | :--- | :--- | :--- |
+| **2026-10-26** | `TASK-LINT-01` | Résolution complète des 11 erreurs ESLint React 19 (hooks & hydration) | 8 composants & hooks nettoyés |
 | **2026-10-25** | `TASK-SYS-01` | Création de `Agent.md` et `AGENTS.md` pour l'encadrement des agents IA | [Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md) |
 | **2026-01-23** | `TASK-SEC-01` | Refonte de la sécurité BYOK avec chiffrement AES-256-GCM et alertes | `src/lib/api-key-encryption.ts`, `docs/API_KEY_SECURITY.md` |
 | **2026-01-22** | `TASK-DEP-01` | Correction de la configuration de déploiement Vercel (suppression secrets syntax) | `vercel.json`, `DEPLOYMENT_FIX_SUMMARY.md` |

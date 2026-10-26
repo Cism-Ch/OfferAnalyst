@@ -15,6 +15,7 @@ import { Offer, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+import { getCache, setCache, generateCacheKey } from '@/lib/cache';
 
 // Schéma Zod pour valider une offre
 const OfferSchema = z.object({
@@ -46,13 +47,37 @@ export async function fetchOffersActionV2(
 ): Promise<AgentActionResult<Offer[]>> {
     const {
         preferWebSources = true,
-        // enableCaching - future feature
+        enableCaching = true,
         async = false,
         batchSize = 10
     } = options;
 
     const startedAt = Date.now();
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const cacheKey = generateCacheKey('offers:v2', domain, context, modelName, preferWebSources, batchSize);
+
+    // Caching layer check (1 hour TTL)
+    if (enableCaching) {
+        const cachedOffers = await getCache<Offer[]>(cacheKey);
+        if (cachedOffers && cachedOffers.length > 0) {
+            console.log(`Fetch V2: Serving ${cachedOffers.length} offers from cache for domain "${domain}"`);
+            return {
+                success: true,
+                data: cachedOffers,
+                meta: {
+                    model: modelName,
+                    latencyMs: Date.now() - startedAt,
+                    webSources: cachedOffers.filter(o => o.source === 'web').length,
+                    totalOffers: cachedOffers.length,
+                    async,
+                    cached: true
+                }
+            };
+        }
+    }
+
+    const { getAPIKey } = await import('./shared/api-key-provider');
+    const apiKeyResult = await getAPIKey('openrouter');
+    const apiKey = apiKeyResult?.key || process.env.OPENROUTER_API_KEY;
     
     if (!apiKey) {
         return {
@@ -60,12 +85,6 @@ export async function fetchOffersActionV2(
             error: toAgentActionError(new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING'), 'fetch offers v2')
         };
     }
-
-    // TODO: Implement caching layer
-    // if (enableCaching) {
-    //     const cached = await getCachedOffers(domain, context);
-    //     if (cached) return cached;
-    // }
 
     const openrouter = new OpenRouter({
         apiKey: apiKey,
@@ -162,10 +181,10 @@ export async function fetchOffersActionV2(
 
         console.log(`Fetch V2: Retrieved ${validatedOffers.length} offers (${validatedOffers.filter(o => o.source === 'web').length} from web)`);
 
-        // TODO: Cache results
-        // if (enableCaching) {
-        //     await cacheOffers(domain, context, validatedOffers, 3600); // 1h TTL
-        // }
+        // Cache results if enabled (1 hour TTL)
+        if (enableCaching) {
+            await setCache(cacheKey, validatedOffers, 3600);
+        }
 
         return validatedOffers;
     };
@@ -182,7 +201,7 @@ export async function fetchOffersActionV2(
                 webSources: offers.filter(o => o.source === 'web').length,
                 totalOffers: offers.length,
                 async,
-                cached: false // TODO: implement caching
+                cached: false
             }
         };
     } catch (error) {

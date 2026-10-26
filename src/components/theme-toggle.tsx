@@ -1,4 +1,4 @@
-"use strict"
+"use client";
 
 import * as React from "react"
 import { Moon, Sun, Star } from "lucide-react"
@@ -6,13 +6,11 @@ import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 
+const emptySubscribe = () => () => {};
+
 export function ThemeToggle() {
     const { setTheme, theme } = useTheme()
-    const [mounted, setMounted] = React.useState(false)
-
-    React.useEffect(() => {
-        setMounted(true)
-    }, [])
+    const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false)
 
     if (!mounted) {
         return (

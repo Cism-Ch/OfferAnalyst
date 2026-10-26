@@ -18,6 +18,7 @@ import { Offer, UserProfile, AnalysisResponse } from "@/types";
 import { fetchOffersActionV2 } from "../fetchV2";
 import { analyzeOffersActionV2 } from "../analyzeV2";
 import { organizeOffersActionV2, OrganizedOffersV2 } from "../organizeV2";
+import { getCache, setCache } from "@/lib/cache";
 
 export type WorkflowState = 
     | 'pending' 
@@ -104,14 +105,18 @@ export async function executeWorkflow(
 
     let currentStep = 0;
 
-    const addProgress = (state: WorkflowState, message: string) => {
-        progress.push({
+    const addProgress = async (state: WorkflowState, message: string) => {
+        const item: WorkflowProgress = {
             state,
             currentStep,
             totalSteps,
             message,
             timestamp: Date.now()
-        });
+        };
+        progress.push(item);
+        // Persist latest state and complete transition history (15 min TTL)
+        await setCache(`workflow:progress:${workflowId}`, item, 900);
+        await setCache(`workflow:history:${workflowId}`, progress, 900);
     };
 
     const checkCancellation = () => {
@@ -123,7 +128,7 @@ export async function executeWorkflow(
 
     try {
         // State: Pending
-        addProgress('pending', 'Workflow initialized');
+        await addProgress('pending', 'Workflow initialized');
         checkCancellation();
 
         let fetchedOffers = offers;
@@ -133,7 +138,7 @@ export async function executeWorkflow(
         // Step 1: Fetch offers
         if (enableFetch) {
             currentStep++;
-            addProgress('fetching', `Fetching offers from ${domain}...`);
+            await addProgress('fetching', `Fetching offers from ${domain}...`);
             checkCancellation();
 
             const fetchResult = await fetchOffersActionV2(domain, context, modelName, {
@@ -146,7 +151,7 @@ export async function executeWorkflow(
             }
 
             fetchedOffers = fetchResult.data;
-            addProgress('fetching', `Fetched ${fetchedOffers?.length || 0} offers`);
+            await addProgress('fetching', `Fetched ${fetchedOffers?.length || 0} offers`);
         }
 
         if (!fetchedOffers || fetchedOffers.length === 0) {
@@ -156,7 +161,7 @@ export async function executeWorkflow(
         // Step 2: Analyze offers
         if (enableAnalyze) {
             currentStep++;
-            addProgress('analyzing', `Analyzing ${fetchedOffers.length} offers...`);
+            await addProgress('analyzing', `Analyzing ${fetchedOffers.length} offers...`);
             checkCancellation();
 
             const analyzeResult = await analyzeOffersActionV2(
@@ -175,13 +180,13 @@ export async function executeWorkflow(
             }
 
             analysisResult = analyzeResult.data;
-            addProgress('analyzing', `Analysis complete. Top ${analysisResult?.topOffers.length || 0} offers ranked`);
+            await addProgress('analyzing', `Analysis complete. Top ${analysisResult?.topOffers.length || 0} offers ranked`);
         }
 
         // Step 3: Organize offers
         if (enableOrganize) {
             currentStep++;
-            addProgress('organizing', 'Organizing results...');
+            await addProgress('organizing', 'Organizing results...');
             checkCancellation();
 
             const offersToOrganize = analysisResult?.topOffers || fetchedOffers;
@@ -194,7 +199,7 @@ export async function executeWorkflow(
                 }
             );
 
-            addProgress('organizing', `Organized into ${
+            await addProgress('organizing', `Organized into ${
                 organizationResult.categories?.length || 
                 organizationResult.timeline?.length || 
                 organizationResult.kanban?.length || 
@@ -203,7 +208,7 @@ export async function executeWorkflow(
         }
 
         // State: Complete
-        addProgress('complete', 'Workflow completed successfully');
+        await addProgress('complete', 'Workflow completed successfully');
 
         return {
             success: true,
@@ -219,7 +224,7 @@ export async function executeWorkflow(
 
     } catch (error) {
         if (error instanceof WorkflowCancellationError) {
-            addProgress('cancelled', 'Workflow was cancelled by user');
+            await addProgress('cancelled', 'Workflow was cancelled by user');
             return {
                 success: false,
                 state: 'cancelled',
@@ -230,7 +235,7 @@ export async function executeWorkflow(
         }
 
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        addProgress('failed', `Workflow failed: ${errorMessage}`);
+        await addProgress('failed', `Workflow failed: ${errorMessage}`);
 
         return {
             success: false,
@@ -251,11 +256,16 @@ export async function cancelWorkflow(workflowId: string): Promise<boolean> {
 }
 
 /**
- * Get workflow progress (for polling)
+ * Get current workflow progress (for real-time polling)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getWorkflowProgress(_workflowId: string): Promise<WorkflowProgress | null> {
-    // TODO: Implement progress storage and retrieval
-    // For now, return null
-    return null;
+export async function getWorkflowProgress(workflowId: string): Promise<WorkflowProgress | null> {
+    return await getCache<WorkflowProgress>(`workflow:progress:${workflowId}`);
+}
+
+/**
+ * Get complete progress history of a workflow
+ */
+export async function getWorkflowProgressHistory(workflowId: string): Promise<WorkflowProgress[]> {
+    const history = await getCache<WorkflowProgress[]>(`workflow:history:${workflowId}`);
+    return history || [];
 }

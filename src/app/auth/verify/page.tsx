@@ -22,15 +22,18 @@ function VerifyEmailContent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
     const token = searchParams.get("token");
-    
-    if (!token) {
-      setStatus("error");
-      setMessage("Invalid verification link");
-      return;
-    }
 
-    const verifyEmail = async (token: string) => {
+    const timer = setTimeout(async () => {
+      if (!token) {
+        if (isMounted) {
+          setStatus("error");
+          setMessage("Invalid verification link");
+        }
+        return;
+      }
+
       try {
         // TODO: Implement email verification API call
         const response = await fetch("/api/auth/verify-email", {
@@ -44,20 +47,29 @@ function VerifyEmailContent() {
           throw new Error(data.error || "Verification failed");
         }
 
-        setStatus("success");
-        setMessage("Your email has been verified successfully!");
+        if (isMounted) {
+          setStatus("success");
+          setMessage("Your email has been verified successfully!");
+        }
         
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
-          router.push("/dashboard");
+          if (isMounted) {
+            router.push("/dashboard");
+          }
         }, 2000);
       } catch (err) {
-        setStatus("error");
-        setMessage(err instanceof Error ? err.message : "Failed to verify email");
+        if (isMounted) {
+          setStatus("error");
+          setMessage(err instanceof Error ? err.message : "Failed to verify email");
+        }
       }
-    };
+    }, 0);
 
-    verifyEmail(token);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [searchParams, router]);
 
   const handleResendEmail = async () => {

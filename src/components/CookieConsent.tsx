@@ -32,19 +32,23 @@ export function CookieConsent() {
   const [preferences, setPreferences] = React.useState<CookiePreferences>(defaultPreferences);
 
   React.useEffect(() => {
-    // Check if user has already consented
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      setIsVisible(true);
-    } else {
-      try {
-        const saved = JSON.parse(consent);
-        setPreferences(saved);
-      } catch {
-        // Invalid JSON, show banner
+    const timer = setTimeout(() => {
+      // Check if user has already consented
+      const consent = localStorage.getItem('cookie-consent');
+      if (!consent) {
         setIsVisible(true);
+      } else {
+        try {
+          const saved = JSON.parse(consent);
+          setPreferences(saved);
+        } catch {
+          // Invalid JSON, show banner
+          setIsVisible(true);
+        }
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const savePreferences = (prefs: CookiePreferences) => {
@@ -280,14 +284,18 @@ export function useCookieConsent() {
   const [preferences, setPreferences] = React.useState<CookiePreferences | null>(null);
 
   React.useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (consent) {
-      try {
-        setPreferences(JSON.parse(consent));
-      } catch {
-        setPreferences(null);
+    const timer = setTimeout(() => {
+      const consent = localStorage.getItem('cookie-consent');
+      if (consent) {
+        try {
+          setPreferences(JSON.parse(consent));
+        } catch {
+          setPreferences(null);
+        }
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return {

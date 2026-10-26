@@ -56,49 +56,63 @@ export function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadAnalytics();
-  }, []);
+    let isMounted = true;
 
-  const loadAnalytics = async () => {
-    try {
-      // Fetch analytics from server API endpoint
-      const response = await fetch('/api/analytics/summary');
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAnalytics(data);
-      } else {
-        // Fallback to localStorage if API fails (for development/offline mode)
-        const searchHistoryData = localStorage.getItem('searchHistory');
-        const savedOffersData = localStorage.getItem('savedOffers');
-        const projectsData = localStorage.getItem('projects');
+    const loadAnalytics = async () => {
+      try {
+        // Fetch analytics from server API endpoint
+        const response = await fetch('/api/analytics/summary');
         
-        const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
-        const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
-        const projects = projectsData ? JSON.parse(projectsData).length : 0;
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted) {
+            setAnalytics(data);
+          }
+        } else {
+          // Fallback to localStorage if API fails (for development/offline mode)
+          const searchHistoryData = typeof window !== 'undefined' ? localStorage.getItem('searchHistory') : null;
+          const savedOffersData = typeof window !== 'undefined' ? localStorage.getItem('savedOffers') : null;
+          const projectsData = typeof window !== 'undefined' ? localStorage.getItem('projects') : null;
+          
+          const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
+          const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
+          const projects = projectsData ? JSON.parse(projectsData).length : 0;
 
-        setAnalytics({
-          period: '30 days',
-          searches,
-          savedOffers,
-          projects,
-          apiCallsUsed: searches * 2, // Estimate: fetch + analyze
-        });
+          if (isMounted) {
+            setAnalytics({
+              period: '30 days',
+              searches,
+              savedOffers,
+              projects,
+              apiCallsUsed: searches * 2, // Estimate: fetch + analyze
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load analytics:', error);
+        // Set empty data to show zero state instead of error
+        if (isMounted) {
+          setAnalytics({
+            period: '30 days',
+            searches: 0,
+            savedOffers: 0,
+            projects: 0,
+            apiCallsUsed: 0,
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
-      // Set empty data to show zero state instead of error
-      setAnalytics({
-        period: '30 days',
-        searches: 0,
-        savedOffers: 0,
-        projects: 0,
-        apiCallsUsed: 0,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadAnalytics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (loading) {
     return (

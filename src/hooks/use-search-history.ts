@@ -18,22 +18,24 @@ export function useSearchHistory() {
     useEffect(() => {
         if (typeof window === 'undefined') return;
         
-        try {
-            const stored = window.localStorage.getItem(HISTORY_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // This is intentional to prevent hydration errors - we load from localStorage after mount
-                setHistory(parsed);
-                console.log("[useSearchHistory] Loaded:", parsed.length, "items");
+        const timer = setTimeout(() => {
+            try {
+                const stored = window.localStorage.getItem(HISTORY_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    // This is intentional to prevent hydration errors - we load from localStorage after mount
+                    setHistory(parsed);
+                    console.log("[useSearchHistory] Loaded:", parsed.length, "items");
+                }
+            } catch (e) {
+                console.error("[useSearchHistory] Failed to load history", e);
+            } finally {
+                setIsLoading(false);
+                isInitialLoad.current = false;
             }
-        } catch (e) {
-            console.error("[useSearchHistory] Failed to load history", e);
-        } finally {
-            setIsLoading(false);
-        }
-        
-        // Mark initial load as complete
-        isInitialLoad.current = false;
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, []);
 
     // Save to localStorage whenever history changes (skip initial load)

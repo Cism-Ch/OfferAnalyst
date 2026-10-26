@@ -16,7 +16,7 @@
  * - Unauthenticated users: Keys stored in browser localStorage (temporary, 24h max)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,11 @@ export default function APIKeysPage() {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = useCallback((message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    }, []);
 
     const isAuthenticated = !!session?.user && !isPending;
 
@@ -133,12 +138,7 @@ export default function APIKeysPage() {
         if (!isPending) {
             loadKeys();
         }
-    }, [isAuthenticated, session?.user?.id, temporaryKeys.isLoaded, temporaryKeys.keys, isPending]);
-
-    const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-    };
+    }, [isAuthenticated, session?.user?.id, temporaryKeys.isLoaded, temporaryKeys.keys, isPending, showToast]);
 
     const maskKey = (key: string) => {
         if (key.length <= 8) return '••••••••';

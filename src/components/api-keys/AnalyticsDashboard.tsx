@@ -6,7 +6,7 @@
  * Comprehensive dashboard displaying API key usage analytics with charts and metrics.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -53,25 +53,36 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
     const [timeline, setTimeline] = useState<Array<{ date: string; requests: number }>>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadAnalytics = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const [analyticsData, timelineData] = await Promise.all([
-                getAPIKeyAnalytics(userId, apiKeyId, days),
-                getUsageTimeline(userId, apiKeyId, days)
-            ]);
-            setAnalytics(analyticsData);
-            setTimeline(timelineData);
-        } catch (error) {
-            console.error('Error loading analytics:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [userId, apiKeyId, days]);
-
     useEffect(() => {
-        loadAnalytics();
-    }, [loadAnalytics]);
+        let isMounted = true;
+
+        async function fetchAnalytics() {
+            try {
+                const [analyticsData, timelineData] = await Promise.all([
+                    getAPIKeyAnalytics(userId, apiKeyId, days),
+                    getUsageTimeline(userId, apiKeyId, days)
+                ]);
+                if (isMounted) {
+                    setAnalytics(analyticsData);
+                    setTimeline(timelineData);
+                }
+            } catch (error) {
+                if (isMounted) {
+                    console.error('Error loading analytics:', error);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        fetchAnalytics();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [userId, apiKeyId, days]);
 
     if (isLoading) {
         return (

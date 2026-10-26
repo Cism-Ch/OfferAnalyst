@@ -80,14 +80,12 @@ const themes: Theme[] = [
   },
 ];
 
+const emptySubscribe = () => () => {};
+
 export function PremiumThemeSelector() {
   const { setTheme, theme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [open, setOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return (
