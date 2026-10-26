@@ -132,30 +132,30 @@ export async function getAPIKeyAnalytics(
         });
 
         const totalRequests = allLogs.length;
-        const successfulRequests = allLogs.filter(log => log.success).length;
+        const successfulRequests = allLogs.filter((log: { success: boolean }) => log.success).length;
         const successRate = totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 0;
 
-        const responseTimes = allLogs.filter(log => log.responseTime != null).map(log => log.responseTime!);
+        const responseTimes = allLogs.filter((log: { responseTime: number | null }) => log.responseTime != null).map((log: { responseTime: number | null }) => log.responseTime!);
         const avgResponseTime = responseTimes.length > 0
-            ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+            ? responseTimes.reduce((sum: number, time: number) => sum + time, 0) / responseTimes.length
             : 0;
 
-        const totalTokens = allLogs.reduce((sum, log) => sum + (log.tokensUsed || 0), 0);
+        const totalTokens = allLogs.reduce((sum: number, log: { tokensUsed: number | null }) => sum + (log.tokensUsed || 0), 0);
 
         return {
             totalRequests,
             successRate: Math.round(successRate * 10) / 10,
             avgResponseTime: Math.round(avgResponseTime),
             totalTokens,
-            requestsByProvider: byProvider.map(item => ({
+            requestsByProvider: byProvider.map((item: { provider: string; _count: { provider: number } }) => ({
                 provider: item.provider,
                 count: item._count.provider
             })),
-            requestsByAction: byAction.map(item => ({
+            requestsByAction: byAction.map((item: { action: string; _count: { action: number } }) => ({
                 action: item.action,
                 count: item._count.action
             })),
-            recentActivity: logs.map(log => ({
+            recentActivity: logs.map((log: { timestamp: Date; action: string; provider: string; success: boolean; responseTime: number | null }) => ({
                 timestamp: log.timestamp.toISOString(),
                 action: log.action,
                 provider: log.provider,
@@ -211,7 +211,7 @@ export async function getUsageTimeline(
         });
 
         // Group by date
-        const grouped = logs.reduce((acc: { [key: string]: { total: number; successful: number; failed: number } }, log) => {
+        const grouped = logs.reduce((acc: { [key: string]: { total: number; successful: number; failed: number } }, log: { timestamp: Date; success: boolean }) => {
             const date = log.timestamp.toISOString().split('T')[0];
             if (!acc[date]) {
                 acc[date] = { total: 0, successful: 0, failed: 0 };
@@ -225,7 +225,8 @@ export async function getUsageTimeline(
             return acc;
         }, {});
 
-        return Object.entries(grouped).map(([date, data]) => ({
+        const entries = Object.entries(grouped) as [string, { total: number; successful: number; failed: number }][];
+        return entries.map(([date, data]) => ({
             date,
             requests: data.total,
             successfulRequests: data.successful,

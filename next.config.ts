@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Empty turbopack config to silence warning
   turbopack: {},
   
+  transpilePackages: ['@prisma/client'],
+  
   // Security headers
   async headers() {
     return [

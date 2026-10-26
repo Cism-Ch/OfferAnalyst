@@ -53,7 +53,7 @@ const createLogger = () => {
     return pino({
       level: 'info',
       formatters: {
-        level: (label) => ({ level: label }),
+        level: (label: string) => ({ level: label }),
       },
       timestamp: pino.stdTimeFunctions.isoTime,
       // Redact sensitive fields

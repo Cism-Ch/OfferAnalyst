@@ -68,7 +68,26 @@ export async function getUserSecurityAlerts(
             }
         });
 
-        return alerts.map((alert) => ({
+        interface AlertWithKeys {
+            id: string;
+            alertType: string;
+            severity: string;
+            message: string;
+            metadata: string | null;
+            isRead: boolean;
+            isResolved: boolean;
+            resolvedAt: Date | null;
+            createdAt: Date;
+            apiKeyId: string | null;
+            user: {
+                apiKeys: {
+                    id: string;
+                    name: string;
+                }[];
+            };
+        }
+
+        return (alerts as unknown as AlertWithKeys[]).map((alert: AlertWithKeys) => ({
             id: alert.id,
             alertType: alert.alertType,
             severity: alert.severity,
@@ -79,7 +98,7 @@ export async function getUserSecurityAlerts(
             resolvedAt: alert.resolvedAt?.toISOString() || null,
             createdAt: alert.createdAt.toISOString(),
             apiKeyName: alert.apiKeyId 
-                ? alert.user.apiKeys.find(k => k.id === alert.apiKeyId)?.name 
+                ? alert.user.apiKeys.find((k: { id: string; name: string }) => k.id === alert.apiKeyId)?.name 
                 : undefined
         }));
     } catch (error) {

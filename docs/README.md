@@ -1,33 +1,63 @@
-# Ticket d'Amélioration : Modernisation de l'Agent Fetch
+# 📚 Documentation OfferAnalyst — Index & Référence
 
-## Description du Problème
-L'implémentation actuelle de `src/app/actions/fetch.ts` présente plusieurs faiblesses qui affectent la stabilité et la qualité des données récupérées :
-1.  **Parsing Manuel Fragile** : L'extraction du JSON se fait par manipulation de chaînes de caractères (`indexOf('[')`), ce qui est sujet aux erreurs si l'AI ajoute du texte périphérique.
-2.  **Absence de Validation de Schéma** : Les données renvoyées par l'AI ne sont pas validées par Zod, risquant des erreurs plus loin dans le dashboard.
-3.  **Gestion des Erreurs Simpliste** : En cas d'échec de parsing, l'agent renvoie des données "mock" (factices), ce qui peut induire l'utilisateur en erreur sur la réalité des résultats.
-4.  **Instructions Système Limitées** : Le prompt pourrait être optimisé pour mieux exploiter l'outil `googleSearch`.
+Bienvenue dans la documentation technique du projet **OfferAnalyst**.  
+Cette documentation est structurée selon des normes rigoureuses afin de garantir la clarté et l'efficacité du travail des équipes humaines et des agents IA.
 
-## Améliorations Requises
+---
 
-### 1. Robustesse du Parsing
-- Migrer vers l'utilisation de `parseJSONFromText` (nouvellement amélioré dans `agent-utils.ts`) pour capturer proprement les réponses, qu'elles soient encapsulées ou non.
-- Explorer l'activation de `responseMimeType: "application/json"` si les tests confirment la compatibilité avec l'outil de recherche.
+## 🎯 Pilotage des Tâches & Feuille de Route (SSOT)
 
-### 2. Validation avec Zod
-- Définir un schéma `FetchResponseSchema` (ou réutiliser `OfferSchema`) pour valider chaque offre récupérée.
-- Utiliser `validateWithZod` pour garantir l'intégrité des données avant de les renvoyer au client.
+> [!IMPORTANT]
+> **Source Unique de Vérité :** Toutes les tâches, tickets et priorités sont désormais centralisés dans :  
+> 👉 **[docs/TASKS.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/TASKS.md)**  
+> Aucun fichier de TODO ou de ticket isolé ne doit être créé en dehors de ce registre.
 
-### 3. Stratégie de Retry et Erreurs
-- Supprimer les `mock-1` et `mock-2` comme fallback.
-- Utiliser `retryWithBackoff` pour gérer les échecs temporaires de l'AI ou du réseau.
-- Lever une `AgentError` explicite en cas d'échec final pour informer l'interface utilisateur.
+---
 
-### 4. Optimisation du Fetching
-- Permettre le passage de paramètres de limite dynamiques.
-- Améliorer les instructions système pour exiger des URLs sources valides et des descriptions plus riches.
+## 🏗️ Architecture & Système Multi-Agents
 
-## Critères d'Acceptation
-- [ ] `fetchOffersAction` utilise `agent-utils.ts` pour son orchestration (retry, parse, validate).
-- [ ] Toutes les offres renvoyées respectent strictement le contrat d'interface `Offer`.
-- [ ] Aucun résultat "mock" n'est généré en silence.
-- [ ] Les erreurs d'API (quota, sécurité) sont détectées et remontées proprement.
+- 🤖 **[Agent.md (Guide Opérationnel des Agents IA)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md)** : Règles absolues d'ingénierie, cycle de vie du code et protocoles de validation.
+- 🧠 **[AGENTS_ARCHITECTURE.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/AGENTS_ARCHITECTURE.md)** : Spécifications modulaires des agents internes (Fetch, Analyze, Organize, Orchestrator).
+- 🔐 **[API_KEY_SECURITY.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/API_KEY_SECURITY.md)** : Architecture du coffre-fort de clés BYOK et chiffrement AES-256-GCM.
+- 🛡️ **[SECURITY_SCANNING.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/SECURITY_SCANNING.md)** : Procédures d'audit de vulnérabilités et sécurité continue.
+
+---
+
+## 🗄️ Base de Données & Infrastructure
+
+- 🍃 **[MONGODB_SETUP.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/MONGODB_SETUP.md)** : Guide de configuration MongoDB Atlas & variables d'environnement.
+- 🔄 **[MONGODB_INTEGRATION.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/MONGODB_INTEGRATION.md)** : Schémas et intégration du connecteur MongoDB avec Prisma.
+- ⚙️ **[PRISMA_BUILD_CONFIG.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/PRISMA_BUILD_CONFIG.md)** : Pipeline de build et génération du client Prisma.
+- 🚀 **[DEPLOYMENT.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/DEPLOYMENT.md)** : Déploiement Vercel, configurations DNS et optimisations de production.
+
+---
+
+## 🎨 Design System & Expérience Utilisateur
+
+- ✨ **[PREMIUM_DESIGN_SYSTEM.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/PREMIUM_DESIGN_SYSTEM.md)** : Charte graphique, tokens de couleurs, typographie et composants Neon.
+- 📐 **[MODERN_LAYOUT_SYSTEM.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/MODERN_LAYOUT_SYSTEM.md)** : Système de grille, micro-animations Framer Motion et adaptativité mobile.
+
+---
+
+## ⚖️ Conformité Légale
+
+- 🔒 **[PRIVACY_POLICY.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/PRIVACY_POLICY.md)** : Politique de confidentialité des données utilisateurs et clés API.
+- 📜 **[TERMS_OF_SERVICE.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/TERMS_OF_SERVICE.md)** : Conditions générales d'utilisation du service.
+
+---
+
+## 🚀 Démarrage & Fonctionnalités Produit
+
+- ⚡ **[QUICKSTART.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/QUICKSTART.md)** : Guide de déploiement express en ~20 minutes (Vercel + MongoDB Atlas).
+- 🎯 **[FEATURES.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/FEATURES.md)** : Documentation détaillée de toutes les fonctionnalités de la plateforme.
+
+---
+
+## 📦 Archives Historiques (`docs/archive/`)
+
+Les anciens comptes-rendus de phases, tickets ponctuels résolus et plans préliminaires sont archivés pour référence historique :
+- **[docs/archive/phases/](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/phases)** : Rapports d'achèvement des phases 00 à 11.
+- **[docs/archive/tickets/](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tickets)** : Anciens tickets de résolution de bugs et d'optimisations passées.
+- **[docs/archive/reports/](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports)** : Comptes-rendus de livraison spécifiques (BYOK, correctifs Vercel, fonts build).
+- **[docs/archive/legacy_plans/](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/legacy_plans)** : Anciennes roadmaps et TODOs éclatés (désormais consolidés dans `TASKS.md`).
+

@@ -227,7 +227,7 @@ export async function getKeysNeedingRotation(userId: string): Promise<{
         });
 
         const now = new Date();
-        return keys.map(key => ({
+        return keys.map((key: { id: string; name: string; provider: string; createdAt: Date }) => ({
             id: key.id,
             name: key.name,
             provider: key.provider,
@@ -282,7 +282,7 @@ export async function getKeyRotationHistory(
             }
         });
 
-        return keys.map(key => ({
+        return keys.map((key: { id: string; name: string; provider: string; createdAt: Date; isActive: boolean; isPrimary: boolean }) => ({
             id: key.id,
             name: key.name,
             provider: key.provider,

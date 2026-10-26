@@ -153,12 +153,12 @@ API_KEY_ENCRYPTION_SECRET="your-secret-32-chars-minimum"
 
 **New Documentation Added:**
 - `docs/API_KEY_SECURITY.md` - Complete security architecture and usage guide
-- `IMPLEMENTATION_SUMMARY.md` - French user guide
+- `docs/archive/reports/IMPLEMENTATION_SUMMARY.md` - French user guide
 - `.env.example` - Updated with new environment variables
 
 **Key Resources:**
 - [Security Architecture](docs/API_KEY_SECURITY.md)
-- [Implementation Summary (FR)](IMPLEMENTATION_SUMMARY.md)
+- [Implementation Summary (FR)](docs/archive/reports/IMPLEMENTATION_SUMMARY.md)
 - [Environment Setup](.env.example)
 
 #### Security Validation
