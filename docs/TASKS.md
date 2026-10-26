@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 26 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Phase 5 (Sprints 1, 2, 3 & 4 Complétés — Plateforme Intégrale Prête pour Production)
+**Statut Global :** Phase 5 (Sprints 1, 2, 3 & 4 Complétés — Sprint 5 Infrastructure Actif)
 
 ---
 
@@ -13,14 +13,14 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│     🔴 SPRINT ACTIF     │  │   🟢 PROCHAIN SPRINT    │  │       ✅ TERMINÉ        │
+│   🔴 SPRINT 5 (ACTIF)   │  │  🟢 SPRINT 6 (SUIVANT)  │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] MAINTENANCE & CI/CD │  │ [ ] EXTENSION CHROME    │  │ [x] TASK-LINT-01 (React)│
-│     (Tests E2E & Perf)  │  │     (Manifest V3)       │  │ [x] TASK-AI-01 (Fetch)  │
-│ [ ] MONITORING QSTASH   │  │ [ ] EXPORTS S3 TIGRIS   │  │ [x] TASK-AI-02 (Cache)  │
-│     (Jobs asynchrones)  │  │     (Presigned URLs)    │  │ [x] TASK-AI-03 (Workflow)│
-│                         │  │                         │  │ [x] TASK-DATA-01(MongoDB│
-│                         │  │                         │  │ [x] TASK-DATA-02(Webhook│
+│ [ ] TASK-INFRA-01       │  │ [ ] TASK-GROWTH-01      │  │ [x] TASK-LINT-01 (React)│
+│     (Upstash QStash)    │  │     (Chrome Ext. MV3)   │  │ [x] TASK-AI-01 (Fetch)  │
+│ [ ] TASK-INFRA-02       │  │ [ ] TASK-GROWTH-02      │  │ [x] TASK-AI-02 (Cache)  │
+│     (Tigris S3 Storage) │  │     (Stripe Billing)    │  │ [x] TASK-AI-03 (Workflow)│
+│ [ ] TASK-INFRA-03       │  │ [ ] TASK-GROWTH-03      │  │ [x] TASK-DATA-01(MongoDB│
+│     (E2E Tests & CI)    │  │     (Realtime Collab)   │  │ [x] TASK-DATA-02(Webhook│
 │                         │  │                         │  │ [x] TASK-DATA-03(Exports│
 │                         │  │                         │  │ [x] TASK-AUTH-01(Verify)│
 │                         │  │                         │  │ [x] TASK-AUTH-02(Reset) │
@@ -31,6 +31,75 @@
 │                         │  │                         │  │ [x] TASK-UI-03 (Themes) │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🚀 Sprint Actif : Sprint 5 — Infrastructure Distribuée & Scalabilité
+
+### ⚡ Tâches Asynchrones, Cloud Storage & Fiabilité
+
+- [ ] **`TASK-INFRA-01` — Délégation Asynchrone Upstash QStash & Receiver Verify**
+  - **Priorité :** 🔴 HAUTE (Conformité Règle 5 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
+  - **Fichiers cibles :** `src/lib/qstash.ts`, `src/app/api/jobs/route.ts`, `src/lib/email-notifications.ts`
+  - **Description :** Décharger les opérations lourdes (envoi d'emails transactionnels, génération et compilation d'analyses de plus de 50 offres, retries de webhooks) vers Upstash QStash. Implémenter l'endpoint de réception avec validation cryptographique de signature (`receiver.verify({ signature, body })`) et concevoir des handlers strictement idempotents pour absorber les réémissions automatiques.
+  - **Critères d'acceptation :**
+    - [ ] Client singleton QStash (`@/lib/qstash`) initialisé avec `QSTASH_TOKEN`.
+    - [ ] Route webhook `/api/jobs` sécurisée par `Receiver` vérifiant la signature HMAC QStash.
+    - [ ] Déchargement des emails de réinitialisation/vérification via file QStash (zéro blocage du thread HTTP).
+    - [ ] Mécanisme d'idempotence basé sur l'identifiant de message (`messageId` ou hash d'opération).
+
+- [ ] **`TASK-INFRA-02` — Stockage Cloud d'Objets Tigris S3 & URLs Pré-signées**
+  - **Priorité :** 🔴 HAUTE (Conformité Règle 4 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
+  - **Fichiers cibles :** `src/lib/storage.ts`, `src/app/actions/organizeV2.ts`, `src/lib/export/`
+  - **Description :** Remplacer le transport en mémoire vive des exports volumineux par un téléversement persistant vers Tigris Data Storage (compatible AWS S3). Générer des URLs temporaires pré-signées (*presigned URLs*) valables 15 minutes pour le téléchargement sécurisé des rapports PDF et exports CSV.
+  - **Critères d'acceptation :**
+    - [ ] Client S3 compatible Tigris configuré dans `@/lib/storage.ts` via `@aws-sdk/client-s3`.
+    - [ ] Fonction `uploadExportDocument(fileName, content, contentType)` retournant la clé d'objet.
+    - [ ] Fonction `getPresignedDownloadUrl(fileKey, expiresInSeconds=900)` fournissant un lien direct sécurisé.
+    - [ ] Action `exportOrganizedOffersAction` enrichie avec option `uploadToCloud: true` et retour de lien signé.
+
+- [ ] **`TASK-INFRA-03` — Suite de Tests E2E Automatisés & Pipeline CI/CD**
+  - **Priorité :** 🟡 MOYENNE (Conformité Règle 17 d'[Agent.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/Agent.md))
+  - **Fichiers cibles :** `tests/e2e/workflow.spec.ts`, `.github/workflows/ci.yml`, `package.json`
+  - **Description :** Mettre en place une suite de tests end-to-end automatisés (Playwright) couvrant le parcours utilisateur complet : Auth/Invité → Saisie de critères → Recherche Fetch V2 → Scoring Analyze V2 → Export CSV/PDF. Configurer le workflow GitHub Actions exécutant lint, typecheck et tests E2E.
+  - **Critères d'acceptation :**
+    - [ ] Script `npm run test:e2e` exécutable en local et en intégration continue.
+    - [ ] Test E2E validant la chaîne complète du workflow multi-agents sans régression.
+    - [ ] Workflow GitHub Actions bloquant toute PR échouant au linter ou au typage strict.
+
+---
+
+## 📦 Backlog Prochain Sprint : Sprint 6 — Expansion & Monétisation
+
+### 🌐 Extension Web, Facturation Stripe & Collaboration
+
+- [ ] **`TASK-GROWTH-01` — Extension Navigateur Chrome / Edge (Manifest V3)**
+  - **Priorité :** 🟡 HAUTE
+  - **Fichiers cibles :** `extension/manifest.json`, `extension/src/content.ts`, `extension/src/popup.tsx`
+  - **Description :** Extension de navigateur permettant à l'utilisateur de capturer en 1 clic une offre d'emploi, immobilière ou freelance directement depuis des sites tiers (LinkedIn, Indeed, SeLoger, Malt, Upwork) et de la transmettre instantanément à son compte OfferAnalyst pour analyse immédiate.
+  - **Critères d'acceptation :**
+    - [ ] Manifest V3 valide pour le Chrome Web Store.
+    - [ ] Content script d'extraction automatique du titre, prix, description et URL source.
+    - [ ] Popup UI connectée via token de session ou clé API utilisateur pour expédition directe vers `/api/offers/import`.
+
+- [ ] **`TASK-GROWTH-02` — Facturation Stripe, Quotas & Plans Freemium/Pro**
+  - **Priorité :** 🟡 HAUTE
+  - **Fichiers cibles :** `src/lib/stripe.ts`, `src/app/api/billing/webhook/route.ts`, `src/app/dashboard/billing/page.tsx`
+  - **Description :** Monétisation SaaS : modèle Freemium (10 analyses offertes / mois), formule Pro illimitée (accès aux modèles DeepSeek R1, GPT-4o, Claude 3.5 Sonnet) et formule BYOK illimitée sans coût d'inférence. Webhook Stripe pour provisionnement automatique du statut d'abonnement dans `Subscription`.
+  - **Critères d'acceptation :**
+    - [ ] Session Stripe Checkout fonctionnelle pour abonnement mensuel/annuel.
+    - [ ] Webhook Stripe sécurisé validant la signature (`stripe.webhooks.constructEvent`).
+    - [ ] Portail client Stripe (`stripe.billingPortal.sessions.create`) pour gestion des cartes et annulations.
+    - [ ] Blocage et incitation à l'upgrade lors du dépassement du quota gratuit.
+
+- [ ] **`TASK-GROWTH-03` — Collaboration Temps Réel & Partage de Projets Multi-Utilisateurs**
+  - **Priorité :** 🟢 MOYENNE
+  - **Fichiers cibles :** `src/app/projects/[id]/page.tsx`, `src/lib/realtime.ts`
+  - **Description :** Transformer la recherche individuelle en travail d'équipe : partage de dossiers d'analyses avec des collègues, recruteurs ou co-acheteurs, annotations partagées sur les offres scorées et synchronisation en direct des sélections.
+  - **Critères d'acceptation :**
+    - [ ] Invitation par lien d'accès ou par email avec permissions lecture/écriture.
+    - [ ] Système d'annotations et commentaires sur chaque carte d'offre.
+    - [ ] Synchronisation optimiste et alertes de mise à jour collaborative.
 
 ---
 
@@ -126,19 +195,6 @@
 ---
 
 ## 📜 Protocole de Mise à Jour pour les Agents IA
-
-Tout agent intervenant sur le repository **DOIT SUIVRE CE RITUEL** :
-
-1. **Avant d'intervenir :**
-   - Consulter `docs/TASKS.md` pour identifier l'ID de la tâche et ses critères d'acceptation.
-   - Si la tâche n'existe pas, l'ajouter dans la section appropriée avec un ID formaté (`TASK-DOMAIN-XX`).
-2. **Pendant l'intervention :**
-   - Marquer la tâche avec `[-]` (En cours) si l'exécution implique plusieurs étapes documentées.
-3. **Après validation technique (`tsc --noEmit` & `npm run lint`) :**
-   - Cocher les critères d'acceptation et marquer `[x]`.
-   - Transférer la tâche dans le tableau **Historique des Tâches Terminées** en spécifiant la date et les fichiers livrés.
-   - Ne créer **AUCUN nouveau document de suivi séparé** : TOUT centraliser dans `docs/TASKS.md` !
- à Jour pour les Agents IA
 
 Tout agent intervenant sur le repository **DOIT SUIVRE CE RITUEL** :
 
