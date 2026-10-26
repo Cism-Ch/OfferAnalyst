@@ -354,10 +354,12 @@ Afin d'éliminer la dispersion documentaire et de garantir un suivi rigoureux, *
 - Les anciens comptes-rendus de phases et tickets résolus sont préservés dans le dossier d'archives :  
   👉 **[`docs/archive/`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive)**.
 
-### 11.2 Rituel d'Exécution en 4 Étapes pour tout Agent IA
-1. **Lecture préalable :** Consulter obligatoirement `docs/TASKS.md` pour récupérer l'identifiant normalisé de la tâche (ex: `TASK-AI-01`) et ses critères d'acceptation avant toute modification de code.
-2. **Prise en charge :** Si le travail s'échelonne sur plusieurs tours, marquer la tâche avec `[-]` (En cours) dans le tableau Kanban de `docs/TASKS.md`.
-3. **Validation & Clôture :** Une fois le code validé techniquement (`npx tsc --noEmit` & `npm run lint`), cocher les critères d'acceptation `[x]`, passer la tâche à `[x]`, et la consigner dans le tableau `Historique des Tâches Terminées` avec la date et les fichiers livrés.
+### 11.2 Rituel d'Exécution Inviolable en 4 Étapes pour tout Agent IA
+1. **Lecture & Décomposition Préalable :**
+   - Consulter obligatoirement `docs/TASKS.md` pour récupérer l'identifiant normalisé de la tâche (ex: `TASK-INFRA-01`) et ses critères d'acceptation avant toute modification de code.
+   - **Obligation de formalisation :** Si la tâche ou le sprint demandé n'est pas encore détaillé, l'agent a l'OBLIGATION de l'inscrire et de la décomposer dans `docs/TASKS.md` (avec ID `TASK-DOMAINE-XX`, priorité, fichiers cibles, description et critères cochables `[ ]`) **AVANT d'écrire la moindre ligne de code**. Il est formellement interdit de coder à l'aveugle sans tâche documentée.
+2. **Prise en charge active :** Dès le démarrage des travaux, marquer la tâche avec `[-]` (En cours) dans le tableau Kanban et dans la section active de `docs/TASKS.md`.
+3. **Validation & Clôture :** Une fois le code vérifié techniquement (`npx tsc --noEmit` et `npm run lint` avec 0 erreur tolérée), cocher chaque critère d'acceptation `[x]`, marquer la tâche `[x]`, puis la transférer dans le tableau `Historique des Tâches Terminées` avec la date et les fichiers livrés.
 4. **Journalisation Globale :** Pour les livraisons de fonctionnalités majeures ou corrections notables, consigner la synthèse dans [`CHANGELOG.md`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/CHANGELOG.md) suivant le format canonique *Keep a Changelog*.
 
 ---
