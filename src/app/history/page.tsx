@@ -26,15 +26,22 @@ import {
     ArrowRight,
     Search,
     Eraser,
-    RotateCcw
+    RotateCcw,
+    Cloud,
+    HardDrive,
+    Info,
+    Sparkles,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { SearchHistoryItem } from '@/types';
 
 export default function HistoryPage() {
-    const { history, togglePin, deleteItem, clearHistory, isLoading } = useSearchHistory();
+    const { history, togglePin, deleteItem, clearHistory, isLoading, isAuthenticated, isCloudSync } = useSearchHistory();
     const router = useRouter();
     
+    // Stable timestamp for TTL display
+    const [now] = useState(() => Date.now());
+
     // Search and filter state
     const [searchQuery, setSearchQuery] = useState('');
     const [showClearDialog, setShowClearDialog] = useState(false);
@@ -44,14 +51,15 @@ export default function HistoryPage() {
         if (!searchQuery.trim()) return history;
         
         const query = searchQuery.toLowerCase();
-        return history.filter(item => 
-            item.inputs.domain.toLowerCase().includes(query) ||
-            item.inputs.criteria.toLowerCase().includes(query) ||
-            item.inputs.context.toLowerCase().includes(query) ||
-            (item.results?.topOffers && item.results.topOffers.some(offer => 
-                offer.title.toLowerCase().includes(query)
-            ))
-        );
+        return history.filter(item => {
+            const domain = item.inputs?.domain?.toLowerCase() || '';
+            const criteria = item.inputs?.criteria?.toLowerCase() || '';
+            const context = item.inputs?.context?.toLowerCase() || '';
+            const offersMatch = item.results?.topOffers?.some(offer => 
+                offer.title?.toLowerCase().includes(query)
+            );
+            return domain.includes(query) || criteria.includes(query) || context.includes(query) || !!offersMatch;
+        });
     }, [history, searchQuery]);
     
     // Count pinned and unpinned items
@@ -60,7 +68,6 @@ export default function HistoryPage() {
     
     // Handle restore search - navigate to home page with query params
     const handleRestoreSearch = (item: SearchHistoryItem) => {
-        // Store the item to be restored in sessionStorage
         sessionStorage.setItem('restore_search', JSON.stringify(item));
         router.push('/');
     };
@@ -78,6 +85,32 @@ export default function HistoryPage() {
             maxWidth="6xl"
         >
             <div className="space-y-6">
+                {/* Dual Storage Status Banner */}
+                {isCloudSync ? (
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <Cloud className="h-4 w-4 text-primary" />
+                            <span><strong>Cloud Sync Active:</strong> Your searches are securely retained in MongoDB Atlas (retention: 90 days for unpinned, permanent for pinned).</span>
+                        </div>
+                        <Badge variant="outline" className="border-primary/40 text-primary bg-background">
+                            Cloud DB
+                        </Badge>
+                    </div>
+                ) : (
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-lg border border-amber-500/20 bg-amber-500/5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <HardDrive className="h-4 w-4 text-amber-600 shrink-0" />
+                            <span><strong>Guest Mode (7-day TTL):</strong> Searches are stored locally in your browser for 7 days. Sign in to sync and keep your searches permanently in the cloud.</span>
+                        </div>
+                        <Link href="/auth/login?from=/history" className="shrink-0">
+                            <Button size="sm" variant="outline" className="h-7 text-xs border-amber-500/30 text-amber-700 hover:bg-amber-500/10">
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Sign in to Sync
+                            </Button>
+                        </Link>
+                    </div>
+                )}
+
                 {/* Search and Actions Bar */}
                 {history.length > 0 && (
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -103,7 +136,6 @@ export default function HistoryPage() {
                 )}
 
                 <div className="space-y-6">
-
                 {isLoading ? (
                     <div className="text-center py-20 text-muted-foreground">
                         <Clock className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
@@ -137,6 +169,7 @@ export default function HistoryPage() {
                                         size="icon"
                                         className="h-8 w-8 hover:bg-background/80"
                                         onClick={() => togglePin(item.id)}
+                                        title={item.pinned ? "Unpin search" : "Pin search (prevent deletion)"}
                                     >
                                         {item.pinned ? <Pin className="h-4 w-4 fill-primary text-primary" /> : <Pin className="h-4 w-4 text-muted-foreground" />}
                                     </Button>
@@ -145,6 +178,7 @@ export default function HistoryPage() {
                                         size="icon"
                                         className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
                                         onClick={() => deleteItem(item.id)}
+                                        title="Delete search"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -154,6 +188,11 @@ export default function HistoryPage() {
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                                         <Calendar className="h-3 w-3" />
                                         <span>{formatDistanceToNow(item.timestamp, { addSuffix: true })}</span>
+                                        {!isAuthenticated && item.expiresAt && (
+                                            <span className="text-[10px] text-amber-600 font-medium">
+                                                • Exp in {Math.max(1, Math.ceil((item.expiresAt - now) / (24 * 3600 * 1000)))}d
+                                            </span>
+                                        )}
                                     </div>
                                     <CardTitle className="text-lg line-clamp-1 pr-16">{item.inputs.domain}</CardTitle>
                                     <CardDescription className="line-clamp-2 min-h-10">
@@ -163,24 +202,39 @@ export default function HistoryPage() {
 
                                 <CardContent className="flex-1 pb-2">
                                     <div className="flex flex-wrap gap-2 mb-4">
-                                        <Badge variant="secondary" className="text-xs">
-                                            {item.inputs.context.split(' ').slice(0, 3).join(' ')}...
-                                        </Badge>
+                                        {item.inputs.context ? (
+                                            <Badge variant="secondary" className="text-xs">
+                                                {item.inputs.context.split(' ').slice(0, 3).join(' ')}...
+                                            </Badge>
+                                        ) : null}
                                         <Badge variant="outline" className="text-xs">
-                                            {item.results.topOffers.length} Results
+                                            {item.results?.topOffers?.length ?? item.results?.totalAnalyzed ?? 0} Results
                                         </Badge>
+                                        {item.results?.modelUsed && (
+                                            <Badge variant="outline" className="text-[10px] opacity-70">
+                                                {item.results.modelUsed}
+                                            </Badge>
+                                        )}
                                     </div>
 
-                                    <ScrollArea className="h-32 rounded-md border border-border bg-muted/40 p-3 text-sm">
-                                        <ul className="space-y-2">
-                                            {item.results.topOffers.slice(0, 3).map((offer, idx) => (
-                                                <li key={idx} className="flex justify-between items-start gap-2 text-xs">
-                                                    <span className="truncate flex-1 font-medium">{offer.title}</span>
-                                                    <span className={`font-bold ${offer.finalScore > 80 ? 'text-green-600' : 'text-blue-600'}`}>{offer.finalScore}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </ScrollArea>
+                                    {item.results?.topOffers && item.results.topOffers.length > 0 ? (
+                                        <ScrollArea className="h-32 rounded-md border border-border bg-muted/40 p-3 text-sm">
+                                            <ul className="space-y-2">
+                                                {item.results.topOffers.slice(0, 3).map((offer, idx) => (
+                                                    <li key={idx} className="flex justify-between items-start gap-2 text-xs">
+                                                        <span className="truncate flex-1 font-medium">{offer.title}</span>
+                                                        <span className={`font-bold ${offer.finalScore > 80 ? 'text-green-600' : 'text-blue-600'}`}>{offer.finalScore}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </ScrollArea>
+                                    ) : (
+                                        <div className="h-32 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground flex flex-col justify-center items-center text-center">
+                                            <Info className="h-4 w-4 mb-1 opacity-50" />
+                                            <span>Search archived in cloud</span>
+                                            <span className="mt-1 opacity-70">Click restore to rerun or reload offers</span>
+                                        </div>
+                                    )}
                                 </CardContent>
 
                                 <CardFooter className="pt-2">

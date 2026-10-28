@@ -37,7 +37,9 @@ export interface SearchSource {
 export interface AnalysisResponse {
   topOffers: ScoredOffer[];
   marketSummary: string;
-  searchSources: SearchSource[];
+  searchSources?: SearchSource[];
+  totalAnalyzed?: number;
+  modelUsed?: string;
 }
 
 export type AgentErrorCode =
@@ -119,6 +121,9 @@ export interface SearchHistoryItem {
   };
   results: AnalysisResponse;
   pinned: boolean;
+  expiresAt?: number;
+  model?: string;
+  resultCount?: number;
 }
 
 // Zod schemas for validation

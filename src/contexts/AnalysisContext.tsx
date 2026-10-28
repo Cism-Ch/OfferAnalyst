@@ -349,7 +349,8 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         // Sauvegarde dans l'historique
         addToHistory(
           { domain, criteria: explicitCriteria, context: implicitContext },
-          analysisResult.data
+          analysisResult.data,
+          targetModel
         );
 
         toast.success(
