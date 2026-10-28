@@ -2,18 +2,30 @@
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, AgentActionResult } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError, extractOffersArray } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 
-// Schéma Zod pour valider une offre
+// Schéma Zod résilient pour valider une offre
 const OfferSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string(),
-    price: z.union([z.string(), z.number()]),
-    location: z.string(),
-    category: z.string(),
+    id: z.union([z.string(), z.number()]).transform(val => String(val)),
+    title: z.string().default("Offre sans titre"),
+    description: z.string().optional().default(""),
+    price: z.union([
+        z.string(),
+        z.number(),
+        z.record(z.string(), z.any())
+    ]).transform(val => {
+        if (typeof val === 'number') return val;
+        if (typeof val === 'string') return val;
+        if (typeof val === 'object' && val !== null) {
+            if ('amount' in val) return `${val.amount} ${val.currency || '€'}`.trim();
+            return JSON.stringify(val);
+        }
+        return "N/A";
+    }),
+    location: z.string().optional().default("Non spécifié"),
+    category: z.string().optional().default("Général"),
     url: z.string().optional().default("")
 });
 
@@ -74,22 +86,24 @@ export async function fetchOffersAction(
     3. Ensure each listing includes a title, price, location, and a valid source URL if possible.
     
     OUTPUT REQUIREMENTS:
-    - You MUST return ONLY a valid JSON array.
+    - You MUST return ONLY a valid JSON object matching the JSON SCHEMA below.
     - DO NOT include any introductory text, summary, or "thinking" tags in the final JSON output.
     - If you use research, ensure the data is as up-to-date as possible.
 
     JSON SCHEMA:
-    [
-      {
-        "id": "unique_string",
-        "title": "string",
-        "description": "key details",
-        "price": "string or number",
-        "location": "string",
-        "category": "string",
-        "url": "full_source_url"
-      }
-    ]
+    {
+      "offers": [
+        {
+          "id": "1",
+          "title": "string",
+          "description": "key details",
+          "price": "string or number",
+          "location": "string",
+          "category": "string",
+          "url": "full_source_url"
+        }
+      ]
+    }
 
     DOMAIN: ${domain}
     CONTEXT: ${context}
@@ -103,7 +117,7 @@ export async function fetchOffersAction(
                 model: modelName,
                 messages: [
                     { role: "system", content: systemInstruction },
-                    { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return as JSON array.` }
+                    { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return a JSON object with an "offers" array.` }
                 ],
                 responseFormat: { type: "json_object" }
             }
@@ -131,18 +145,11 @@ export async function fetchOffersAction(
         // On utilise l'utilitaire de parsing robuste
         const parsedData = parseJSONFromText(cleanedText, 'fetch response');
 
-        // Si l'AI a wrappé le tableau dans un objet (parce qu'on a demandé json_object), on récupère le tableau
-        let dataToValidate = parsedData;
-        if (typeof parsedData === 'object' && parsedData !== null && !Array.isArray(parsedData)) {
-            const values = Object.values(parsedData);
-            const arrayValue = values.find(v => Array.isArray(v));
-            if (arrayValue) {
-                dataToValidate = arrayValue;
-            }
-        }
+        // Extraire le tableau d'offres de manière ultra-résiliente (gère { offers: [] }, direct [], dicts, offre unique)
+        const offersArray = extractOffersArray(parsedData);
 
         // Validation avec Zod
-        const validatedOffers = validateWithZod(dataToValidate, FetchResponseSchema, 'fetch response');
+        const validatedOffers = validateWithZod(offersArray, FetchResponseSchema, 'fetch response');
 
         console.log(`Fetch: Successfully retrieved ${validatedOffers.length} offers`);
         return validatedOffers;

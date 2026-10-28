@@ -45,9 +45,9 @@ export default function LoginPage() {
       await signIn.email({
         email,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: "/",
       });
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign in");
     } finally {
@@ -62,7 +62,7 @@ export default function LoginPage() {
     try {
       await signIn.social({
         provider,
-        callbackURL: "/dashboard",
+        callbackURL: "/",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to sign in with ${provider}`);

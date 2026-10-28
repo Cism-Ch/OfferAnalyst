@@ -67,6 +67,51 @@ const getPageInfo = (pathname: string) => {
             description: 'Side-by-side comparison',
             breadcrumbs: ['Home', 'Compare']
         },
+        '/help': {
+            title: 'Help Center',
+            description: 'Find answers to common questions and troubleshooting guides',
+            breadcrumbs: ['Home', 'Help Center']
+        },
+        '/changelog': {
+            title: 'Changelog',
+            description: 'Track new features, improvements, and bug fixes',
+            breadcrumbs: ['Home', 'Changelog']
+        },
+        '/privacy': {
+            title: 'Privacy Policy',
+            description: 'Our commitment to data protection and user privacy',
+            breadcrumbs: ['Home', 'Privacy Policy']
+        },
+        '/terms': {
+            title: 'Terms of Service',
+            description: 'Rules and terms governing the use of OfferAnalyst',
+            breadcrumbs: ['Home', 'Terms of Service']
+        },
+        '/cookies': {
+            title: 'Cookie Preferences',
+            description: 'Manage tracking cookies and telemetry preferences',
+            breadcrumbs: ['Home', 'Cookie Preferences']
+        },
+        '/dashboard/settings': {
+            title: 'Settings',
+            description: 'Account preferences, themes, and configuration',
+            breadcrumbs: ['Home', 'Dashboard', 'Settings']
+        },
+        '/dashboard/workspace': {
+            title: 'Workspace',
+            description: 'Team spaces, saved prompts, and shared environments',
+            breadcrumbs: ['Home', 'Dashboard', 'Workspace']
+        },
+        '/dashboard/support': {
+            title: 'Support & Assistance',
+            description: 'Get in touch with support or sponsor development',
+            breadcrumbs: ['Home', 'Dashboard', 'Support']
+        },
+        '/dashboard/analytics': {
+            title: 'Analytics & Insights',
+            description: 'Personal usage trends, searches, and AI performance metrics',
+            breadcrumbs: ['Home', 'Dashboard', 'Analytics']
+        },
     };
 
     return routes[pathname] || routes['/'];

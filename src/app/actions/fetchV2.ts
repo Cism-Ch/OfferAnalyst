@@ -12,19 +12,31 @@
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, AgentActionResult } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
+import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError, extractOffersArray } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { getCache, setCache, generateCacheKey } from '@/lib/cache';
 
-// Schéma Zod pour valider une offre
+// Schéma Zod résilient pour valider une offre
 const OfferSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string(),
-    price: z.union([z.string(), z.number()]),
-    location: z.string(),
-    category: z.string(),
+    id: z.union([z.string(), z.number()]).transform(val => String(val)),
+    title: z.string().default("Offre sans titre"),
+    description: z.string().optional().default(""),
+    price: z.union([
+        z.string(),
+        z.number(),
+        z.record(z.string(), z.any())
+    ]).transform(val => {
+        if (typeof val === 'number') return val;
+        if (typeof val === 'string') return val;
+        if (typeof val === 'object' && val !== null) {
+            if ('amount' in val) return `${val.amount} ${val.currency || '€'}`.trim();
+            return JSON.stringify(val);
+        }
+        return "N/A";
+    }),
+    location: z.string().optional().default("Non spécifié"),
+    category: z.string().optional().default("Général"),
     url: z.string().optional().default(""),
     source: z.enum(['web', 'ai-generated']).optional().default('ai-generated'),
     priority: z.number().optional().default(0)
@@ -108,24 +120,26 @@ export async function fetchOffersActionV2(
     4. Ensure each listing includes title, price, location, category, and URL (if available).
     
     OUTPUT REQUIREMENTS:
-    - Return ONLY a valid JSON array.
+    - Return ONLY a valid JSON object matching the JSON SCHEMA below.
     - DO NOT include any introductory text, summary, or "thinking" tags.
     - Mark source type for each offer.
 
     JSON SCHEMA:
-    [
-      {
-        "id": "unique_string",
-        "title": "string",
-        "description": "key details",
-        "price": "string or number",
-        "location": "string",
-        "category": "string",
-        "url": "full_source_url (empty string if not available)",
-        "source": "web" or "ai-generated",
-        "priority": number (0-100, higher = more reliable)
-      }
-    ]
+    {
+      "offers": [
+        {
+          "id": "unique_string",
+          "title": "string",
+          "description": "key details",
+          "price": "string or number",
+          "location": "string",
+          "category": "string",
+          "url": "full_source_url (empty string if not available)",
+          "source": "web" or "ai-generated",
+          "priority": 0
+        }
+      ]
+    }
 
     DOMAIN: ${domain}
     CONTEXT: ${context}
@@ -138,7 +152,7 @@ export async function fetchOffersActionV2(
                 model: modelName,
                 messages: [
                     { role: "system", content: systemInstruction },
-                    { role: "user", content: `Find ${batchSize} live offers for domain "${domain}" with context: "${context}". Return as JSON array with source prioritization.` }
+                    { role: "user", content: `Find ${batchSize} live offers for domain "${domain}" with context: "${context}". Return a JSON object with an "offers" array with source prioritization.` }
                 ],
                 responseFormat: { type: "json_object" }
             }
@@ -157,18 +171,11 @@ export async function fetchOffersActionV2(
 
         const parsedData = parseJSONFromText(cleanedText, 'fetch v2 response');
 
-        // Handle wrapped arrays
-        let dataToValidate = parsedData;
-        if (typeof parsedData === 'object' && parsedData !== null && !Array.isArray(parsedData)) {
-            const values = Object.values(parsedData);
-            const arrayValue = values.find(v => Array.isArray(v));
-            if (arrayValue) {
-                dataToValidate = arrayValue;
-            }
-        }
+        // Extraire le tableau d'offres de manière ultra-résiliente
+        const offersArray = extractOffersArray(parsedData);
 
         // Validate with Zod
-        const validatedOffers = validateWithZod(dataToValidate, FetchResponseSchema, 'fetch v2 response');
+        const validatedOffers = validateWithZod(offersArray, FetchResponseSchema, 'fetch v2 response');
 
         // Sort by priority and source type if preferWebSources is true
         if (preferWebSources) {

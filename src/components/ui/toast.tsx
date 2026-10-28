@@ -102,7 +102,7 @@ function ToastComponent({ id, type, title, description, duration = 5000, onDismi
       {/* Progress bar */}
       {duration > 0 && (
         <motion.div
-          className={cn('h-1', iconColors[type].replace('text-', 'bg-'))}
+          className={cn('h-1', iconColors[type].replace(/text-/g, 'bg-'))}
           initial={{ scaleX: 1 }}
           animate={{ scaleX: 0 }}
           transition={{ duration: duration / 1000, ease: 'linear' }}

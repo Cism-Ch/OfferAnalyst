@@ -7,7 +7,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Sparkles, Shield, Zap, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Sparkles, Shield, TrendingUp } from 'lucide-react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 
 interface ChangelogEntry {
   version: string;
@@ -143,17 +144,7 @@ const typeColors = {
 
 export default function ChangelogPage() {
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-2">
-          <Zap className="h-8 w-8 text-primary" />
-          Changelog
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Track new features, improvements, and bug fixes
-        </p>
-      </div>
-
+    <SimpleLayout maxWidth="5xl">
       <div className="space-y-6">
         {changelog.map((entry) => (
           <Card key={entry.version} className="overflow-hidden">
@@ -221,6 +212,6 @@ export default function ChangelogPage() {
           for the latest updates and release notes.
         </p>
       </div>
-    </div>
+    </SimpleLayout>
   );
 }

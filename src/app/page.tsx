@@ -13,6 +13,7 @@ import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { 
     Sparkles, 
     Search, 
@@ -142,10 +143,10 @@ export default function Home() {
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent>
-                                            <Button variant="ghost" className="w-full justify-between group">
-                                                Get Started
+                                            <div className="w-full flex items-center justify-between text-sm font-medium px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                                                <span>Get Started</span>
                                                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                            </Button>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </Link>
@@ -237,12 +238,12 @@ export default function Home() {
                                     </p>
                                 </div>
                                 <div className="flex gap-3">
-                                    <Link href="/search-context">
-                                        <Button size="lg" className="gap-2">
+                                    <Button asChild size="lg" className="gap-2">
+                                        <Link href="/search-context">
                                             <Search className="h-4 w-4" />
                                             Start Analysis
-                                        </Button>
-                                    </Link>
+                                        </Link>
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
@@ -251,8 +252,4 @@ export default function Home() {
             </motion.div>
         </ModernLayout>
     );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-    return classes.filter(Boolean).join(' ');
 }

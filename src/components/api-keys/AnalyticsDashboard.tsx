@@ -187,10 +187,10 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                 <YAxis fontSize={11} />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: 'hsl(var(--card))',
-                                        color: 'hsl(var(--card-foreground))',
+                                        backgroundColor: 'var(--card)',
+                                        color: 'var(--card-foreground)',
                                         borderRadius: '8px', 
-                                        border: '1px solid hsl(var(--border))' 
+                                        border: '1px solid var(--border)' 
                                     }}
                                 />
                                 <Legend />
@@ -255,10 +255,10 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                     </Pie>
                                     <Tooltip 
                                         contentStyle={{ 
-                                            backgroundColor: 'hsl(var(--card))',
-                                            color: 'hsl(var(--card-foreground))',
+                                            backgroundColor: 'var(--card)',
+                                            color: 'var(--card-foreground)',
                                             borderRadius: '8px', 
-                                            border: '1px solid hsl(var(--border))' 
+                                            border: '1px solid var(--border)' 
                                         }}
                                     />
                                 </PieChart>
@@ -280,7 +280,7 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                         <CardContent className="p-2 sm:p-6">
                             <ResponsiveContainer width="100%" height={250}>
                                 <BarChart data={analytics.requestsByAction} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
                                     <XAxis 
                                         dataKey="action" 
                                         fontSize={11}
@@ -289,10 +289,10 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
                                     <YAxis fontSize={11} />
                                     <Tooltip 
                                         contentStyle={{ 
-                                            backgroundColor: 'hsl(var(--card))',
-                                            color: 'hsl(var(--card-foreground))',
+                                            backgroundColor: 'var(--card)',
+                                            color: 'var(--card-foreground)',
                                             borderRadius: '8px', 
-                                            border: '1px solid hsl(var(--border))' 
+                                            border: '1px solid var(--border)' 
                                         }}
                                     />
                                     <Bar dataKey="count" fill="#3b82f6" />

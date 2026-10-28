@@ -20,8 +20,38 @@ import { Sparkles, ArrowRight, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
+const PRESETS = [
+    {
+        label: 'Emploi Tech',
+        icon: '💼',
+        domain: 'Jobs',
+        criteria: 'Senior Fullstack TypeScript/React, Remote ou Paris, > 65k€',
+        context: 'Priorité à la flexibilité, stack moderne (Next.js, Tailwind), ambiance collaborative et autonomie.'
+    },
+    {
+        label: 'Immobilier',
+        icon: '🏡',
+        domain: 'Real Estate',
+        criteria: 'Appartement 3 pièces, > 60m², Budget max 450 000€, balcon',
+        context: 'Quartier calme, proche écoles et transports, lumineux avec bonne isolation thermique et phonique.'
+    },
+    {
+        label: 'Matériel Tech',
+        icon: '💻',
+        domain: 'Hardware',
+        criteria: 'PC Portable 14-16 pouces, 32 Go RAM, SSD 1 To, autonomie > 10h, sous 1800€',
+        context: 'Développement web et inférence IA locale, écran haute fidélité, silencieux et châssis léger.'
+    }
+];
+
 export default function SearchContextPage() {
     const dashboardState = useDashboardState();
+
+    const applyPreset = (preset: typeof PRESETS[number]) => {
+        dashboardState.setDomain(preset.domain);
+        dashboardState.setExplicitCriteria(preset.criteria);
+        dashboardState.setImplicitContext(preset.context);
+    };
 
     return (
         <SimpleLayout
@@ -58,6 +88,29 @@ export default function SearchContextPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                        {/* 1-Click Quick Presets */}
+                        <div className="p-3.5 rounded-lg border bg-muted/30 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Exemples Rapides (1-Clic)
+                                </span>
+                                <span className="text-xs text-muted-foreground">Cliquez pour préremplir</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {PRESETS.map((p) => (
+                                    <button
+                                        key={p.label}
+                                        type="button"
+                                        onClick={() => applyPreset(p)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-background hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all cursor-pointer"
+                                    >
+                                        <span>{p.icon}</span>
+                                        <span>{p.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Domain and Limit Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">

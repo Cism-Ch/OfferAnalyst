@@ -2,6 +2,7 @@ import { analyzeOffersAction } from '@/app/actions/analyze';
 import { fetchOffersAction } from '@/app/actions/fetch';
 import { AnalysisResponse, Offer, ProviderErrorState, UserProfile } from '@/types';
 import { useTemporaryApiKeys } from './use-temporary-api-keys';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Custom hook for handling offer analysis workflow
@@ -35,6 +36,7 @@ export function useOfferAnalysis({
     setProviderError: (error: ProviderErrorState | null) => void;
 }) {
     const tempKeys = useTemporaryApiKeys();
+    const { language, t } = useLanguage();
     
     /**
      * Handles the complete offer analysis workflow
@@ -112,7 +114,17 @@ export function useOfferAnalysis({
                 try {
                     currentOffers = JSON.parse(offersInput);
                 } catch {
-                    alert("Invalid JSON for offers");
+                    setProviderError({
+                        message: t.errors.invalidJson,
+                        code: 'INVALID_JSON',
+                        phase: 'analyze',
+                        timestamp: Date.now(),
+                        model: selectedModel,
+                        remedy: {
+                            type: 'adjust_criteria',
+                            label: t.errors.jsonRemedy
+                        }
+                    });
                     setLoading(false);
                     return;
                 }
@@ -128,7 +140,14 @@ export function useOfferAnalysis({
             // Get temporary OpenRouter key if available (for unauthenticated users)
             const tempKey = tempKeys.getKey('openrouter');
 
-            const analysisResult = await analyzeOffersAction(currentOffers, profile, parseInt(limit), selectedModel, tempKey || undefined);
+            const analysisResult = await analyzeOffersAction(
+                currentOffers,
+                profile,
+                parseInt(limit),
+                selectedModel,
+                tempKey || undefined,
+                language
+            );
             if (!analysisResult.success) {
                 setProviderError({
                     ...analysisResult.error,

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, HelpCircle, BookOpen, Zap, Key, Settings, AlertCircle, Mail, MessageSquare } from 'lucide-react';
+import { SimpleLayout } from '@/components/layout/SimpleLayout';
 
 interface FAQItem {
   question: string;
@@ -128,17 +129,7 @@ export default function HelpPage() {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-2">
-          <HelpCircle className="h-8 w-8 text-primary" />
-          Help Center
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Find answers to common questions and troubleshooting guides
-        </p>
-      </div>
-
+    <SimpleLayout maxWidth="5xl">
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
@@ -270,6 +261,6 @@ export default function HelpPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </SimpleLayout>
   );
 }

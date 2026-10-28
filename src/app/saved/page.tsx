@@ -12,9 +12,11 @@ import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/toast";
 
 export default function SavedOffersPage() {
     const router = useRouter();
+    const { error: toastError } = useToast();
     const { savedOffers, removeOffer } = useSavedOffers();
     const [organizing, setOrganizing] = useState(false);
     const [organizedData, setOrganizedData] = useState<OrganizedOffers | null>(null);
@@ -28,7 +30,7 @@ export default function SavedOffersPage() {
             setOrganizedData(data);
         } catch (error) {
             console.error(error);
-            alert("Failed to organize offers.");
+            toastError("Failed to organize offers", "Please check your connection and try again.");
         } finally {
             setOrganizing(false);
         }

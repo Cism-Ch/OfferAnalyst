@@ -4,6 +4,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { AnalysisProvider } from "@/contexts/AnalysisContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CookieConsent } from "@/components/CookieConsent";
+import { WebVitalsTracker } from "@/components/WebVitalsTracker";
 
 export const metadata: Metadata = {
   title: "Offer Analyst - AI-Powered Contextual Recommendations",
@@ -16,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body className="antialiased">
         <ErrorBoundary>
           <ThemeProvider
@@ -27,9 +30,13 @@ export default function RootLayout({
             themes={['light', 'dark', 'gold', 'ocean', 'forest', 'neon', 'silver', 'system']}
           >
             <ToastProvider>
-              <AnalysisProvider>
-                {children}
-              </AnalysisProvider>
+              <LanguageProvider>
+                <AnalysisProvider>
+                  <WebVitalsTracker />
+                  {children}
+                  <CookieConsent />
+                </AnalysisProvider>
+              </LanguageProvider>
             </ToastProvider>
           </ThemeProvider>
         </ErrorBoundary>

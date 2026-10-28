@@ -70,13 +70,20 @@ export function AnalyticsDashboard() {
           }
         } else {
           // Fallback to localStorage if API fails (for development/offline mode)
-          const searchHistoryData = typeof window !== 'undefined' ? localStorage.getItem('searchHistory') : null;
-          const savedOffersData = typeof window !== 'undefined' ? localStorage.getItem('savedOffers') : null;
-          const projectsData = typeof window !== 'undefined' ? localStorage.getItem('projects') : null;
+          const searchHistoryData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_search_history') || localStorage.getItem('searchHistory')) : null;
+          const savedOffersData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_saved_offers') || localStorage.getItem('savedOffers')) : null;
+          const projectsData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_projects') || localStorage.getItem('projects')) : null;
           
-          const searches = searchHistoryData ? JSON.parse(searchHistoryData).length : 0;
-          const savedOffers = savedOffersData ? JSON.parse(savedOffersData).length : 0;
-          const projects = projectsData ? JSON.parse(projectsData).length : 0;
+          let searches = 0;
+          let savedOffers = 0;
+          let projects = 0;
+          try {
+            if (searchHistoryData) searches = JSON.parse(searchHistoryData).length;
+            if (savedOffersData) savedOffers = JSON.parse(savedOffersData).length;
+            if (projectsData) projects = JSON.parse(projectsData).length;
+          } catch {
+            // Ignore parse errors
+          }
 
           if (isMounted) {
             setAnalytics({
@@ -90,14 +97,29 @@ export function AnalyticsDashboard() {
         }
       } catch (error) {
         console.error('Failed to load analytics:', error);
-        // Set empty data to show zero state instead of error
+        // Fallback to local storage on error
+        const searchHistoryData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_search_history') || localStorage.getItem('searchHistory')) : null;
+        const savedOffersData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_saved_offers') || localStorage.getItem('savedOffers')) : null;
+        const projectsData = typeof window !== 'undefined' ? (localStorage.getItem('offeranalyst_projects') || localStorage.getItem('projects')) : null;
+
+        let searches = 0;
+        let savedOffers = 0;
+        let projects = 0;
+        try {
+          if (searchHistoryData) searches = JSON.parse(searchHistoryData).length;
+          if (savedOffersData) savedOffers = JSON.parse(savedOffersData).length;
+          if (projectsData) projects = JSON.parse(projectsData).length;
+        } catch {
+          // Ignore parse errors
+        }
+
         if (isMounted) {
           setAnalytics({
             period: '30 days',
-            searches: 0,
-            savedOffers: 0,
-            projects: 0,
-            apiCallsUsed: 0,
+            searches,
+            savedOffers,
+            projects,
+            apiCallsUsed: searches * 2,
           });
         }
       } finally {

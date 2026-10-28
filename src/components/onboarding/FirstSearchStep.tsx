@@ -87,7 +87,9 @@ export default function FirstSearchStep({ onComplete }: FirstSearchStepProps) {
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">AI Model</label>
-            <p className="text-lg font-semibold">GPT-4o Mini</p>
+            <p className="text-lg font-semibold flex items-center gap-2">
+              Gemini 3.5 Flash Lite <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">(Inclus Gratuitement)</span>
+            </p>
           </div>
         </div>
       </motion.div>

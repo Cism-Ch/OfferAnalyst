@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Wallet, Search } from 'lucide-react';
 import { ScoredOffer } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * OfferCard Component Props
@@ -27,18 +28,9 @@ interface OfferCardProps {
  * 
  * Displays a single offer with its AI-generated score, justification,
  * and web insights. Provides functionality to save the offer for later reference.
- * 
- * Features:
- * - Score badge with color coding (green for high scores)
- * - Relevance progress bar
- * - Web insights panel
- * - Save/Saved functionality
- * - Responsive design for mobile and desktop
- * 
- * @param {OfferCardProps} props - Component props
- * @returns {JSX.Element} The offer card
  */
 export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
+    const { t } = useLanguage();
     return (
         <Card 
             key={offer.id || index} 
@@ -75,11 +67,11 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                             size="sm"
                             onClick={() => onSave(offer)}
                             disabled={isSaved}
-                            aria-label={isSaved ? "Offre déjà sauvegardée" : "Sauvegarder cette offre"}
+                            aria-label={isSaved ? t.offer.alreadySaved : t.offer.saveThisOffer}
                             className="hidden sm:flex"
                         >
                             {isSaved ? <CheckCircle2 className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
-                            {isSaved ? "Sauvegardé" : "Sauvegarder"}
+                            {isSaved ? t.offer.saved : t.offer.save}
                         </Button>
                         
                         {/* Save Button - Mobile (Accessible Touch Target 44x44px) */}
@@ -88,7 +80,7 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                             size="icon"
                             onClick={() => onSave(offer)}
                             disabled={isSaved}
-                            aria-label={isSaved ? "Offre déjà sauvegardée" : "Sauvegarder cette offre"}
+                            aria-label={isSaved ? t.offer.alreadySaved : t.offer.saveThisOffer}
                             className="sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl"
                         >
                             {isSaved ? <CheckCircle2 className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
@@ -107,7 +99,7 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                 {/* Relevance Score Breakdown */}
                 <div className="space-y-1">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Relevance</span>
+                        <span>{t.offer.relevance}</span>
                         <span>{offer.breakdown.relevance}%</span>
                     </div>
                     <Progress value={offer.breakdown.relevance} className="h-1.5" />
@@ -117,7 +109,7 @@ export function OfferCard({ offer, index, onSave, isSaved }: OfferCardProps) {
                 {offer.webInsights && offer.webInsights.length > 0 && (
                     <div className="bg-muted/40 p-2.5 rounded-lg text-xs text-muted-foreground mt-2 border border-border/60">
                         <span className="font-semibold flex items-center gap-1 text-primary mb-1">
-                            <Search size={12} /> Web Insight
+                            <Search size={12} /> {t.offer.webInsight}
                         </span>
                         {offer.webInsights[0]}
                     </div>

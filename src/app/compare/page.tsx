@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 function ComparePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { savedOffers } = useSavedOffers();
+    const { savedOffers, isLoaded } = useSavedOffers();
 
     const selectedOffers = useMemo(() => {
         const idsParam = searchParams.get('ids');
@@ -31,12 +31,34 @@ function ComparePageContent() {
         }) as ScoredOffer[];
     }, [searchParams, savedOffers]);
 
-    // Redirect if invalid selection
+    // Redirect only when storage is loaded and selection is invalid
     useEffect(() => {
-        if (selectedOffers.length < 2) {
+        if (isLoaded && selectedOffers.length < 2) {
             router.push('/saved');
         }
-    }, [selectedOffers, router]);
+    }, [isLoaded, selectedOffers, router]);
+
+    // Show clean loading skeletons during initial load to prevent flash or premature redirection
+    if (!isLoaded) {
+        return (
+            <SimpleLayout
+                title="Compare Offers"
+                description="Side-by-side comparison of selected offers"
+                maxWidth="7xl"
+            >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <Card key={i} className="animate-pulse p-6 space-y-4 border-2 border-border/40">
+                            <div className="h-5 w-24 bg-muted rounded" />
+                            <div className="h-6 w-3/4 bg-muted rounded" />
+                            <div className="h-4 w-1/2 bg-muted rounded" />
+                            <div className="h-28 bg-muted/50 rounded-lg" />
+                        </Card>
+                    ))}
+                </div>
+            </SimpleLayout>
+        );
+    }
 
     if (selectedOffers.length < 2) {
         return null;

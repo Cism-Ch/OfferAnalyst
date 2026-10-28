@@ -115,10 +115,16 @@ export default function SupportPage() {
                                     If you find OfferAnalyst helpful, consider supporting its development with a voluntary donation.
                                     Every coffee helps keep the servers running!
                                 </p>
-                                <Button size="lg" className="mb-4">
-                                    <Heart className="w-5 h-5 mr-2" />
-                                    Support with $5
-                                    <ExternalLink className="w-4 h-4 ml-2" />
+                                <Button size="lg" className="mb-4" asChild>
+                                    <a
+                                        href="https://buymeacoffee.com/cismch"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Heart className="w-5 h-5 mr-2" />
+                                        Support with $5
+                                        <ExternalLink className="w-4 h-4 ml-2" />
+                                    </a>
                                 </Button>
                                 <p className="text-xs text-muted-foreground">
                                     100% optional • No pressure • Truly free forever
@@ -220,9 +226,11 @@ export default function SupportPage() {
                                     If you have questions not covered in the FAQ, feel free to reach out.
                                     We typically respond within 24-48 hours.
                                 </p>
-                                <Button variant="outline">
-                                    Contact Support
-                                    <ExternalLink className="w-4 h-4 ml-2" />
+                                <Button variant="outline" asChild>
+                                    <a href="mailto:support@offeranalyst.com">
+                                        Contact Support
+                                        <ExternalLink className="w-4 h-4 ml-2" />
+                                    </a>
                                 </Button>
                             </CardContent>
                         </Card>

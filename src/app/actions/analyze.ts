@@ -34,7 +34,8 @@ export async function analyzeOffersAction(
     profile: UserProfile,
     limit: number = 3,
     modelName: string = DEFAULT_MODEL_ID,
-    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
+    clientApiKey?: string, // Optional BYOK key for temporary/authenticated users
+    language: 'fr' | 'en' = 'fr'
 ): Promise<AgentActionResult<AnalysisResponse>> {
     const startedAt = Date.now();
     
@@ -54,7 +55,7 @@ export async function analyzeOffersAction(
 
     // Only log in development mode
     if (process.env.NODE_ENV === 'development') {
-        console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key`);
+        console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key (language: ${language})`);
     }
 
     const openrouter = new OpenRouter({
@@ -87,6 +88,7 @@ export async function analyzeOffersAction(
     OUTPUT REQUIREMENTS:
     - Return ONLY a valid JSON object.
     - DO NOT include summary text or "thinking" tags in the final JSON.
+    - LANGUAGE REQUIREMENT: All textual output (including "justification", "webInsights", and "marketSummary") MUST be generated in ${language === 'fr' ? 'FRENCH (Français)' : 'ENGLISH'}.
 
     JSON SCHEMA:
     {
@@ -100,7 +102,7 @@ export async function analyzeOffersAction(
           "category": "string",
           "finalScore": number (0-100),
           "rank": number (1 to ${limit}),
-          "justification": "Detailed explanation of the rank",
+          "justification": "Detailed explanation of the rank in ${language === 'fr' ? 'French' : 'English'}",
           "webInsights": ["specific market insight", "another insight"],
           "breakdown": {
             "relevance": number (0-100),
@@ -109,12 +111,13 @@ export async function analyzeOffersAction(
           }
         }
       ],
-      "marketSummary": "2-sentence overview of the current market context"
+      "marketSummary": "2-sentence overview of the current market context in ${language === 'fr' ? 'French' : 'English'}"
     }
 
     USER PROFILE: ${JSON.stringify(profile)}
     DOMAIN: ${profile.domain}
     LIMIT: Top ${limit} offers
+    TARGET LANGUAGE: ${language.toUpperCase()}
   `;
 
     let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
@@ -125,7 +128,7 @@ export async function analyzeOffersAction(
                 model: modelName,
                 messages: [
                     { role: "system", content: systemInstruction },
-                    { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}: ${JSON.stringify(simplifiedOffers)}` }
+                    { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}. Language: ${language.toUpperCase()}: ${JSON.stringify(simplifiedOffers)}` }
                 ],
                 responseFormat: { type: "json_object" }
             }

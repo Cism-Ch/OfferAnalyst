@@ -62,10 +62,10 @@ export function ScoreChart({ offers }: ScoreChartProps) {
                         />
                         <Tooltip
                             contentStyle={{ 
-                                backgroundColor: 'hsl(var(--card))',
-                                color: 'hsl(var(--card-foreground))',
+                                backgroundColor: 'var(--card)',
+                                color: 'var(--card-foreground)',
                                 borderRadius: '8px', 
-                                border: '1px solid hsl(var(--border))', 
+                                border: '1px solid var(--border)', 
                                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
                             }}
                             cursor={{ fill: 'transparent' }}

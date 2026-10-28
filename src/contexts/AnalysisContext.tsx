@@ -112,6 +112,36 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
           if (parsed.limit) setLimit(parsed.limit);
           if (parsed.model) setModel(parsed.model);
         }
+
+        // Restore search if navigated from History page
+        const restoreData = window.sessionStorage.getItem('restore_search');
+        if (restoreData) {
+          try {
+            const item = JSON.parse(restoreData);
+            if (item?.inputs) {
+              if (item.inputs.domain) setDomain(item.inputs.domain);
+              if (item.inputs.criteria) setExplicitCriteria(item.inputs.criteria);
+              if (item.inputs.context) setImplicitContext(item.inputs.context);
+            }
+            if (item?.results && item.results.topOffers && item.results.topOffers.length > 0) {
+              setResults(item.results);
+              const offersFromResults = item.results.topOffers.map((offer: { id: string; title: string; description: string; price: string | number; location: string; category: string }) => ({
+                id: offer.id,
+                title: offer.title,
+                description: offer.description,
+                price: offer.price,
+                location: offer.location,
+                category: offer.category,
+              }));
+              setOffersInput(JSON.stringify(offersFromResults, null, 2));
+            }
+            window.sessionStorage.removeItem('restore_search');
+            toast.success('Search restored from history');
+          } catch (restoreErr) {
+            console.error('[AnalysisContext] Failed to parse restore_search:', restoreErr);
+            window.sessionStorage.removeItem('restore_search');
+          }
+        }
       } catch (e) {
         console.error("[AnalysisContext] Failed to load from localStorage", e);
       } finally {
@@ -120,6 +150,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
     }, 0);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save inputs to localStorage whenever they change

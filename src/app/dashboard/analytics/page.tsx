@@ -196,13 +196,14 @@ export default function AnalyticsPage() {
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
                                     <LineChart data={searchesOverTime}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                        <XAxis dataKey="date" stroke="var(--muted-foreground)" />
+                                        <YAxis stroke="var(--muted-foreground)" />
                                         <Tooltip 
                                             contentStyle={{
-                                                backgroundColor: 'hsl(var(--card))',
-                                                border: '1px solid hsl(var(--border))',
+                                                backgroundColor: 'var(--card)',
+                                                color: 'var(--card-foreground)',
+                                                border: '1px solid var(--border)',
                                                 borderRadius: '8px'
                                             }}
                                         />
@@ -210,9 +211,9 @@ export default function AnalyticsPage() {
                                         <Line 
                                             type="monotone" 
                                             dataKey="searches" 
-                                            stroke="hsl(var(--primary))" 
+                                            stroke="var(--primary)" 
                                             strokeWidth={2}
-                                            dot={{ fill: 'hsl(var(--primary))' }}
+                                            dot={{ fill: 'var(--primary)' }}
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
@@ -247,7 +248,14 @@ export default function AnalyticsPage() {
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'var(--card)',
+                                                    color: 'var(--card-foreground)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '8px'
+                                                }}
+                                            />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </CardContent>
@@ -266,17 +274,18 @@ export default function AnalyticsPage() {
                                 <CardContent>
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart data={scoreDistribution}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                            <XAxis dataKey="score" stroke="hsl(var(--muted-foreground))" />
-                                            <YAxis stroke="hsl(var(--muted-foreground))" />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                            <XAxis dataKey="score" stroke="var(--muted-foreground)" />
+                                            <YAxis stroke="var(--muted-foreground)" />
                                             <Tooltip
                                                 contentStyle={{
-                                                    backgroundColor: 'hsl(var(--card))',
-                                                    border: '1px solid hsl(var(--border))',
+                                                    backgroundColor: 'var(--card)',
+                                                    color: 'var(--card-foreground)',
+                                                    border: '1px solid var(--border)',
                                                     borderRadius: '8px'
                                                 }}
                                             />
-                                            <Bar dataKey="count" fill="hsl(var(--primary))" />
+                                            <Bar dataKey="count" fill="var(--primary)" />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </CardContent>
@@ -296,17 +305,18 @@ export default function AnalyticsPage() {
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
                                     <BarChart data={modelUsage} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                        <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                                        <YAxis dataKey="model" type="category" stroke="hsl(var(--muted-foreground))" width={120} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                        <XAxis type="number" stroke="var(--muted-foreground)" />
+                                        <YAxis dataKey="model" type="category" stroke="var(--muted-foreground)" width={120} />
                                         <Tooltip
                                             contentStyle={{
-                                                backgroundColor: 'hsl(var(--card))',
-                                                border: '1px solid hsl(var(--border))',
+                                                backgroundColor: 'var(--card)',
+                                                color: 'var(--card-foreground)',
+                                                border: '1px solid var(--border)',
                                                 borderRadius: '8px'
                                             }}
                                         />
-                                        <Bar dataKey="requests" fill="hsl(var(--primary))" />
+                                        <Bar dataKey="requests" fill="var(--primary)" />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </CardContent>

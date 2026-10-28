@@ -55,7 +55,7 @@ function VerifyEmailContent() {
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
           if (isMounted) {
-            router.push("/dashboard");
+            router.push("/");
           }
         }, 2000);
       } catch (err) {

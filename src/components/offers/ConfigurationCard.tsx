@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { ClientOnlySelect } from '@/components/ClientOnlySelect';
 import { ClientOnlySwitch } from '@/components/ClientOnlySwitch';
 import { Loader2, Sparkles, Bot } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * ConfigurationCard Component Props
@@ -54,18 +55,6 @@ interface ConfigurationCardProps {
  * Main configuration interface for setting up offer analysis parameters.
  * Allows users to define their search criteria and preferences before
  * initiating the AI-powered analysis workflow.
- * 
- * Features:
- * - Domain selection for offer categorization
- * - Explicit criteria input (hard requirements)
- * - Implicit context input (soft preferences)
- * - Auto-fetch toggle for AI web scraping
- * - Manual JSON offer input
- * - Result limit selection
- * - Workflow initiation button
- * 
- * @param {ConfigurationCardProps} props - Component props
- * @returns {JSX.Element} The configuration card
  */
 export function ConfigurationCard({
     domain,
@@ -84,6 +73,8 @@ export function ConfigurationCard({
     fetching,
     onAnalyze
 }: ConfigurationCardProps) {
+    const { t } = useLanguage();
+
     return (
         <Card className="border-none shadow-sm drop-shadow-sm">
             {/* Card Header */}
@@ -91,14 +82,14 @@ export function ConfigurationCard({
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="text-primary" size={20} />
-                        Configuration
+                        {t.config.title}
                     </CardTitle>
                     <Badge variant="outline" className="gap-1">
-                        <Bot size={12} /> AI Powered
+                        <Bot size={12} /> {t.config.badgeAI}
                     </Badge>
                 </div>
                 <CardDescription>
-                    Define your context. Enable Auto-Fetch to let AI find offers for you.
+                    {t.config.description}
                 </CardDescription>
             </CardHeader>
 
@@ -108,26 +99,26 @@ export function ConfigurationCard({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Domain Input */}
                     <div className="space-y-2">
-                        <Label>Domain</Label>
+                        <Label>{t.config.domainLabel}</Label>
                         <Input 
                             value={domain} 
                             onChange={(e) => setDomain(e.target.value)} 
-                            placeholder="e.g. Real Estate" 
+                            placeholder={t.config.domainPlaceholder} 
                         />
                     </div>
                     
                     {/* Limit Selection */}
                     <div className="space-y-2">
-                        <Label>Recommendation Limit</Label>
+                        <Label>{t.config.limitLabel}</Label>
                         <ClientOnlySelect>
                             <Select value={limit} onValueChange={setLimit}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select limit" />
+                                    <SelectValue placeholder={t.config.selectLimit} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="3">Top 3</SelectItem>
-                                    <SelectItem value="5">Top 5</SelectItem>
-                                    <SelectItem value="10">Top 10</SelectItem>
+                                    <SelectItem value="3">{t.config.top} 3</SelectItem>
+                                    <SelectItem value="5">{t.config.top} 5</SelectItem>
+                                    <SelectItem value="10">{t.config.top} 10</SelectItem>
                                 </SelectContent>
                             </Select>
                         </ClientOnlySelect>
@@ -136,21 +127,21 @@ export function ConfigurationCard({
 
                 {/* Explicit Criteria Input */}
                 <div className="space-y-2">
-                    <Label>Explicit Criteria</Label>
+                    <Label>{t.config.explicitCriteriaLabel}</Label>
                     <Input 
                         value={explicitCriteria} 
                         onChange={(e) => setExplicitCriteria(e.target.value)} 
-                        placeholder="Budget, Location..." 
+                        placeholder={t.config.explicitCriteriaPlaceholder} 
                     />
                 </div>
 
                 {/* Implicit Context Textarea */}
                 <div className="space-y-2">
-                    <Label>Implicit Context</Label>
+                    <Label>{t.config.implicitContextLabel}</Label>
                     <Textarea
                         value={implicitContext}
                         onChange={(e) => setImplicitContext(e.target.value)}
-                        placeholder="What matters to you? (e.g., safety, vibe)"
+                        placeholder={t.config.implicitContextPlaceholder}
                         className="resize-none"
                     />
                 </div>
@@ -158,9 +149,9 @@ export function ConfigurationCard({
                 {/* Auto-Fetch Toggle */}
                 <div className="flex items-center justify-between rounded-xl border p-3.5 bg-muted/40">
                     <div className="space-y-0.5">
-                        <Label className="text-sm sm:text-base font-semibold">Auto-Fetch Offers</Label>
+                        <Label className="text-sm sm:text-base font-semibold">{t.config.autoFetchLabel}</Label>
                         <p className="text-xs text-muted-foreground">
-                            AI will search the web for live offers
+                            {t.config.autoFetchDesc}
                         </p>
                     </div>
                     <ClientOnlySwitch>
@@ -174,9 +165,9 @@ export function ConfigurationCard({
                 {/* Offers JSON Input */}
                 <div className="space-y-2">
                     <Label>
-                        Offers (JSON) {autoFetch && (
+                        {t.config.offersLabel} {autoFetch && (
                             <span className="text-xs text-muted-foreground">
-                                (Will be overwritten by Auto-Fetch)
+                                {t.config.offersOverwritten}
                             </span>
                         )}
                     </Label>
@@ -184,7 +175,7 @@ export function ConfigurationCard({
                         value={offersInput}
                         onChange={(e) => setOffersInput(e.target.value)}
                         className="font-mono text-xs h-32"
-                        placeholder="Paste JSON array of offers here, or enable Auto-Fetch"
+                        placeholder={t.config.offersPlaceholder}
                         disabled={autoFetch}
                     />
                 </div>
@@ -200,9 +191,9 @@ export function ConfigurationCard({
                     {loading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {fetching ? "Fetching Offers..." : "Analyzing Context..."}
+                            {fetching ? t.config.btnSearching : t.config.btnAnalyzing}
                         </>
-                    ) : "Start Workflow"}
+                    ) : t.config.btnRun}
                 </Button>
             </CardFooter>
         </Card>

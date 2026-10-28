@@ -43,6 +43,7 @@ export interface APIKeyData {
  * Get all API keys for the current authenticated user
  */
 export async function getUserAPIKeys(_providedUserId?: string): Promise<APIKeyData[]> {
+    void _providedUserId;
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -404,6 +405,7 @@ export async function getAPIKeyStats(_providedUserId?: string): Promise<{
     totalRequests: number;
     byokActive: boolean;
 }> {
+    void _providedUserId;
     try {
         const session = await auth.api.getSession({
             headers: await headers()

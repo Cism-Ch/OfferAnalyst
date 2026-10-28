@@ -22,6 +22,14 @@ import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { 
     Key, 
     Plus, 
@@ -133,6 +141,8 @@ function APIKeysContent() {
     const [initialProvider, setInitialProvider] = useState<string>('openrouter');
     const [isLoading, setIsLoading] = useState(true);
     const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
+    const [keyPendingDeletion, setKeyPendingDeletion] = useState<{ id: string; name: string; isTemporary?: boolean } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const showToast = useCallback((message: string, type: 'success' | 'error') => {
@@ -248,10 +258,12 @@ function APIKeysContent() {
         setVisibleKeys(newVisible);
     };
 
-    const copyToClipboard = (key: string) => {
-        if (confirm('Copy full API key to clipboard? This will expose your key to clipboard monitoring.')) {
-            navigator.clipboard.writeText(key);
+    const copyToClipboard = async (key: string) => {
+        try {
+            await navigator.clipboard.writeText(key);
             showToast('API key copied to clipboard', 'success');
+        } catch {
+            showToast('Failed to copy API key to clipboard', 'error');
         }
     };
 
@@ -312,9 +324,6 @@ function APIKeysContent() {
     };
 
     const handleDeleteKey = async (id: string, isTemporary?: boolean) => {
-        if (!confirm('Are you sure you want to delete this API key?')) {
-            return;
-        }
 
         try {
             if (isTemporary) {
@@ -665,7 +674,7 @@ function APIKeysContent() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleDeleteKey(apiKey.id, apiKey.isTemporary)}
+                                                        onClick={() => setKeyPendingDeletion({ id: apiKey.id, name: apiKey.name, isTemporary: apiKey.isTemporary })}
                                                         className="text-destructive hover:text-destructive h-8 w-8 p-0"
                                                         aria-label="Supprimer la clé"
                                                     >
@@ -718,6 +727,39 @@ function APIKeysContent() {
                     isAuthenticated={isAuthenticated}
                     initialProvider={initialProvider}
                 />
+
+                {/* Delete API Key Confirmation Dialog */}
+                <Dialog open={!!keyPendingDeletion} onOpenChange={(open) => !open && setKeyPendingDeletion(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-destructive">
+                                <Trash2 className="w-5 h-5" />
+                                Delete API Key
+                            </DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to delete the API key &ldquo;{keyPendingDeletion?.name}&rdquo;? This action cannot be undone.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button variant="outline" onClick={() => setKeyPendingDeletion(null)} disabled={isDeleting}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={async () => {
+                                    if (!keyPendingDeletion) return;
+                                    setIsDeleting(true);
+                                    await handleDeleteKey(keyPendingDeletion.id, keyPendingDeletion.isTemporary);
+                                    setIsDeleting(false);
+                                    setKeyPendingDeletion(null);
+                                }}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete Key'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </ModernLayout>
     );

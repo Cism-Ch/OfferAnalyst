@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from '@/lib/auth-client';
 import {
     Home,
     Briefcase,
@@ -128,6 +129,54 @@ function renderNavItems(
     );
 }
 
+function SidebarUserProfile({ isCollapsed }: { isCollapsed: boolean }) {
+    const { data: session } = useSession();
+    const user = session?.user;
+    const name = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest User');
+    const email = user?.email || (user ? 'Authenticated' : 'Click to Sign In');
+    const image = user?.image || undefined;
+    const initials = (user?.name || user?.email || 'GU').slice(0, 2).toUpperCase();
+    const href = user ? '/dashboard/settings' : '/auth/login';
+
+    return (
+        <div className="border-t p-3">
+            <Link
+                href={href}
+                className={cn(
+                    'flex items-center gap-3 p-2 rounded-xl hover:bg-accent/60 transition-colors group',
+                    isCollapsed && 'justify-center p-1.5'
+                )}
+                title={user ? `${name} (${email}) • Account Settings` : 'Sign in to OfferAnalyst'}
+            >
+                <Avatar className={cn(isCollapsed ? 'h-8 w-8' : 'h-9 w-9', 'border border-border/70 shrink-0')}>
+                    {image && <AvatarImage src={image} alt={name} />}
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {initials}
+                    </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex-1 min-w-0"
+                    >
+                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                            {name}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                            <span className={cn(
+                                'inline-block w-2 h-2 rounded-full shrink-0',
+                                user ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                            )}></span>
+                            <span className="truncate">{user ? 'Active Session' : 'Free / Guest'}</span>
+                        </p>
+                    </motion.div>
+                )}
+            </Link>
+        </div>
+    );
+}
+
 // Helper function to render sidebar content
 function renderSidebarContent(
     isCollapsed: boolean,
@@ -167,30 +216,7 @@ function renderSidebarContent(
             </nav>
 
             {/* User Profile */}
-            <div className="border-t p-4">
-                <div className={cn(
-                    'flex items-center gap-3',
-                    isCollapsed && 'justify-center'
-                )}>
-                    <Avatar className={cn(isCollapsed && 'h-8 w-8')}>
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    {!isCollapsed && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex-1 min-w-0"
-                        >
-                            <p className="text-sm font-medium truncate">User Profile</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-                                Pro Plan
-                            </p>
-                        </motion.div>
-                    )}
-                </div>
-            </div>
+            <SidebarUserProfile isCollapsed={isCollapsed} />
 
             {/* Collapse Toggle - Desktop */}
             {onToggle && (

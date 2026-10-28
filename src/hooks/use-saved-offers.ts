@@ -9,6 +9,9 @@ export function useSavedOffers() {
     // Track if localStorage has been loaded to avoid saving during initial load
     const isInitialLoad = useRef(true);
 
+    // Track hydration/load state for consumer components
+    const [isLoaded, setIsLoaded] = useState(false);
+
     // Initialize with empty array to ensure server/client consistency
     const [savedOffers, setSavedOffers] = useState<Offer[]>([]);
 
@@ -28,10 +31,11 @@ export function useSavedOffers() {
             }
         } catch (e) {
             console.error("[useSavedOffers] Failed to load saved offers", e);
+        } finally {
+            // Mark initial load as complete and expose isLoaded
+            isInitialLoad.current = false;
+            setIsLoaded(true);
         }
-
-        // Mark initial load as complete
-        isInitialLoad.current = false;
     }, []);
 
     // Save to localStorage whenever savedOffers changes (skip initial load)
@@ -70,6 +74,7 @@ export function useSavedOffers() {
         savedOffers,
         saveOffer,
         removeOffer,
-        isSaved
+        isSaved,
+        isLoaded,
     }
 }

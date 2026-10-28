@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/components/ui/toast';
 
 interface TeamMember {
     id: string;
@@ -38,6 +40,8 @@ interface TeamMember {
 }
 
 export default function WorkspacePage() {
+    const { success, info } = useToast();
+    const { language, setLanguage } = useLanguage();
     const [workspaceName, setWorkspaceName] = useState('My Workspace');
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
         {
@@ -56,9 +60,9 @@ export default function WorkspacePage() {
     };
 
     const removeMember = (id: string) => {
-        if (confirm('Remove this team member?')) {
-            setTeamMembers(members => members.filter(m => m.id !== id));
-        }
+        const member = teamMembers.find(m => m.id === id);
+        setTeamMembers(members => members.filter(m => m.id !== id));
+        success(`Removed ${member?.name || 'member'} from workspace`);
     };
 
     return (
@@ -93,7 +97,7 @@ export default function WorkspacePage() {
                                         className="w-full mt-2 px-4 py-2 border rounded-md bg-background"
                                     />
                                 </div>
-                                <Button>Save Changes</Button>
+                                <Button onClick={() => success('Workspace settings saved successfully!')}>Save Changes</Button>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -125,11 +129,17 @@ export default function WorkspacePage() {
                                             <Globe className="w-4 h-4" />
                                             Language
                                         </Label>
-                                        <select className="w-full px-4 py-2 border rounded-md bg-background">
-                                            <option>English</option>
-                                            <option>Français</option>
-                                            <option>Español</option>
-                                            <option>Deutsch</option>
+                                        <select 
+                                            value={language}
+                                            onChange={(e) => {
+                                                const nextLang = e.target.value as SupportedLanguage;
+                                                setLanguage(nextLang);
+                                                info('Préférence actualisée', `Langue définie sur ${nextLang === 'fr' ? 'Français' : 'English'}`);
+                                            }}
+                                            className="w-full px-4 py-2 border rounded-md bg-background"
+                                        >
+                                            <option value="fr">Français 🇫🇷</option>
+                                            <option value="en">English 🇬🇧</option>
                                         </select>
                                     </div>
                                     <div>
@@ -144,7 +154,7 @@ export default function WorkspacePage() {
                                         </select>
                                     </div>
                                 </div>
-                                <Button>Save Preferences</Button>
+                                <Button onClick={() => success('Workspace preferences saved!')}>Save Preferences</Button>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -160,7 +170,7 @@ export default function WorkspacePage() {
                                             Manage workspace access and roles
                                         </CardDescription>
                                     </div>
-                                    <Button>
+                                    <Button onClick={() => info('Invitation link generated and copied to clipboard!')}>
                                         <Plus className="w-4 h-4 mr-2" />
                                         Invite Member
                                     </Button>

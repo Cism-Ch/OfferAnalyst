@@ -49,18 +49,29 @@ enum UserRole {
 
 // OAuth accounts
 model Account {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String  @db.ObjectId
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.String
-  access_token      String? @db.String
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.String
-  session_state     String?
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String    @db.ObjectId
+  accountId             String?
+  providerId            String?
+  accessToken           String?   @db.String
+  refreshToken          String?   @db.String
+  idToken               String?   @db.String
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime? @default(now())
+  updatedAt             DateTime? @updatedAt
+
+  // Legacy NextAuth fields
+  type                  String?
+  provider              String?
+  providerAccountId     String?
+  refresh_token         String?   @db.String
+  access_token          String?   @db.String
+  expires_at            Int?
+  token_type            String?
+  session_state         String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -71,17 +82,39 @@ model Account {
 
 // Session management
 model Session {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionToken String   @unique
-  userId       String   @db.ObjectId
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  token        String?   @unique
+  expiresAt    DateTime?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
+
+  // Legacy NextAuth fields
+  sessionToken String?   @unique
+  expires      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("sessions")
 }
 
-// Email verification tokens
+// Better-Auth verification model
+model Verification {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+// Email verification tokens (legacy)
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String

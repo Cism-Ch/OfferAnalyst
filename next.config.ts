@@ -8,6 +8,22 @@ const nextConfig: NextConfig = {
   
   transpilePackages: ['@prisma/client'],
   
+  // Permanent redirects to prevent 404 errors
+  async redirects() {
+    return [
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/docs',
+        destination: '/help',
+        permanent: false,
+      },
+    ];
+  },
+  
   // Security headers
   async headers() {
     return [

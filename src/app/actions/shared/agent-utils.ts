@@ -118,13 +118,74 @@ export function validateWithZod<T>(data: unknown, schema: z.ZodSchema<T>, contex
 
   if (!validationResult.success) {
     console.error(`Schema validation failed for ${context}:`, validationResult.error);
+    const details = validationResult.error.issues
+      .map(i => `${i.path.length > 0 ? `[${i.path.join('.')}] ` : ''}${i.message}`)
+      .join('; ');
     throw new AgentError(
-      `Validation failed for ${context}: ${validationResult.error.issues.map(i => i.path.join('.')).join(', ')}`,
+      `Validation failed for ${context}: ${details}`,
       'VALIDATION_FAILED'
     );
   }
 
   return validationResult.data;
+}
+
+/**
+ * Extrait de manière robuste un tableau d'offres depuis n'importe quelle structure JSON renvoyée par un LLM.
+ * Gère :
+ * - Tableaux JSON directs : [ {...}, {...} ]
+ * - Objets avec clé standard : { "offers": [...] }, { "data": [...] }, { "results": [...] }, { "items": [...] }
+ * - Objets imbriqués : { "response": { "offers": [...] } }
+ * - Dictionnaire d'offres : { "0": {...}, "1": {...} } ou { "offer_a": {...} }
+ * - Offre unique isolée au niveau racine : { "id": "1", "title": "..." }
+ */
+export function extractOffersArray(parsed: unknown): unknown[] {
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (typeof parsed !== 'object' || parsed === null) {
+    return [];
+  }
+
+  const obj = parsed as Record<string, unknown>;
+
+  // 1. Clés directes standard
+  const candidateKeys = ['offers', 'topOffers', 'listings', 'results', 'items', 'data', 'elements'];
+  for (const key of candidateKeys) {
+    if (Array.isArray(obj[key])) {
+      return obj[key] as unknown[];
+    }
+  }
+
+  // 2. Recherche d'un tableau au premier ou deuxième niveau d'imbrication
+  for (const val of Object.values(obj)) {
+    if (Array.isArray(val)) {
+      return val;
+    }
+    if (typeof val === 'object' && val !== null) {
+      for (const nestedVal of Object.values(val as Record<string, unknown>)) {
+        if (Array.isArray(nestedVal)) {
+          return nestedVal;
+        }
+      }
+    }
+  }
+
+  // 3. Dictionnaire d'objets (ex: { "offer1": { title: "..." }, "offer2": { title: "..." } })
+  const values = Object.values(obj);
+  if (
+    values.length > 0 &&
+    values.every(v => typeof v === 'object' && v !== null && ('title' in v || 'name' in v || 'description' in v))
+  ) {
+    return values;
+  }
+
+  // 4. Offre unique renvoyée directement à la racine
+  if ('title' in obj || 'name' in obj || 'price' in obj) {
+    return [obj];
+  }
+
+  return [];
 }
 
 // Détection d'erreurs API dans les réponses

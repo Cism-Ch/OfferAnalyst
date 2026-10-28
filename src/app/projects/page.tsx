@@ -23,8 +23,13 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+import { Project } from '@/hooks/use-projects';
 
 export default function ProjectsPage() {
+    const router = useRouter();
+    const { success, info } = useToast();
     const { projects, createProject, deleteProject, syncProjectSources } = useProjects();
     const { history, isLoading: historyLoading } = useSearchHistory();
     
@@ -38,6 +43,18 @@ export default function ProjectsPage() {
     // Wizard State
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [step, setStep] = useState(1);
+
+    const openProjectBoard = (project: Project) => {
+        if (project.sources && project.sources.length > 0) {
+            const primarySource = project.sources[0];
+            sessionStorage.setItem('restore_search', JSON.stringify(primarySource));
+            success(`Restoring board for "${project.name}"...`);
+            router.push('/');
+        } else {
+            info(`"${project.name}" has no search sources yet. Launching new search...`);
+            router.push('/search-context');
+        }
+    };
 
     // Form Data
     const [newProjectName, setNewProjectName] = useState("");
@@ -247,7 +264,11 @@ export default function ProjectsPage() {
                                     <Button variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => deleteProject(project.id)}>
                                         Delete
                                     </Button>
-                                    <Button variant="outline" className="gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                    <Button
+                                        variant="outline"
+                                        className="gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                                        onClick={() => openProjectBoard(project)}
+                                    >
                                         Open Board <ArrowRight className="h-4 w-4" />
                                     </Button>
                                 </CardFooter>

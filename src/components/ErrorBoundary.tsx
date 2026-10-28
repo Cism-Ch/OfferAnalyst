@@ -11,6 +11,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { pageVariants } from '@/lib/motion';
 
 interface Props {
@@ -113,10 +114,10 @@ class ErrorBoundary extends Component<Props, State> {
                 Try Again
               </Button>
               <Button
-                onClick={() => window.location.href = '/'}
+                asChild
                 variant="outline"
               >
-                Go to Home
+                <Link href="/">Go to Home</Link>
               </Button>
             </div>
           </div>

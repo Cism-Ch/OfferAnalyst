@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useSyncExternalStore } from 'react';
+
+const emptySubscribe = () => () => {};
 
 /**
  * ClientOnlySwitch Component
@@ -8,8 +10,7 @@ import React, { useState, useEffect } from 'react';
  * A wrapper component that ensures Switch components are only rendered on the client side
  * to prevent hydration issues in Next.js applications.
  * 
- * This component displays a placeholder during server-side rendering and the actual
- * children once the component has mounted on the client.
+ * Uses useSyncExternalStore for zero-flash, idiomatic client-side mounting without setState in effects.
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - The Switch component to render client-side
@@ -18,16 +19,15 @@ import React, { useState, useEffect } from 'react';
 export function ClientOnlySwitch({ children }: {
     children: React.ReactNode;
 }) {
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsClient(true);
-    }, []);
+    const isClient = useSyncExternalStore(
+        emptySubscribe,
+        () => true,
+        () => false
+    );
 
     if (!isClient) {
         return (
-            <div className="w-9 h-5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+            <div className="w-9 h-5 rounded-full bg-muted border border-border/60" aria-hidden="true" />
         );
     }
 

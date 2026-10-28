@@ -30,6 +30,7 @@
 - [R-UI-07] DataViz Responsive : Sur les graphiques (Recharts), calibrer `XAxis` avec `minTickGap={20}`, `interval="preserveStartEnd"`, et tronquer systématiquement les libellés via `tickFormatter`.
 - [R-UI-08] Multi-Thèmes & Tailwind v4 : Toujours passer le tableau `themes` explicite à `ThemeProvider` pour la persistance SSR. Étendre `@custom-variant dark` aux thèmes sombres customisés (`.neon`), et bannir les classes en dur (`bg-white`, `bg-slate-*`) au profit des tokens HSL (`bg-card`, `bg-muted`).
 - [R-UI-09] Hygiène Visuelle & Emojis : Bannir les emojis natifs OS dans l'interface utilisateur au profit d'icônes vectorielles SVG (Lucide) adaptées aux tokens HSL du thème actif. Utiliser le composant 'OffanLogo' / 'OffanIcon' pour l'identité de marque.
+- [R-UI-10] Synchronisation État Externe (React 19 / ESLint react-hooks/set-state-in-effect) : Ne jamais appeler setState() directement dans le corps d'un useEffect() pour lire du localStorage ou synchroniser une préférence (thème, langue). Utiliser systématiquement useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) avec un Set de listeners et window.addEventListener('storage') pour une réactivité instantanée sans flash ni render en cascade.
 
 ## [INTEGRATION, SECURITY & TYPES]
 - [R-INT-01] Bannir strictement `any`. Définir des interfaces TypeScript explicites ou inférer les types via `z.infer<typeof Schema>`.
@@ -40,3 +41,6 @@
 - [R-INT-06] Anti-SSRF : Valider systématiquement toute URL externe de webhook avant dispatch HTTP (bloquer localhost, IP privées RFC 1918 et métadonnées d'instance cloud `169.254.169.254`).
 - [R-INT-07] Principe Fail-Closed : En production (`NODE_ENV === 'production'`), rejeter immédiatement les requêtes (HTTP 503) ou lever une exception si les clés de signature (QStash) ou secrets d'auth manquent.
 - [R-INT-08] FinOps & Télémétrie AI : Interroger `GET https://openrouter.ai/api/v1/auth/key` pour auditer le statut, solde $ et limites d'une clé sans coût d'inférence. Avec `@openrouter/sdk`, les métriques d'usage sont strictement en camelCase (`promptTokens`, `completionTokens`, `totalTokens`).
+- [R-INT-09] Décision Décodage Contraint LLM : Quand `responseFormat: { type: "json_object" }` est utilisé, l'instruction système DOIT exiger un objet JSON `{ "offers": [ ... ] }` et non un tableau brut `[ ... ]` (interdit par la grammaire BNF contrainte).
+- [R-INT-10] Extracteur Universel LLM : Dépiler les réponses AI via `extractOffersArray()` pour absorber les tableaux directs, clés conteneurs (`offers`, `data`, `results`), dictionnaires ou objet unique sans crash Zod.
+- [R-INT-11] Better-Auth 1.7+ & MongoDB : Désactiver la vérification bloquante `advanced.database.validateSchema: false` et synchroniser `Session`, `Account`, `Verification` dans `schema.prisma` pour éliminer les 503 sur `/api/auth/get-session`.
