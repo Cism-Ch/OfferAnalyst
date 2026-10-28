@@ -7,11 +7,13 @@
  * - Template selection (timeline, grid, kanban)
  * - Custom grouping (by price, location, score)
  * - Export options (JSON, CSV, PDF-ready)
+ * - Hybrid BYOK + Guest Temporary API Key + Env fallback resolution
  */
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
+import { getAPIKey } from "./shared/api-key-provider";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { convertToCSV } from "@/lib/export/csv";
@@ -66,6 +68,7 @@ interface OrganizeOptionsV2 {
     template?: TemplateType;
     groupBy?: GroupingType;
     exportFormat?: ExportFormat;
+    clientApiKey?: string;
 }
 
 export async function organizeOffersActionV2(
@@ -76,10 +79,12 @@ export async function organizeOffersActionV2(
     const {
         template = 'grid',
         groupBy = 'category',
-        exportFormat
+        exportFormat,
+        clientApiKey
     } = options;
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const keyResult = await getAPIKey('openrouter', clientApiKey);
+    const apiKey = keyResult?.key;
     if (!apiKey) {
         throw new AgentError("OPENROUTER_API_KEY not found", 'API_KEY_MISSING');
     }
@@ -88,7 +93,6 @@ export async function organizeOffersActionV2(
         apiKey: apiKey,
     });
 
-    // Simplify offers for processing
     const simplifiedOffers = offers.map(offer => ({
         id: offer.id,
         title: offer.title,
@@ -101,7 +105,6 @@ export async function organizeOffersActionV2(
             : offer.description
     }));
 
-    // Template-specific instructions
     const templateInstructions = {
         timeline: `
             Organize offers chronologically or by relevance period.
@@ -117,7 +120,6 @@ export async function organizeOffersActionV2(
         `
     };
 
-    // Grouping-specific instructions
     const groupingInstructions = {
         category: 'Group by thematic categories (type, sector, etc.)',
         price: 'Group by price ranges (e.g., Budget, Mid-range, Premium)',
@@ -210,7 +212,6 @@ export async function organizeOffersActionV2(
 
         const validatedResponse = validateWithZod(parsedData, OrganizedOffersSchema, 'organize v2 response');
 
-        // Re-hydrate offers with full data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rehydrateOffers = (items: any[]) => {
             return items.map(item => {
@@ -246,7 +247,6 @@ export async function organizeOffersActionV2(
 
         console.log(`Organize V2: Successfully organized using ${template} template`);
 
-        // Handle export formats if requested
         if (exportFormat === 'csv') {
             result.exportedCsv = convertToCSV(result);
         } else if (exportFormat === 'pdf-ready') {
@@ -347,4 +347,3 @@ export async function exportOrganizedOffersAction(
         };
     }
 }
-

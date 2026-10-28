@@ -5,15 +5,15 @@
  * 
  * Manage personal account settings and preferences.
  * Features:
- * - Profile information (name, email, avatar) connected to Better-Auth session
- * - Password management with validation
- * - Connected OAuth providers with dynamic indicators
- * - Notification preferences
- * - Privacy settings with data export
- * - Account deletion with explicit confirmation modal
+ * - Guest Mode vs Authenticated Cloud Account differentiation
+ * - Real Profile & Password Server Actions connected to Better-Auth & Prisma
+ * - Sign Out action & Local Guest Data cleanup
+ * - Bilingual FR/EN interface
  */
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,9 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
-import { useSession } from '@/lib/auth-client';
+import { useSession, signOut } from '@/lib/auth-client';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { updateUserProfile, changeUserPassword, deleteUserAccount } from '@/app/actions/db/profile';
 import { 
     Lock,
     Bell,
@@ -47,23 +49,30 @@ import {
     Brain,
     Loader2,
     Download,
-    Globe
+    Globe,
+    LogOut,
+    LogIn,
+    UserPlus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
 import { LanguageToggle } from '@/components/layout/LanguageToggle';
 
 export default function SettingsPage() {
+    const router = useRouter();
     const { data: session } = useSession();
+    const { language, t } = useLanguage();
+    const isFr = language === 'fr';
+    const isAuthenticated = Boolean(session?.user?.id);
     const toast = useToast();
 
     // Profile form state (controlled with fallback to session user)
     const [customFullName, setCustomFullName] = useState<string | null>(null);
-    const [customEmail, setCustomEmail] = useState<string | null>(null);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isSigningOut, setIsSigningOut] = useState(false);
 
     const fullName = customFullName ?? (session?.user?.name || '');
-    const email = customEmail ?? (session?.user?.email || '');
+    const email = session?.user?.email || '';
 
     // Password form state
     const [currentPassword, setCurrentPassword] = useState('');
@@ -97,7 +106,7 @@ export default function SettingsPage() {
         { 
             name: 'Google', 
             connected: Boolean(session?.user?.email && session?.user?.image?.includes('googleusercontent')), 
-            email: session?.user?.email || 'user@gmail.com' 
+            email: session?.user?.email || null 
         },
         { 
             name: 'GitHub', 
@@ -109,15 +118,28 @@ export default function SettingsPage() {
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!fullName.trim()) {
-            toast.error('Nom requis', 'Veuillez saisir votre nom complet.');
+            toast.error(
+                isFr ? 'Nom requis' : 'Name required',
+                isFr ? 'Veuillez saisir votre nom complet.' : 'Please enter your full name.'
+            );
             return;
         }
         setIsSavingProfile(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 600));
-            toast.success('Profil mis à jour', 'Vos informations de profil ont été enregistrées avec succès.');
+            const res = await updateUserProfile({ name: fullName.trim() });
+            if (!res.success) {
+                toast.error(isFr ? 'Erreur' : 'Error', res.error);
+                return;
+            }
+            toast.success(
+                isFr ? 'Profil mis à jour' : 'Profile updated',
+                isFr ? 'Vos informations de profil ont été enregistrées.' : 'Your profile information has been saved.'
+            );
         } catch {
-            toast.error('Erreur', 'Impossible de mettre à jour le profil pour le moment.');
+            toast.error(
+                isFr ? 'Erreur' : 'Error',
+                isFr ? 'Impossible de mettre à jour le profil.' : 'Could not update profile.'
+            );
         } finally {
             setIsSavingProfile(false);
         }
@@ -126,39 +148,97 @@ export default function SettingsPage() {
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentPassword) {
-            toast.error('Mot de passe actuel requis', 'Veuillez renseigner votre mot de passe actuel.');
+            toast.error(
+                isFr ? 'Mot de passe actuel requis' : 'Current password required',
+                isFr ? 'Veuillez renseigner votre mot de passe actuel.' : 'Please enter your current password.'
+            );
             return;
         }
         if (newPassword.length < 8) {
-            toast.error('Mot de passe trop court', 'Le nouveau mot de passe doit comporter au moins 8 caractères.');
+            toast.error(
+                isFr ? 'Mot de passe trop court' : 'Password too short',
+                t.auth.errPasswordLength
+            );
             return;
         }
         if (newPassword !== confirmPassword) {
-            toast.error('Mots de passe non identiques', 'La confirmation ne correspond pas au nouveau mot de passe.');
+            toast.error(
+                isFr ? 'Mots de passe non identiques' : 'Password mismatch',
+                t.auth.errPasswordMismatch
+            );
             return;
         }
         setIsChangingPassword(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 700));
-            toast.success('Mot de passe actualisé', 'Votre mot de passe a été modifié avec succès.');
+            const res = await changeUserPassword({ currentPassword, newPassword });
+            if (!res.success) {
+                toast.error(isFr ? 'Erreur' : 'Error', res.error);
+                return;
+            }
+            toast.success(
+                isFr ? 'Mot de passe actualisé' : 'Password updated',
+                isFr ? 'Votre mot de passe a été modifié avec succès.' : 'Your password has been updated successfully.'
+            );
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch {
-            toast.error('Erreur', 'Échec de la mise à jour du mot de passe.');
+            toast.error(
+                isFr ? 'Erreur' : 'Error',
+                isFr ? 'Échec de la mise à jour du mot de passe.' : 'Failed to update password.'
+            );
         } finally {
             setIsChangingPassword(false);
         }
     };
 
+    const handleSignOut = async () => {
+        setIsSigningOut(true);
+        try {
+            await signOut();
+            toast.success(
+                isFr ? 'Déconnexion réussie' : 'Signed out',
+                isFr ? 'Vous êtes maintenant en mode Invité.' : 'You are now in Guest Mode.'
+            );
+            router.push('/');
+            router.refresh();
+        } catch {
+            toast.error(
+                isFr ? 'Erreur' : 'Error',
+                isFr ? 'Impossible de fermer la session.' : 'Failed to sign out.'
+            );
+        } finally {
+            setIsSigningOut(false);
+        }
+    };
+
+    const handleClearGuestData = () => {
+        if (typeof window === 'undefined') return;
+        const keysToRemove = [
+            'offeranalyst_temp_api_keys',
+            'offeranalyst_saved_offers',
+            'offeranalyst_search_history',
+            'offeranalyst_projects',
+            'offeranalyst_onboarding_completed',
+            'offeranalyst_onboarding_usecase',
+        ];
+        keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+        toast.success(
+            isFr ? 'Données locales effacées' : 'Local data cleared',
+            isFr ? 'Le cache navigateur du mode Invité a été réinitialisé.' : 'Guest Mode browser storage has been reset.'
+        );
+    };
+
     const handleDownloadData = () => {
         const payload = {
+            mode: isAuthenticated ? 'authenticated' : 'guest',
             user: {
-                name: fullName || session?.user?.name || 'Anonymous User',
-                email: email || session?.user?.email || 'N/A',
+                name: fullName || session?.user?.name || 'Guest User',
+                email: email || 'N/A',
                 avatar: selectedAvatar,
             },
             preferences: {
+                language,
                 emailNotifications,
                 pushNotifications,
                 weeklyDigest,
@@ -177,20 +257,36 @@ export default function SettingsPage() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        toast.success('Exportation réussie', 'Votre archive de données utilisateur a été générée.');
+        toast.success(
+            isFr ? 'Exportation réussie' : 'Export complete',
+            isFr ? 'Votre archive de données utilisateur a été générée.' : 'Your user data archive has been generated.'
+        );
     };
 
     const handleDeleteAccount = async () => {
         if (deleteConfirmText !== 'DELETE') {
-            toast.error('Confirmation invalide', 'Veuillez taper DELETE en majuscules pour confirmer.');
+            toast.error(
+                isFr ? 'Confirmation invalide' : 'Invalid confirmation',
+                isFr ? 'Veuillez taper DELETE en majuscules pour confirmer.' : 'Please type DELETE in uppercase to confirm.'
+            );
             return;
         }
         setIsDeletingAccount(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            toast.warning('Compte en cours de clôture', 'Votre demande de suppression totale a été transmise.');
+            const res = await deleteUserAccount();
+            if (!res.success) {
+                toast.error(isFr ? 'Erreur' : 'Error', res.error);
+                return;
+            }
+            await signOut().catch(() => null);
+            toast.warning(
+                isFr ? 'Compte supprimé' : 'Account deleted',
+                isFr ? 'Votre compte et vos données ont été supprimés.' : 'Your account and cloud data have been permanently deleted.'
+            );
             setShowDeleteDialog(false);
             setDeleteConfirmText('');
+            router.push('/');
+            router.refresh();
         } finally {
             setIsDeletingAccount(false);
         }
@@ -200,216 +296,269 @@ export default function SettingsPage() {
         <ModernLayout>
             <div className="container mx-auto py-8 px-4 max-w-4xl">
                 {/* Header */}
-                <motion.div {...fadeInUpProps} className="mb-8">
-                    <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
-                    <p className="text-muted-foreground">
-                        Manage your personal account and preferences
-                    </p>
+                <motion.div {...fadeInUpProps} className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-1">
+                            {isFr ? 'Paramètres du Compte' : 'Account Settings'}
+                        </h1>
+                        <p className="text-muted-foreground">
+                            {isFr
+                                ? 'Gérez votre profil, vos préférences régionales et votre sécurité'
+                                : 'Manage your personal profile, regional preferences, and security'}
+                        </p>
+                    </div>
+                    {isAuthenticated && (
+                        <Button
+                            variant="outline"
+                            onClick={handleSignOut}
+                            disabled={isSigningOut}
+                            className="min-h-11 gap-2 self-start sm:self-auto"
+                        >
+                            {isSigningOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                            {isSigningOut ? t.auth.signingOut : t.auth.signOut}
+                        </Button>
+                    )}
                 </motion.div>
 
                 <motion.div {...staggerContainerProps} className="space-y-6">
-                    {/* Profile Information */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Profile Information</CardTitle>
-                                <CardDescription>
-                                    Update your personal information
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <Label>Avatar</Label>
-                                    <div className="flex flex-wrap gap-2.5 mt-2">
-                                        {avatarPresets.map((preset) => {
-                                            const Icon = preset.icon;
-                                            const isSelected = selectedAvatar === preset.id;
-                                            return (
-                                                <button
-                                                    key={preset.id}
-                                                    type="button"
-                                                    onClick={() => setSelectedAvatar(preset.id)}
-                                                    title={preset.label}
-                                                    aria-label={`Select avatar ${preset.label}`}
-                                                    className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                        isSelected
-                                                            ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
-                                                            : 'border-border/60 bg-muted/40 text-muted-foreground hover:border-primary/50 hover:text-foreground'
-                                                    }`}
+                    {/* Guest Mode Banner OR Authenticated Profile Card */}
+                    {!isAuthenticated ? (
+                        <motion.div {...staggerItemProps}>
+                            <Card className="border-primary/30 bg-primary/5">
+                                <CardHeader>
+                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <User className="w-5 h-5 text-primary" />
+                                            {isFr ? 'Mode Invité Actif (Session Locale)' : 'Guest Mode Active (Local Session)'}
+                                        </CardTitle>
+                                        <Badge variant="secondary">
+                                            {t.nav.guestSession}
+                                        </Badge>
+                                    </div>
+                                    <CardDescription>
+                                        {t.auth.guestNotice}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <Button asChild className="min-h-11 gap-2">
+                                        <Link href="/auth/login">
+                                            <LogIn className="w-4 h-4" />
+                                            {t.auth.signInBtn}
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" className="min-h-11 gap-2">
+                                        <Link href="/auth/signup">
+                                            <UserPlus className="w-4 h-4" />
+                                            {t.auth.signUpBtn}
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={handleClearGuestData}
+                                        className="min-h-11 gap-2 text-muted-foreground hover:text-destructive sm:ml-auto"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        {isFr ? 'Réinitialiser le cache local' : 'Reset local cache'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ) : (
+                        <>
+                            {/* Profile Information */}
+                            <motion.div {...staggerItemProps}>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>{isFr ? 'Informations du Profil' : 'Profile Information'}</CardTitle>
+                                        <CardDescription>
+                                            {isFr ? 'Mettez à jour vos informations personnelles' : 'Update your personal information'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div>
+                                            <Label>Avatar</Label>
+                                            <div className="flex flex-wrap gap-2.5 mt-2">
+                                                {avatarPresets.map((preset) => {
+                                                    const Icon = preset.icon;
+                                                    const isSelected = selectedAvatar === preset.id;
+                                                    return (
+                                                        <button
+                                                            key={preset.id}
+                                                            type="button"
+                                                            onClick={() => setSelectedAvatar(preset.id)}
+                                                            title={preset.label}
+                                                            aria-label={`Select avatar ${preset.label}`}
+                                                            className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                                isSelected
+                                                                    ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
+                                                                    : 'border-border/60 bg-muted/40 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                                                            }`}
+                                                        >
+                                                            <Icon className="w-5 h-5" />
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <form onSubmit={handleSaveProfile} className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="full-name">{t.auth.nameLabel}</Label>
+                                                <Input
+                                                    id="full-name"
+                                                    type="text"
+                                                    placeholder={t.auth.namePlaceholder}
+                                                    value={fullName}
+                                                    onChange={(e) => setCustomFullName(e.target.value)}
+                                                    className="mt-2 h-11"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="email">{t.auth.emailLabel}</Label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    value={email}
+                                                    disabled
+                                                    className="mt-2 h-11 bg-muted/50"
+                                                />
+                                            </div>
+
+                                            <Button type="submit" disabled={isSavingProfile} className="min-h-11">
+                                                {isSavingProfile ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        {isFr ? 'Enregistrement...' : 'Saving...'}
+                                                    </>
+                                                ) : (
+                                                    isFr ? 'Enregistrer le profil' : 'Save Profile'
+                                                )}
+                                            </Button>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+
+                            {/* Password Management */}
+                            <motion.div {...staggerItemProps}>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Lock className="w-5 h-5" />
+                                            {t.auth.passwordLabel}
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {isFr ? 'Modifiez votre mot de passe de connexion' : 'Change your account password'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form onSubmit={handleChangePassword} className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="current-password">
+                                                    {isFr ? 'Mot de passe actuel' : 'Current Password'}
+                                                </Label>
+                                                <Input
+                                                    id="current-password"
+                                                    type="password"
+                                                    placeholder="••••••••"
+                                                    value={currentPassword}
+                                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                                    className="mt-2 h-11"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="new-password">
+                                                    {isFr ? 'Nouveau mot de passe' : 'New Password'}
+                                                </Label>
+                                                <Input
+                                                    id="new-password"
+                                                    type="password"
+                                                    placeholder={t.auth.passwordMinHint}
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    className="mt-2 h-11"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="confirm-password">
+                                                    {t.auth.confirmPasswordLabel}
+                                                </Label>
+                                                <Input
+                                                    id="confirm-password"
+                                                    type="password"
+                                                    placeholder="••••••••"
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    className="mt-2 h-11"
+                                                />
+                                            </div>
+
+                                            <Button type="submit" disabled={isChangingPassword} className="min-h-11">
+                                                {isChangingPassword ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        {isFr ? 'Mise à jour...' : 'Updating Password...'}
+                                                    </>
+                                                ) : (
+                                                    isFr ? 'Modifier le mot de passe' : 'Change Password'
+                                                )}
+                                            </Button>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+
+                            {/* Connected Providers */}
+                            <motion.div {...staggerItemProps}>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>{isFr ? 'Comptes Connectés (OAuth)' : 'Connected Accounts (OAuth)'}</CardTitle>
+                                        <CardDescription>
+                                            {isFr ? 'Connexions tierces associées à votre compte' : 'Manage your OAuth provider connections'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-3">
+                                            {connectedProviders.map((provider) => (
+                                                <div
+                                                    key={provider.name}
+                                                    className="flex items-center justify-between p-4 border rounded-lg"
                                                 >
-                                                    <Icon className="w-5 h-5" />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                        Choose from preset avatars (no file upload required)
-                                    </p>
-                                </div>
-
-                                <form onSubmit={handleSaveProfile} className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="full-name">Full Name</Label>
-                                        <Input
-                                            id="full-name"
-                                            type="text"
-                                            placeholder="Your full name"
-                                            value={fullName}
-                                            onChange={(e) => setCustomFullName(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="email">Email Address</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="your.email@example.com"
-                                            value={email}
-                                            onChange={(e) => setCustomEmail(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <Button type="submit" disabled={isSavingProfile}>
-                                        {isSavingProfile ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            'Save Profile'
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    {/* Password Management */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Lock className="w-5 h-5" />
-                                    Password
-                                </CardTitle>
-                                <CardDescription>
-                                    Change your password
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleChangePassword} className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="current-password">Current Password</Label>
-                                        <Input
-                                            id="current-password"
-                                            type="password"
-                                            placeholder="••••••••"
-                                            value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="new-password">New Password</Label>
-                                        <Input
-                                            id="new-password"
-                                            type="password"
-                                            placeholder="At least 8 characters"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="confirm-password">Confirm New Password</Label>
-                                        <Input
-                                            id="confirm-password"
-                                            type="password"
-                                            placeholder="Confirm your new password"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <Button type="submit" disabled={isChangingPassword}>
-                                        {isChangingPassword ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Updating Password...
-                                            </>
-                                        ) : (
-                                            'Change Password'
-                                        )}
-                                    </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    {/* Connected Providers */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Connected Accounts</CardTitle>
-                                <CardDescription>
-                                    Manage your OAuth provider connections
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    {connectedProviders.map((provider) => (
-                                        <div
-                                            key={provider.name}
-                                            className="flex items-center justify-between p-4 border rounded-lg"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <Shield className="w-5 h-5 text-primary" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-semibold">{provider.name}</h4>
-                                                    {provider.connected && provider.email && (
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {provider.email}
-                                                        </p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <Shield className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold">{provider.name}</h4>
+                                                            {provider.connected && provider.email && (
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {provider.email}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    {provider.connected ? (
+                                                        <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
+                                                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                            {isFr ? 'Connecté' : 'Connected'}
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">
+                                                            {isFr ? 'Non lié' : 'Not linked'}
+                                                        </Badge>
                                                     )}
                                                 </div>
-                                            </div>
-                                            {provider.connected ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant="outline" className="text-green-500">
-                                                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                                                        Connected
-                                                    </Badge>
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        onClick={() => toast.info('Gestion OAuth', `La déconnexion de ${provider.name} s'effectue depuis la console Better-Auth.`)}
-                                                    >
-                                                        Disconnect
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => toast.info('Connexion OAuth', `La connexion de compte ${provider.name} est disponible sur la page de connexion.`)}
-                                                >
-                                                    Connect
-                                                </Button>
-                                            )}
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </>
+                    )}
 
                     {/* Language & Regional Preferences */}
                     <motion.div {...staggerItemProps}>
@@ -417,18 +566,24 @@ export default function SettingsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Globe className="w-5 h-5 text-primary" />
-                                    Langue & Région / Language & Region
+                                    {isFr ? 'Langue & Région' : 'Language & Region'}
                                 </CardTitle>
                                 <CardDescription>
-                                    Choisissez votre langue d&apos;affichage et de synthèse IA (Français ou Anglais)
+                                    {isFr
+                                        ? "Choisissez votre langue d'affichage et de synthèse IA (Français ou Anglais)"
+                                        : 'Choose your display and AI synthesis language (French or English)'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/30">
                                     <div className="space-y-0.5">
-                                        <Label className="text-sm font-semibold">Langue active / Active Language</Label>
+                                        <Label className="text-sm font-semibold">
+                                            {isFr ? 'Langue active' : 'Active Language'}
+                                        </Label>
                                         <p className="text-xs text-muted-foreground">
-                                            Adapte les formulaires, métriques et explications générées par l&apos;IA
+                                            {isFr
+                                                ? "Adapte les formulaires, métriques et explications générées par l'IA"
+                                                : 'Adapts forms, metrics, and AI-generated explanations'}
                                         </p>
                                     </div>
                                     <LanguageToggle />
@@ -446,54 +601,69 @@ export default function SettingsPage() {
                                     Notifications
                                 </CardTitle>
                                 <CardDescription>
-                                    Manage how you receive notifications
+                                    {isFr ? 'Gérez vos préférences de notification' : 'Manage how you receive notifications'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <Label>Email Notifications</Label>
+                                        <Label>{isFr ? 'Notifications Email' : 'Email Notifications'}</Label>
                                         <p className="text-sm text-muted-foreground">
-                                            Receive notifications via email
+                                            {isFr ? 'Recevoir les alertes de sécurité par email' : 'Receive security alerts via email'}
                                         </p>
                                     </div>
                                     <Switch
                                         checked={emailNotifications}
                                         onCheckedChange={(checked) => {
                                             setEmailNotifications(checked);
-                                            toast.info('Préférences modifiées', `Notifications email ${checked ? 'activées' : 'désactivées'}.`);
+                                            toast.info(
+                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                isFr
+                                                    ? `Notifications email ${checked ? 'activées' : 'désactivées'}.`
+                                                    : `Email notifications ${checked ? 'enabled' : 'disabled'}.`
+                                            );
                                         }}
                                     />
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <Label>Push Notifications</Label>
+                                        <Label>{isFr ? 'Notifications Push' : 'Push Notifications'}</Label>
                                         <p className="text-sm text-muted-foreground">
-                                            Receive browser push notifications
+                                            {isFr ? 'Notifications navigateur en temps réel' : 'Receive browser push notifications'}
                                         </p>
                                     </div>
                                     <Switch
                                         checked={pushNotifications}
                                         onCheckedChange={(checked) => {
                                             setPushNotifications(checked);
-                                            toast.info('Préférences modifiées', `Notifications push ${checked ? 'activées' : 'désactivées'}.`);
+                                            toast.info(
+                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                isFr
+                                                    ? `Notifications push ${checked ? 'activées' : 'désactivées'}.`
+                                                    : `Push notifications ${checked ? 'enabled' : 'disabled'}.`
+                                            );
                                         }}
                                     />
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <Label>Weekly Digest</Label>
+                                        <Label>{isFr ? 'Résumé Hebdomadaire' : 'Weekly Digest'}</Label>
                                         <p className="text-sm text-muted-foreground">
-                                            Get a weekly summary of your activity
+                                            {isFr ? 'Synthèse hebdomadaire de vos analyses' : 'Get a weekly summary of your activity'}
                                         </p>
                                     </div>
                                     <Switch
                                         checked={weeklyDigest}
                                         onCheckedChange={(checked) => {
                                             setWeeklyDigest(checked);
-                                            toast.info('Préférences modifiées', `Résumé hebdomadaire ${checked ? 'activé' : 'désactivé'}.`);
+                                            toast.info(
+                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                isFr
+                                                    ? `Résumé hebdomadaire ${checked ? 'activé' : 'désactivé'}.`
+                                                    : `Weekly digest ${checked ? 'enabled' : 'disabled'}.`
+                                            );
                                         }}
                                     />
                                 </div>
@@ -507,60 +677,67 @@ export default function SettingsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Shield className="w-5 h-5" />
-                                    Privacy & Security
+                                    {isFr ? 'Confidentialité & Export' : 'Privacy & Security'}
                                 </CardTitle>
                                 <CardDescription>
-                                    Control your privacy settings
+                                    {isFr ? 'Contrôlez et exportez vos données personnelles' : 'Control and export your personal data'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="p-4 bg-muted/50 rounded-lg">
-                                    <h4 className="font-semibold mb-2">Data Privacy</h4>
+                                    <h4 className="font-semibold mb-2">
+                                        {isFr ? 'Protection des Données' : 'Data Privacy'}
+                                    </h4>
                                     <p className="text-sm text-muted-foreground">
-                                        Your searches and analyses are private. We never share your data with third parties.
-                                        API keys are encrypted at rest.
+                                        {isFr
+                                            ? 'Vos recherches et analyses restent privées. Les clés API Cloud sont chiffrées en AES-256-GCM au repos.'
+                                            : 'Your searches and analyses are private. Cloud API keys are encrypted with AES-256-GCM at rest.'}
                                     </p>
                                 </div>
-                                <Button variant="outline" onClick={handleDownloadData}>
+                                <Button variant="outline" onClick={handleDownloadData} className="min-h-11">
                                     <Download className="w-4 h-4 mr-2" />
-                                    Download My Data
+                                    {isFr ? 'Télécharger mes données (JSON)' : 'Download My Data (JSON)'}
                                 </Button>
                             </CardContent>
                         </Card>
                     </motion.div>
 
-                    {/* Danger Zone */}
-                    <motion.div {...staggerItemProps}>
-                        <Card className="border-destructive/50">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-destructive">
-                                    <AlertTriangle className="w-5 h-5" />
-                                    Danger Zone
-                                </CardTitle>
-                                <CardDescription>
-                                    Irreversible actions
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
+                    {/* Danger Zone (Authenticated Only) */}
+                    {isAuthenticated && (
+                        <motion.div {...staggerItemProps}>
+                            <Card className="border-destructive/50">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-destructive">
+                                        <AlertTriangle className="w-5 h-5" />
+                                        {isFr ? 'Zone Critique' : 'Danger Zone'}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {isFr ? 'Actions irréversibles sur votre compte' : 'Irreversible account actions'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
                                     <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-                                        <h4 className="font-semibold mb-2">Delete Account</h4>
+                                        <h4 className="font-semibold mb-2">
+                                            {isFr ? 'Supprimer le compte' : 'Delete Account'}
+                                        </h4>
                                         <p className="text-sm text-muted-foreground mb-4">
-                                            Once you delete your account, all your data will be permanently removed.
-                                            This action cannot be undone.
+                                            {isFr
+                                                ? 'La suppression de votre compte effacera définitivement vos projets, historiques, clés API et favoris Cloud.'
+                                                : 'Once you delete your account, all your cloud projects, history, API keys, and saved offers will be permanently removed.'}
                                         </p>
                                         <Button 
                                             variant="destructive"
                                             onClick={() => setShowDeleteDialog(true)}
+                                            className="min-h-11"
                                         >
                                             <Trash2 className="w-4 h-4 mr-2" />
-                                            Delete Account
+                                            {isFr ? 'Supprimer définitivement mon compte' : 'Delete Account'}
                                         </Button>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
                 </motion.div>
 
                 {/* Delete Account Confirmation Dialog */}
@@ -569,15 +746,21 @@ export default function SettingsPage() {
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-destructive">
                                 <AlertTriangle className="w-5 h-5" />
-                                Delete Account Permanently
+                                {isFr ? 'Supprimer le compte définitivement' : 'Delete Account Permanently'}
                             </DialogTitle>
                             <DialogDescription>
-                                This will permanently delete your user account, analysis records, and stored settings. This action is immediate and cannot be reversed.
+                                {isFr
+                                    ? 'Cette action supprimera immédiatement votre compte utilisateur, vos analyses enregistrées et vos clés API Cloud.'
+                                    : 'This will permanently delete your user account, analysis records, and stored settings. This action cannot be reversed.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-2 space-y-2">
                             <Label htmlFor="delete-confirm">
-                                Type <span className="font-bold text-destructive">DELETE</span> to confirm:
+                                {isFr ? (
+                                    <>Tapez <span className="font-bold text-destructive">DELETE</span> pour confirmer :</>
+                                ) : (
+                                    <>Type <span className="font-bold text-destructive">DELETE</span> to confirm:</>
+                                )}
                             </Label>
                             <Input
                                 id="delete-confirm"
@@ -589,7 +772,7 @@ export default function SettingsPage() {
                         </div>
                         <DialogFooter className="gap-2 sm:gap-0">
                             <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeletingAccount}>
-                                Cancel
+                                {isFr ? 'Annuler' : 'Cancel'}
                             </Button>
                             <Button 
                                 variant="destructive" 
@@ -599,10 +782,10 @@ export default function SettingsPage() {
                                 {isDeletingAccount ? (
                                     <>
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Deleting...
+                                        {isFr ? 'Suppression...' : 'Deleting...'}
                                     </>
                                 ) : (
-                                    'Confirm Deletion'
+                                    isFr ? 'Confirmer la suppression' : 'Confirm Deletion'
                                 )}
                             </Button>
                         </DialogFooter>

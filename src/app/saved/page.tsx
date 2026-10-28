@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
+import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
 import Link from 'next/link';
@@ -19,6 +20,7 @@ export default function SavedOffersPage() {
     const router = useRouter();
     const { error: toastError } = useToast();
     const { savedOffers, removeOffer } = useSavedOffers();
+    const tempKeys = useTemporaryApiKeys();
     const { t } = useLanguage();
     const sp = t.savedPage;
     const [organizing, setOrganizing] = useState(false);
@@ -29,7 +31,8 @@ export default function SavedOffersPage() {
         if (savedOffers.length === 0) return;
         setOrganizing(true);
         try {
-            const data = await organizeOffersAction(savedOffers);
+            const clientApiKey = tempKeys.getKey('openrouter') || undefined;
+            const data = await organizeOffersAction(savedOffers, clientApiKey);
             setOrganizedData(data);
         } catch (error) {
             console.error(error);
@@ -85,7 +88,7 @@ export default function SavedOffersPage() {
                             onClick={handleCompare}
                             disabled={selectedIds.size < 2}
                             variant="outline"
-                            className="gap-2 w-full sm:w-auto"
+                            className="gap-2 w-full sm:w-auto min-h-11"
                         >
                             <GitCompare className="h-4 w-4" />
                             {sp.btnCompare} ({selectedIds.size}/3)
@@ -93,7 +96,7 @@ export default function SavedOffersPage() {
                         <Button
                             onClick={handleOrganize}
                             disabled={savedOffers.length === 0 || organizing}
-                            className="gap-2 w-full sm:w-auto"
+                            className="gap-2 w-full sm:w-auto min-h-11"
                         >
                             {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
                             {organizing ? sp.btnOrganizing : sp.btnSmartOrganize}

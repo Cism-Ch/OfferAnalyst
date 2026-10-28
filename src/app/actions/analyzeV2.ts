@@ -6,14 +6,15 @@
  * Enhanced version with:
  * - User-defined criteria weighting
  * - Multi-language support (FR, EN, ES, DE)
- * - Async processing for 100+ offers
- * - Store analysis results to MongoDB (future)
- * - Webhook notifications (future)
+ * - Hybrid BYOK + Guest Temporary API Key + Env fallback resolution
+ * - Store analysis results to MongoDB
+ * - Webhook notifications
  */
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, UserProfile, AnalysisResponse, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
+import { getAPIKey } from "./shared/api-key-provider";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import prisma from "@/lib/prisma";
@@ -56,6 +57,7 @@ interface AnalyzeOptionsV2 {
     storeResults?: boolean;
     webhookUrl?: string;
     userId?: string;
+    clientApiKey?: string;
 }
 
 export async function analyzeOffersActionV2(
@@ -71,11 +73,13 @@ export async function analyzeOffersActionV2(
         async = false,
         storeResults = false,
         webhookUrl,
-        userId: explicitUserId
+        userId: explicitUserId,
+        clientApiKey
     } = options;
 
     const startedAt = Date.now();
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const keyResult = await getAPIKey('openrouter', clientApiKey);
+    const apiKey = keyResult?.key;
     
     if (!apiKey) {
         return {
@@ -84,7 +88,6 @@ export async function analyzeOffersActionV2(
         };
     }
 
-    // For large batches (100+), recommend async processing
     if (offers.length >= 100 && !async) {
         console.warn(`Analyzing ${offers.length} offers synchronously. Consider using async mode.`);
     }
@@ -93,7 +96,6 @@ export async function analyzeOffersActionV2(
         apiKey: apiKey,
     });
 
-    // Optimize payload: Simplify offers to reduce token usage
     const simplifiedOffers = offers.map(offer => ({
         id: offer.id,
         title: offer.title,
@@ -105,7 +107,6 @@ export async function analyzeOffersActionV2(
             : offer.description
     }));
 
-    // Language-specific instructions
     const languageInstructions = {
         en: 'Provide analysis in English.',
         fr: 'Fournir l\'analyse en français.',
@@ -193,7 +194,6 @@ export async function analyzeOffersActionV2(
 
         const validatedResponse = validateWithZod(parsedData, AnalysisResponseSchema, 'analyze v2 response');
 
-        // Merge with original offers to preserve full data
         const mergedTopOffers = validatedResponse.topOffers.map(scoredOffer => {
             const originalOffer = offers.find(o => o.id === scoredOffer.id);
             if (!originalOffer) return scoredOffer;
@@ -215,7 +215,6 @@ export async function analyzeOffersActionV2(
             searchSources
         };
 
-        // Store results to MongoDB if requested
         let storedResultId: string | undefined;
         if (storeResults) {
             const storeRes = await storeAnalysisResults(
@@ -231,7 +230,6 @@ export async function analyzeOffersActionV2(
             }
         }
 
-        // Send webhook notification if webhookUrl is provided
         if (webhookUrl) {
             try {
                 await sendWebhook(webhookUrl, {
@@ -540,4 +538,3 @@ export async function deleteAnalysisResult(id: string): Promise<AgentActionResul
         };
     }
 }
-
