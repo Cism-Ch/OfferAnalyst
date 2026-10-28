@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
 // Public routes that don't require authentication
 const publicRoutes = [
   "/",
+  "/history",
   "/auth/login",
   "/auth/signup",
   "/auth/reset",
@@ -24,7 +25,6 @@ const publicRoutes = [
 const protectedRoutes = [
   "/onboarding",
   "/saved",
-  "/history",
   "/projects",
   "/compare",
   "/settings",
@@ -56,10 +56,15 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isProtectedRoute) {
-    // Check for Better-Auth session cookie
-    const sessionCookie = request.cookies.get("offeranalyst.session_token");
-    
-    if (!sessionCookie) {
+    // Check for Better-Auth session cookie (both standard and HTTPS __Secure- prefixed tokens)
+    // Validate non-empty string value to prevent empty cookie bypass and prioritize valid secure cookie
+    const standardCookie = request.cookies.get("offeranalyst.session_token");
+    const secureCookie = request.cookies.get("__Secure-offeranalyst.session_token");
+    const sessionToken = 
+      (standardCookie?.value && standardCookie.value.trim().length > 0 ? standardCookie.value : null) ||
+      (secureCookie?.value && secureCookie.value.trim().length > 0 ? secureCookie.value : null);
+
+    if (!sessionToken) {
       // Redirect to login with return URL
       const loginUrl = new URL("/auth/login", request.url);
       loginUrl.searchParams.set("from", pathname);

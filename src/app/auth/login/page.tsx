@@ -10,11 +10,11 @@
  * - Or continue directly in Guest Mode
  */
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type TranslationDictionary } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { PremiumThemeSelector } from "@/components/theme-selector";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowLeft, Loader2, Mail, Sparkles, UserCheck } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -33,24 +34,66 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export default function LoginPage() {
+function getLocalizedOAuthError(
+  errorCode: string,
+  errorDesc: string | null,
+  t: TranslationDictionary
+): string {
+  switch (errorCode) {
+    case "access_denied":
+      return t.auth.oauthErrorAccessDenied;
+    case "account_not_linked":
+      return t.auth.oauthErrorAccountNotLinked;
+    case "OAuthCallbackError":
+      return t.auth.oauthErrorCallback;
+    case "configuration":
+      return t.auth.oauthErrorConfiguration;
+    case "verification":
+      return t.auth.oauthErrorVerification;
+    default:
+      return errorDesc || t.auth.oauthErrorDefault;
+  }
+}
+
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+
+  const oauthErrorCode = searchParams.get("error");
+  const oauthError = oauthErrorCode
+    ? getLocalizedOAuthError(oauthErrorCode, searchParams.get("error_description"), t)
+    : "";
+  const displayError = formError || oauthError;
+
+  // Notify external toast system when OAuth error is present in query parameters
+  useEffect(() => {
+    if (!oauthErrorCode) return;
+    const message = getLocalizedOAuthError(oauthErrorCode, searchParams.get("error_description"), t);
+    toast.error(t.auth.oauthErrorDefault, message);
+  }, [oauthErrorCode, searchParams, t, toast]);
+
+  const isSafeRelativeUrl = (url: string | null): boolean => {
+    if (!url) return false;
+    return url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\") && !url.includes("://");
+  };
 
   const getCallbackUrl = (): string => {
-    if (typeof window === "undefined") return "/";
-    const params = new URLSearchParams(window.location.search);
-    const cb = params.get("callbackUrl") || params.get("redirect");
-    return cb && cb.startsWith("/") ? cb : "/";
+    const from = searchParams.get("from");
+    const callbackUrl = searchParams.get("callbackUrl");
+    const redirect = searchParams.get("redirect");
+    const cb = from || callbackUrl || redirect;
+    return isSafeRelativeUrl(cb) ? (cb as string) : "/";
   };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setFormError("");
     setLoading(true);
 
     try {
@@ -62,21 +105,21 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        setError(res.error.message || t.auth.errInvalidCredentials);
+        setFormError(res.error.message || t.auth.errInvalidCredentials);
         return;
       }
 
       router.push(callbackURL);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.auth.errInvalidCredentials);
+      setFormError(err instanceof Error ? err.message : t.auth.errInvalidCredentials);
     } finally {
       setLoading(false);
     }
   };
 
   const handleOAuthLogin = async (provider: "google" | "github") => {
-    setError("");
+    setFormError("");
     setLoading(true);
 
     try {
@@ -84,14 +127,15 @@ export default function LoginPage() {
       const res = await signIn.social({
         provider,
         callbackURL,
+        errorCallbackURL: "/auth/login",
       });
 
       if (res?.error) {
-        setError(res.error.message || t.auth.errInvalidCredentials);
+        setFormError(res.error.message || t.auth.errInvalidCredentials);
         setLoading(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.auth.errInvalidCredentials);
+      setFormError(err instanceof Error ? err.message : t.auth.errInvalidCredentials);
       setLoading(false);
     }
   };
@@ -129,7 +173,7 @@ export default function LoginPage() {
               <CardDescription>{t.auth.loginSubtitle}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {error && (
+              {displayError && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -137,7 +181,7 @@ export default function LoginPage() {
                   className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg flex items-start gap-2.5"
                 >
                   <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm font-medium">{error}</p>
+                  <p className="text-sm font-medium">{displayError}</p>
                 </motion.div>
               )}
 
@@ -229,7 +273,10 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col space-y-3 border-t border-border/40 pt-4">
               <p className="text-sm text-center text-muted-foreground w-full">
                 {t.auth.noAccountYet}{" "}
-                <Link href="/auth/signup" className="text-primary hover:underline font-semibold">
+                <Link
+                  href={searchParams.get("from") ? `/auth/signup?from=${encodeURIComponent(searchParams.get("from")!)}` : "/auth/signup"}
+                  className="text-primary hover:underline font-semibold"
+                >
                   {t.auth.signUpLink}
                 </Link>
               </p>
@@ -246,5 +293,19 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/40">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

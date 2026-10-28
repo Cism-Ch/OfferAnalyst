@@ -107,6 +107,7 @@ export default function SignupPage() {
       const res = await signIn.social({
         provider,
         callbackURL: "/onboarding",
+        errorCallbackURL: "/auth/login",
       });
 
       if (res?.error) {
