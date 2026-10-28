@@ -6,7 +6,7 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "eslint",
+        "lint": "eslint --cache",
         "test:e2e": "playwright test",
         "eval:fullstack": "python evals/run_fullstack_eval.py",
         "eval:quick": "python evals/run_fullstack_eval.py --quick",

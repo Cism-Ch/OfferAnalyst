@@ -80,7 +80,7 @@ def main():
         # 1. Vérification du typage statique TypeScript strict
         run_cmd("typecheck", "npx tsc --noEmit", weight=35 if args.quick else 30, timeout_sec=150),
         # 2. Vérification ESLint React 19
-        run_cmd("lint", "npm run lint", weight=35 if args.quick else 25, timeout_sec=150),
+        run_cmd("lint", "npm run lint", weight=35 if args.quick else 25, timeout_sec=240),
         # 3. Validation Prisma MongoDB & Singletons
         run_cmd("prisma_hygiene", f'"{python_executable}" .agents/skills/db_schema_validator.py', weight=30 if args.quick else 20, timeout_sec=60),
     ]

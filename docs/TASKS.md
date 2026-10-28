@@ -13,19 +13,67 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🔄 SPRINT 15 PRÉPARATION│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🔄 SPRINT 15 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-EXP-01 (PDF/CSV│  │ [ ] SPRINT 16 (E2E &    │  │     - Sprint 14 (4)     │
-│ [ ] TASK-EXP-02 (Share) │  │     Observabilité IA)   │  │     - Sprint 13 (5)     │
-│ [ ] TASK-EXP-03 (UI/A11y│  │                         │  │     - Sprint 12 (4)     │
-│ [ ] TASK-EXP-04 (Eval)  │  │                         │  │     - Sprint 11 (5)     │
-│                         │  │                         │  │     - Sprints 1-10 (All)│
+│ [x] TASK-AUTH-01 (M1)   │  │ [ ] SPRINT 16 (E2E &    │  │     - Sprint 14 (4)     │
+│ [x] TASK-AUTH-02 (M2)   │  │     Observabilité IA)   │  │     - Sprint 13 (5)     │
+│ [x] TASK-AUTH-03 (M3)   │  │                         │  │     - Sprint 12 (4)     │
+│ [x] TASK-AUTH-04 (M4)   │  │                         │  │     - Sprint 11 (5)     │
+│ [ ] TASK-EXP-01 (PDF/CSV│  │                         │  │     - Sprints 1-10 (All)│
+│ [ ] TASK-EXP-02 (Share) │  │                         │  │                         │
+│ [ ] TASK-EXP-03 (UI/A11y│  │                         │  │                         │
+│ [ ] TASK-EXP-04 (Eval)  │  │                         │  │                         │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 15 (En Préparation) — Export PDF / CSV & Partage Collaboratif d'Analyses
+## 🚀 Sprint Actif : Sprint 15 — Auth & User Journeys (M1, M2, M3 & M4) & Export / Partage Collaboratif
+
+- [x] **`TASK-AUTH-01` — Schéma Prisma, Configuration Better-Auth & Hygiène de l'Outillage**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `.env.local`, `eslint.config.mjs`, `prisma/schema.prisma`, `src/lib/auth.ts`, `src/app/error/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AUTH-01.01` : Élimination du masquage des identifiants Google OAuth dans `.env.local` sans suppression de variables.
+    - [x] `TASK-AUTH-01.02` : Optimisation ESLint (`docs/**`, `tests/**`, `scripts/**` dans `globalIgnores`, cache activé `eslint --cache`, timeout étendu à 240s dans l'évaluateur).
+    - [x] `TASK-AUTH-01.03` : Alignement schéma Prisma (`User.emailVerified: Boolean`, élimination du risque de collision null MongoDB sur `Account`, unique `[providerId, accountId]`) et régénération du client.
+    - [x] `TASK-AUTH-01.04` : Configuration Better-Auth (`accountLinking: ["google", "github"]`, `onAPIError.errorURL: "/auth/login"`, `google.prompt: "select_account"`, `accessType: "offline"`).
+    - [x] `TASK-AUTH-01.05` : Création de la page de secours défensive `/error/page.tsx` évitant toute erreur 404 en cas d'échec ou d'annulation OAuth.
+    - [x] `TASK-AUTH-01.06` : Validation déterministe avec `npx tsc --noEmit`, `npm run lint` et `npm run eval:quick` (Score 100/100, PASS, 0 erreur).
+
+- [x] **`TASK-AUTH-02` — Protection des Routes, Middleware & Expérience Utilisateur OAuth (M2)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `middleware.ts`, `src/app/auth/login/page.tsx`, `src/app/auth/signup/page.tsx`, `src/components/auth/FluidAuthModal.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/contexts/LanguageContext.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AUTH-02.01` : Détection résiliente de cookie de session dans `middleware.ts` pour `offeranalyst.session_token` et `__Secure-offeranalyst.session_token` avec validation de chaîne non-vide (anti-bypass de cookie vide et priorité multi-cookies).
+    - [x] `TASK-AUTH-02.02` : Déverrouillage de la route `/history` pour les invités sans compte, tout en préservant l'URL cible via le paramètre de retour `from`.
+    - [x] `TASK-AUTH-02.03` : Prise en charge du paramètre `from` dans `getCallbackUrl()` de `login/page.tsx` avec assainissement strict anti-open-redirect (`isSafeRelativeUrl`) et transmission de `errorCallbackURL: "/auth/login"` dans `signIn.social`.
+    - [x] `TASK-AUTH-02.04` : Capture des erreurs OAuth (`access_denied`, `account_not_linked`, `OAuthCallbackError`, `configuration`, `verification`) avec affichage bilingue FR/EN (alerte motion + toast) et encapsulation `<Suspense>`.
+    - [x] `TASK-AUTH-02.05` : Création du modal d'authentification fluide `FluidAuthModal.tsx` et intégration dans `ModernSidebar.tsx` pour intercepter les clics invités sur `/saved` et `/projects`.
+    - [x] `TASK-AUTH-02.06` : Validation déterministe (`npx tsc --noEmit`, `npm run lint`, `npm run eval:quick` 100/100 PASS, tests adversariaux M2 100% PASS).
+
+- [x] **`TASK-AUTH-03` — Parcours Invité, Clé API 24h Chiffrée & Quotas Quotidiens Stricts (M3)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/api-key-encryption.ts`, `src/app/actions/shared/guest-api-key.ts`, `src/app/actions/shared/api-key-provider.ts`, `src/app/actions/shared/quota-limiter.ts`, `src/app/actions/fetch.ts`, `src/app/actions/analyze.ts`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/app/data-source/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AUTH-03.01` : Actions serveur `guest-api-key.ts` avec chiffrement `AES-256-GCM` et stockage en cookie `offeranalyst.guest_key` HttpOnly/Secure 24h (zéro fuite de clé en clair).
+    - [x] `TASK-AUTH-03.02` : Ordre de résolution strict dans `getAPIKey` (1. DB BYOK -> 2. Cookie Chiffré Invité -> 3. Client Key -> 4. Fallback Env).
+    - [x] `TASK-AUTH-03.03` : Limiteur de quota strict (10 recherches/jour, fenêtre UTC, cookie `offeranalyst.guest_id`, contournement BYOK illimité) et injection dans `fetch` & `analyze`.
+    - [x] `TASK-AUTH-03.04` : Composant modal `GuestApiKeyDialog.tsx` avec compte à rebours 24h, aperçu masqué et révocation immédiate.
+    - [x] `TASK-AUTH-03.05` : Indicateurs de quota en temps réel dans `ModernHeader.tsx` (badge Zap) et widget progress bar dans `ModernSidebar.tsx`.
+    - [x] `TASK-AUTH-03.06` : Intégration sur `/data-source` avec désactivation préventive en cas de quota épuisé et CTA vers clé BYOK ou inscription.
+    - [x] `TASK-AUTH-03.07` : Validation déterministe (`npx tsc --noEmit`, `npm run lint`, `npm run eval:quick` 100/100 PASS, tests empiriques adversariaux M3 100% PASS).
+
+- [x] **`TASK-AUTH-04` — Double Stockage de l'Historique de Recherche & Rétention Cloud (M4)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/actions/db/history.ts`, `src/hooks/use-search-history.ts`, `src/hooks/use-unified-search-history.ts`, `src/app/api/cron/cleanup-history/route.ts`, `src/app/history/page.tsx`, `src/contexts/AnalysisContext.tsx`, `src/types/index.ts`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AUTH-04.01` : Actions serveur `src/app/actions/db/history.ts` avec validation Zod, protection IDOR stricte (confinement au `session.user.id`) et pattern `{ success, data, error }`.
+    - [x] `TASK-AUTH-04.02` : Hook unifié `use-search-history.ts` avec double stockage : localStorage avec TTL 7 jours (`offeranalyst_guest_search_history`, purge auto) pour les invités vs persistance MongoDB Atlas pour les connectés.
+    - [x] `TASK-AUTH-04.03` : Migration automatique de l'historique invité local vers MongoDB Atlas lors de la connexion/inscription (`migrateGuestSearchesAction`) avec déduplication et nettoyage localStorage.
+    - [x] `TASK-AUTH-04.04` : Endpoint CRON de rétention `/api/cron/cleanup-history` (GET/POST) avec authentification `CRON_SECRET` / QStash, supprimant les recherches non épinglées > 90 jours tout en préservant indéfiniment les recherches épinglées.
+    - [x] `TASK-AUTH-04.05` : Intégration transparente dans l'interface `/history` (bannière de statut dual-storage, badges d'expiration TTL 7j, restauration sécurisée) et dans `AnalysisContext.tsx`.
+    - [x] `TASK-AUTH-04.06` : Validation déterministe (`npx tsc --noEmit`, `npm run lint`, `npm run eval:quick` 100/100 PASS, tests adversariaux M4 100% PASS).
 
 - [ ] **`TASK-EXP-01` — Moteur de Génération & Téléchargement de Rapports PDF & CSV d'Analyse**
   - **Priorité :** 🔴 HAUTE
