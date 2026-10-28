@@ -3,24 +3,24 @@
 /**
  * Signup Page
  * 
- * Multi-step registration form:
- * 1. Email & Password
- * 2. Profile Information
- * 
- * Also supports OAuth signup with Google and GitHub
+ * Registration form with strict Better-Auth { data, error } verification,
+ * OAuth support, FR/EN bilingualism, and Guest Mode navigation.
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp, signIn } from "@/lib/auth-client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { PremiumThemeSelector } from "@/components/theme-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { AlertCircle, Loader2, Mail } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, Mail, Sparkles } from "lucide-react";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -33,6 +33,7 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,36 +46,44 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    // Validate
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t.auth.errPasswordMismatch);
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError(t.auth.errPasswordLength);
       return;
     }
 
     if (!agreeToTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy");
+      setError(
+        language === "fr"
+          ? "Vous devez accepter les Conditions d'Utilisation et la Politique de Confidentialité."
+          : "You must agree to the Terms of Service and Privacy Policy."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      await signUp.email({
-        email,
+      const res = await signUp.email({
+        email: email.trim(),
         password,
-        name,
+        name: name.trim(),
         callbackURL: "/onboarding",
       });
-      
-      // After signup, redirect to onboarding
+
+      if (res?.error) {
+        setError(res.error.message || t.auth.errSignupFailed);
+        return;
+      }
+
       router.push("/onboarding");
+      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account");
+      setError(err instanceof Error ? err.message : t.auth.errSignupFailed);
     } finally {
       setLoading(false);
     }
@@ -82,183 +91,224 @@ export default function SignupPage() {
 
   const handleOAuthSignup = async (provider: "google" | "github") => {
     setError("");
-    
+
     if (!agreeToTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy");
+      setError(
+        language === "fr"
+          ? "Vous devez accepter les Conditions d'Utilisation et la Politique de Confidentialité."
+          : "You must agree to the Terms of Service and Privacy Policy."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      await signIn.social({
+      const res = await signIn.social({
         provider,
         callbackURL: "/onboarding",
       });
+
+      if (res?.error) {
+        setError(res.error.message || t.auth.errSignupFailed);
+        setLoading(false);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to sign up with ${provider}`);
+      setError(err instanceof Error ? err.message : t.auth.errSignupFailed);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
-            <CardDescription className="text-center">
-              Get started with OfferAnalyst for free
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="bg-destructive/10 text-destructive px-4 py-3 rounded-md flex items-start gap-2"
-              >
-                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <p className="text-sm">{error}</p>
-              </motion.div>
-            )}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
+      {/* Top Bar */}
+      <header className="w-full max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors min-h-11 px-3 rounded-lg hover:bg-muted/60"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>{t.auth.backToApp}</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <PremiumThemeSelector />
+        </div>
+      </header>
 
-            <form onSubmit={handleEmailSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={loading}
-                />
+      <div className="flex-1 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-md"
+        >
+          <Card className="border-border/60 shadow-xl">
+            <CardHeader className="space-y-2 text-center">
+              <div className="mx-auto w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/20">
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  minLength={8}
-                />
-                <p className="text-xs text-muted-foreground">
-                  At least 8 characters
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={agreeToTerms}
-                  onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
-                  disabled={loading}
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              <CardTitle className="text-2xl font-bold">{t.auth.signupTitle}</CardTitle>
+              <CardDescription>{t.auth.signupSubtitle}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  role="alert"
+                  className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg flex items-start gap-2.5"
                 >
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">
-                    Privacy Policy
-                  </Link>
-                </label>
+                  <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm font-medium">{error}</p>
+                </motion.div>
+              )}
+
+              <form onSubmit={handleEmailSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t.auth.nameLabel}</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder={t.auth.namePlaceholder}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="name"
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t.auth.emailLabel}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={t.auth.emailPlaceholder}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="email"
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.auth.passwordLabel}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={8}
+                    autoComplete="new-password"
+                    className="h-11"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t.auth.passwordMinHint}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">{t.auth.confirmPasswordLabel}</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="new-password"
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="flex items-start space-x-2.5 pt-1">
+                  <Checkbox
+                    id="terms"
+                    checked={agreeToTerms}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+                    disabled={loading}
+                    className="mt-0.5"
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-xs text-muted-foreground leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {t.auth.termsAgreement}{" "}
+                    <Link href="/terms" className="text-primary hover:underline font-medium">
+                      ({language === "fr" ? "CGU" : "Terms"})
+                    </Link>{" "}
+                    &{" "}
+                    <Link href="/privacy" className="text-primary hover:underline font-medium">
+                      ({language === "fr" ? "Confidentialité" : "Privacy"})
+                    </Link>
+                  </label>
+                </div>
+
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t.auth.creatingAccount}
+                    </>
+                  ) : (
+                    t.auth.signUpBtn
+                  )}
+                </Button>
+              </form>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/60" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    {t.auth.orContinueWith}
+                  </span>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create account"
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleOAuthSignup("google")}
+                  disabled={loading}
+                  className="h-11"
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Google
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleOAuthSignup("github")}
+                  disabled={loading}
+                  className="h-11"
+                >
+                  <GithubIcon className="mr-2 h-4 w-4" />
+                  GitHub
+                </Button>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthSignup("google")}
-                disabled={loading}
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthSignup("github")}
-                disabled={loading}
-              >
-                <GithubIcon className="mr-2 h-4 w-4" />
-                GitHub
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <p className="text-sm text-center text-muted-foreground w-full">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="text-primary hover:underline font-medium">
-                Sign in
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
-      </motion.div>
+            </CardContent>
+            <CardFooter className="border-t border-border/40 pt-4">
+              <p className="text-sm text-center text-muted-foreground w-full">
+                {t.auth.alreadyHaveAccount}{" "}
+                <Link href="/auth/login" className="text-primary hover:underline font-semibold">
+                  {t.auth.signInLink}
+                </Link>
+              </p>
+            </CardFooter>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }

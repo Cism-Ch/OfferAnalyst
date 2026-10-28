@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * Use Case Step - Step 2 of Onboarding
- * 
- * Let users select their primary use case
+ * Use Case Step - Step 2 of Onboarding (Bilingual FR/EN)
  */
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Home, Briefcase, Rocket, ShoppingBag, MoreHorizontal, Building2 } from "lucide-react";
 
 interface UseCaseStepProps {
@@ -17,41 +16,56 @@ interface UseCaseStepProps {
 }
 
 export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProps) {
+  const { language } = useLanguage();
+  const isFr = language === "fr";
+
   const useCases = [
     {
       id: "real-estate",
-      title: "Real Estate",
-      description: "Find and compare properties, rentals, and locations",
+      title: isFr ? "Immobilier" : "Real Estate",
+      description: isFr
+        ? "Rechercher et comparer des biens, locations et emplacements"
+        : "Find and compare properties, rentals, and locations",
       icon: Home,
     },
     {
       id: "jobs",
-      title: "Job Hunting",
-      description: "Analyze job postings and career opportunities",
+      title: isFr ? "Emploi & Carrière" : "Job Hunting",
+      description: isFr
+        ? "Analyser des offres d'emploi, missions freelance et opportunités"
+        : "Analyze job postings and career opportunities",
       icon: Briefcase,
     },
     {
       id: "startups",
-      title: "Startups & Investments",
-      description: "Research startups, funding rounds, and investors",
+      title: isFr ? "Startups & Investissements" : "Startups & Investments",
+      description: isFr
+        ? "Évaluer des startups, levées de fonds et opportunités marché"
+        : "Research startups, funding rounds, and investors",
       icon: Rocket,
     },
     {
       id: "e-commerce",
-      title: "E-commerce",
-      description: "Compare products, prices, and marketplace offers",
+      title: isFr ? "E-commerce & Tech" : "E-commerce & Tech",
+      description: isFr
+        ? "Comparer des produits, équipements, prix et offres marchandes"
+        : "Compare products, prices, and marketplace offers",
       icon: ShoppingBag,
     },
     {
       id: "business",
-      title: "Business Services",
-      description: "Evaluate B2B services, vendors, and partnerships",
+      title: isFr ? "Services B2B & SaaS" : "Business Services",
+      description: isFr
+        ? "Évaluer des prestataires B2B, logiciels SaaS et partenariats"
+        : "Evaluate B2B services, vendors, and partnerships",
       icon: Building2,
     },
     {
       id: "other",
-      title: "Other",
-      description: "Custom use case for your specific needs",
+      title: isFr ? "Autre Domaine" : "Other",
+      description: isFr
+        ? "Cas d'usage personnalisé selon vos besoins spécifiques"
+        : "Custom use case for your specific needs",
       icon: MoreHorizontal,
     },
   ];
@@ -61,12 +75,18 @@ export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProp
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className="text-center"
       >
-        <h2 className="text-3xl font-bold mb-4">What will you use OfferAnalyst for?</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+          {isFr
+            ? "Dans quel domaine utiliserez-vous OfferAnalyst ?"
+            : "What will you use OfferAnalyst for?"}
+        </h2>
         <p className="text-muted-foreground">
-          This helps us personalize your experience and provide better recommendations
+          {isFr
+            ? "Cela nous permet de personnaliser votre expérience et vos recommandations"
+            : "This helps us personalize your experience and provide better recommendations"}
         </p>
       </motion.div>
 
@@ -74,20 +94,23 @@ export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProp
         {useCases.map((useCase, index) => (
           <motion.button
             key={useCase.id}
+            type="button"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 * index }}
+            transition={{ duration: 0.4, delay: 0.08 * index }}
             onClick={() => onChange(useCase.id)}
-            className={`p-6 rounded-lg border-2 text-left transition-all hover:scale-105 ${
+            className={`p-5 rounded-xl border-2 text-left transition-all hover:scale-[1.02] ${
               value === useCase.id
                 ? "border-primary bg-primary/5"
                 : "border-border bg-card hover:border-primary/50"
             }`}
           >
-            <useCase.icon className={`h-8 w-8 mb-3 ${
-              value === useCase.id ? "text-primary" : "text-muted-foreground"
-            }`} />
-            <h3 className="font-semibold mb-2">{useCase.title}</h3>
+            <useCase.icon
+              className={`h-7 w-7 mb-3 ${
+                value === useCase.id ? "text-primary" : "text-muted-foreground"
+              }`}
+            />
+            <h3 className="font-semibold mb-1.5">{useCase.title}</h3>
             <p className="text-sm text-muted-foreground">{useCase.description}</p>
           </motion.button>
         ))}
@@ -96,11 +119,11 @@ export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProp
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
         className="flex justify-center pt-4"
       >
-        <Button onClick={onNext} size="lg" disabled={!value} className="px-8">
-          Continue
+        <Button onClick={onNext} size="lg" disabled={!value} className="px-8 min-h-11">
+          {isFr ? "Continuer" : "Continue"}
         </Button>
       </motion.div>
     </div>

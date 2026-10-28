@@ -8,15 +8,22 @@
  * 3. API Keys - Configure API keys (show dev keys + allow BYOK)
  * 4. First Search - Demo the platform
  * 5. Support - Optional donation/support
+ * 
+ * Supports both Authenticated Cloud Persistence and Guest Mode Local Persistence.
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft } from "lucide-react";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { PremiumThemeSelector } from "@/components/theme-selector";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTemporaryApiKeys } from "@/hooks/use-temporary-api-keys";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 
 // Import step components
 import WelcomeStep from "@/components/onboarding/WelcomeStep";
@@ -29,6 +36,8 @@ const TOTAL_STEPS = 5;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
+  const tempKeys = useTemporaryApiKeys();
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState({
     useCase: "",
@@ -43,7 +52,6 @@ export default function OnboardingPage() {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
       completeOnboarding();
     }
   };
@@ -55,7 +63,6 @@ export default function OnboardingPage() {
   };
 
   const handleSkip = () => {
-    // Skip to last step or complete
     if (currentStep === TOTAL_STEPS) {
       completeOnboarding();
     } else {
@@ -65,7 +72,25 @@ export default function OnboardingPage() {
 
   const completeOnboarding = async () => {
     try {
-      // TODO: Save onboarding data to profile
+      // 1. Persist BYOK keys locally in useTemporaryApiKeys for Guest Mode & immediate local access
+      if (data.hasOwnKeys && data.apiKeys) {
+        Object.entries(data.apiKeys).forEach(([provider, rawKey]) => {
+          const trimmed = rawKey?.trim();
+          if (trimmed && trimmed.length >= 10) {
+            tempKeys.addKey(`Onboarding (${provider})`, provider.toLowerCase(), trimmed);
+          }
+        });
+      }
+
+      // 2. Persist onboarding preferences in localStorage for Guest Mode continuity
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("offeranalyst_onboarding_completed", "true");
+        if (data.useCase) {
+          window.localStorage.setItem("offeranalyst_onboarding_usecase", data.useCase);
+        }
+      }
+
+      // 3. Synchronize with server profile if authenticated
       await fetch("/api/profile/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,6 +104,7 @@ export default function OnboardingPage() {
       router.push("/");
     } catch (error) {
       console.error("Failed to complete onboarding:", error);
+      router.push("/");
     }
   };
 
@@ -124,16 +150,31 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Progress value={progress} className="h-1 rounded-none" />
       </div>
 
+      {/* Top Navigation & Controls */}
+      <header className="w-full max-w-4xl mx-auto px-3 sm:px-6 pt-5 pb-2 flex items-center justify-between gap-2">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors min-h-11 px-3 rounded-lg hover:bg-muted/60"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>{t.auth.backToApp}</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <PremiumThemeSelector />
+        </div>
+      </header>
+
       {/* Main content */}
-      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-8 max-w-4xl pt-safe pb-safe">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-4xl flex-1">
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8 mt-4">
+        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8">
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
             <div
               key={index}
@@ -157,7 +198,7 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="border-0 shadow-lg">
+            <Card className="border-border/60 shadow-lg">
               <CardContent className="p-4 sm:p-8">
                 {renderStep()}
               </CardContent>
@@ -172,15 +213,15 @@ export default function OnboardingPage() {
               variant="ghost"
               onClick={handleBack}
               disabled={currentStep === 1}
-              className="min-h-[44px]"
+              className="min-h-11"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
+              {language === "fr" ? "Retour" : "Back"}
             </Button>
 
             {currentStep < TOTAL_STEPS && (
-              <Button variant="ghost" onClick={handleSkip} className="min-h-[44px]">
-                Skip
+              <Button variant="ghost" onClick={handleSkip} className="min-h-11">
+                {language === "fr" ? "Passer" : "Skip"}
               </Button>
             )}
           </div>

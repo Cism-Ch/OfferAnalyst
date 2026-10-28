@@ -7,7 +7,7 @@
  * - Collapsible design for more space
  * - Organized navigation with sections
  * - Smooth animations
- * - Better visual hierarchy
+ * - Bilingual FR/EN Guest User CTA & Authenticated Sign Out button
  * - Mobile-responsive with overlay
  */
 
@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession, signOut } from '@/lib/auth-client';
 import { useLanguage, type TranslationDictionary } from '@/contexts/LanguageContext';
 import {
     Home,
@@ -39,7 +39,9 @@ import {
     Coffee,
     Shield,
     HelpCircle,
-    FileText
+    FileText,
+    LogOut,
+    LogIn
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OffanIcon, OffanLogo } from '@/components/brand/OffanBrand';
@@ -56,7 +58,6 @@ interface ModernSidebarProps {
     onToggle?: () => void;
 }
 
-// Helper function to render nav items
 function renderNavItems(
     items: NavItem[],
     section: string | undefined,
@@ -104,61 +105,117 @@ function renderNavItems(
 }
 
 function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: TranslationDictionary }) {
+    const router = useRouter();
     const { data: session } = useSession();
+    const [signingOut, setSigningOut] = useState(false);
     const user = session?.user;
-    const name = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest User');
-    const email = user?.email || (user ? 'Authenticated' : 'Click to Sign In');
+    const name = user?.name || (user?.email ? user.email.split('@')[0] : t.auth.guestUser);
+    const email = user?.email || (user ? t.nav.activeSession : t.auth.clickToSignIn);
     const image = user?.image || undefined;
     const initials = (user?.name || user?.email || 'GU').slice(0, 2).toUpperCase();
     const href = user ? '/dashboard/settings' : '/auth/login';
 
+    const handleQuickSignOut = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (signingOut) return;
+        setSigningOut(true);
+        try {
+            await signOut();
+            router.push('/');
+            router.refresh();
+        } finally {
+            setSigningOut(false);
+        }
+    };
+
     return (
         <div className="border-t p-3">
-            <Link
-                href={href}
-                className={cn(
-                    'flex items-center gap-3 p-2 rounded-xl hover:bg-accent/60 transition-colors group',
-                    isCollapsed && 'justify-center p-1.5'
-                )}
-                title={user ? `${name} (${email}) • ${t.nav.settings}` : 'Sign in to OfferAnalyst'}
-            >
-                <Avatar className={cn(isCollapsed ? 'h-8 w-8' : 'h-9 w-9', 'border border-border/70 shrink-0')}>
-                    {image && <AvatarImage src={image} alt={name} />}
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                        {initials}
-                    </AvatarFallback>
-                </Avatar>
+            <div className={cn('flex items-center gap-1.5', isCollapsed && 'justify-center')}>
+                <Link
+                    href={href}
+                    className={cn(
+                        'flex items-center gap-3 p-2 rounded-xl hover:bg-accent/60 transition-colors group flex-1 min-w-0',
+                        isCollapsed && 'justify-center p-1.5 flex-initial'
+                    )}
+                    title={user ? `${name} (${email}) • ${t.nav.settings}` : t.auth.signInCta}
+                >
+                    <Avatar className={cn(isCollapsed ? 'h-8 w-8' : 'h-9 w-9', 'border border-border/70 shrink-0')}>
+                        {image && <AvatarImage src={image} alt={name} />}
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                    {!isCollapsed && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex-1 min-w-0"
+                        >
+                            <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                                {name}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                                <span className={cn(
+                                    'inline-block w-2 h-2 rounded-full shrink-0',
+                                    user ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                                )}></span>
+                                <span className="truncate">{user ? t.nav.activeSession : t.nav.guestSession}</span>
+                            </p>
+                        </motion.div>
+                    )}
+                </Link>
+
                 {!isCollapsed && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex-1 min-w-0"
-                    >
-                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                            {name}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
-                            <span className={cn(
-                                'inline-block w-2 h-2 rounded-full shrink-0',
-                                user ? 'bg-emerald-500' : 'bg-muted-foreground/40'
-                            )}></span>
-                            <span className="truncate">{user ? t.nav.activeSession : t.nav.guestSession}</span>
-                        </p>
-                    </motion.div>
+                    user ? (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleQuickSignOut}
+                            disabled={signingOut}
+                            title={t.auth.signOut}
+                            aria-label={t.auth.signOut}
+                            className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                        >
+                            <LogOut className="h-4 w-4" />
+                        </Button>
+                    ) : (
+                        <Button
+                            asChild
+                            variant="ghost"
+                            size="icon"
+                            title={t.auth.signInCta}
+                            aria-label={t.auth.signInCta}
+                            className="h-9 w-9 shrink-0 text-primary hover:bg-primary/10 rounded-xl"
+                        >
+                            <Link href="/auth/login">
+                                <LogIn className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                    )
                 )}
-            </Link>
+            </div>
         </div>
     );
 }
 
-// Helper function to render sidebar content
-function renderSidebarContent(
-    isCollapsed: boolean,
-    onToggle: (() => void) | undefined,
-    isActive: (href: string) => boolean,
-    setMobileOpen: (open: boolean) => void,
-    t: TranslationDictionary
-) {
+function SidebarBody({
+    isCollapsed,
+    onToggle,
+    isActive,
+    setMobileOpen,
+    t
+}: {
+    isCollapsed: boolean;
+    onToggle: (() => void) | undefined;
+    isActive: (href: string) => boolean;
+    setMobileOpen: (open: boolean) => void;
+    t: TranslationDictionary;
+}) {
+    const { data: session } = useSession();
+    const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
+
     const mainNavItems: NavItem[] = [
         { label: t.nav.dashboard, href: '/', icon: Home },
         { label: t.nav.searchContext, href: '/search-context', icon: Search },
@@ -213,8 +270,12 @@ function renderSidebarContent(
                 {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen)}
                 <Separator className="my-4" />
                 {renderNavItems(dashboardNavItems, !isCollapsed ? t.nav.sectionDashboard : undefined, isCollapsed, isActive, setMobileOpen)}
-                <Separator className="my-4" />
-                {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen)}
+                {isAdmin && (
+                    <>
+                        <Separator className="my-4" />
+                        {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen)}
+                    </>
+                )}
             </nav>
 
             {/* User Profile */}
@@ -283,7 +344,13 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             >
                                 <X className="h-5 w-5" />
                             </button>
-                            {renderSidebarContent(false, undefined, isActive, setMobileOpen, t)}
+                            <SidebarBody
+                                isCollapsed={false}
+                                onToggle={undefined}
+                                isActive={isActive}
+                                setMobileOpen={setMobileOpen}
+                                t={t}
+                            />
                         </motion.aside>
                     </>
                 )}
@@ -295,7 +362,13 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="hidden md:flex flex-col relative border-r bg-background min-h-screen sticky top-0"
             >
-                {renderSidebarContent(isCollapsed, onToggle, isActive, setMobileOpen, t)}
+                <SidebarBody
+                    isCollapsed={isCollapsed}
+                    onToggle={onToggle}
+                    isActive={isActive}
+                    setMobileOpen={setMobileOpen}
+                    t={t}
+                />
             </motion.aside>
         </>
     );
