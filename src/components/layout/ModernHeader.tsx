@@ -19,6 +19,7 @@ import { Search, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fadeInUpProps } from '@/lib/motion';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AIModelSelector } from './AIModelSelector';
 import { LanguageToggle } from './LanguageToggle';
 
@@ -29,106 +30,12 @@ interface ModernHeaderProps {
     description?: string;
 }
 
-const getPageInfo = (pathname: string) => {
-    const routes: Record<string, { title: string; description: string; breadcrumbs: string[] }> = {
-        '/': {
-            title: 'Dashboard',
-            description: 'AI-powered offer analysis and insights',
-            breadcrumbs: ['Home', 'Dashboard']
-        },
-        '/search-context': {
-            title: 'Search Context',
-            description: 'Define your search parameters and preferences',
-            breadcrumbs: ['Home', 'Search Context']
-        },
-        '/data-source': {
-            title: 'Data Source',
-            description: 'Configure offer data inputs',
-            breadcrumbs: ['Home', 'Data Source']
-        },
-        '/analysis': {
-            title: 'Analysis Results',
-            description: 'AI-powered recommendations and scores',
-            breadcrumbs: ['Home', 'Analysis']
-        },
-        '/dashboard/api-keys': {
-            title: 'API Keys',
-            description: 'Manage your AI provider API keys for BYOK access',
-            breadcrumbs: ['Home', 'API Keys']
-        },
-        '/projects': {
-            title: 'Projects',
-            description: 'Manage your analysis projects',
-            breadcrumbs: ['Home', 'Projects']
-        },
-        '/history': {
-            title: 'History',
-            description: 'View your search history',
-            breadcrumbs: ['Home', 'History']
-        },
-        '/saved': {
-            title: 'Saved Offers',
-            description: 'Your bookmarked offers',
-            breadcrumbs: ['Home', 'Saved Offers']
-        },
-        '/compare': {
-            title: 'Compare',
-            description: 'Side-by-side comparison',
-            breadcrumbs: ['Home', 'Compare']
-        },
-        '/dashboard/settings': {
-            title: 'Settings',
-            description: 'Account preferences, themes, and configuration',
-            breadcrumbs: ['Home', 'Dashboard', 'Settings']
-        },
-        '/dashboard/workspace': {
-            title: 'Workspace',
-            description: 'Team spaces, saved prompts, and shared environments',
-            breadcrumbs: ['Home', 'Dashboard', 'Workspace']
-        },
-        '/dashboard/support': {
-            title: 'Support & Assistance',
-            description: 'Get in touch with support or sponsor development',
-            breadcrumbs: ['Home', 'Dashboard', 'Support']
-        },
-        '/dashboard/analytics': {
-            title: 'Analytics & Insights',
-            description: 'Personal usage trends, searches, and AI performance metrics',
-            breadcrumbs: ['Home', 'Dashboard', 'Analytics']
-        },
-        '/help': {
-            title: 'Help Center',
-            description: 'Find answers to common questions and troubleshooting guides',
-            breadcrumbs: ['Home', 'Help Center']
-        },
-        '/changelog': {
-            title: 'Changelog',
-            description: 'Track new features, improvements, and bug fixes',
-            breadcrumbs: ['Home', 'Changelog']
-        },
-        '/privacy': {
-            title: 'Privacy Policy',
-            description: 'Our commitment to data protection and user privacy',
-            breadcrumbs: ['Home', 'Privacy Policy']
-        },
-        '/terms': {
-            title: 'Terms of Service',
-            description: 'Rules and terms governing the use of OfferAnalyst',
-            breadcrumbs: ['Home', 'Terms of Service']
-        },
-        '/cookies': {
-            title: 'Cookie Preferences',
-            description: 'Manage tracking cookies and telemetry preferences',
-            breadcrumbs: ['Home', 'Cookie Preferences']
-        },
-    };
-
-    return routes[pathname] || routes['/'];
-};
-
 export function ModernHeader({ selectedModel, onModelChange, title, description }: ModernHeaderProps) {
     const pathname = usePathname();
-    const pageInfo = getPageInfo(pathname);
+    const { t } = useLanguage();
+    const routeInfo = (t.routes as Record<string, { title: string; description: string; breadcrumbs: string[] }>)[pathname] || t.routes['/'];
+    const pageTitle = title || routeInfo.title;
+    const pageDescription = description || routeInfo.description;
 
     return (
         <motion.header
@@ -144,15 +51,15 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                     <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
                         {/* Mobile Single Crumb */}
                         <span className="sm:hidden text-xs text-foreground font-semibold truncate max-w-[130px]">
-                            {pageInfo.breadcrumbs[pageInfo.breadcrumbs.length - 1]}
+                            {routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}
                         </span>
                         {/* Desktop Full Breadcrumb Trail */}
                         <div className="hidden sm:flex items-center gap-2">
-                            {pageInfo.breadcrumbs.map((crumb, index) => (
+                            {routeInfo.breadcrumbs.map((crumb, index) => (
                                 <React.Fragment key={crumb}>
                                     {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />}
                                     <span className={cn(
-                                        index === pageInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
+                                        index === routeInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
                                     )}>
                                         {crumb}
                                     </span>
@@ -173,7 +80,7 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="search"
-                                placeholder="Quick search..."
+                                placeholder={t.nav.quickSearch}
                                 className="w-56 pl-9 h-9 bg-muted/50 border-none transition-all duration-300 ease-in-out focus:bg-muted focus:w-64"
                             />
                         </motion.div>
@@ -216,7 +123,7 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                         className="text-xl sm:text-2xl font-bold tracking-tight"
                         {...fadeInUpProps}
                     >
-                        {title || pageInfo.title}
+                        {pageTitle}
                     </motion.h1>
                     <motion.p
                         className="text-xs sm:text-sm text-muted-foreground mt-0.5"
@@ -224,7 +131,7 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        {description || pageInfo.description}
+                        {pageDescription}
                     </motion.p>
                 </div>
             </div>

@@ -10,6 +10,7 @@
 import React from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,12 +35,13 @@ import { staggerContainerProps, staggerItemProps } from '@/lib/motion';
  */
 export default function Home() {
     const dashboardState = useDashboardState();
+    const { t } = useLanguage();
 
     const steps = [
         {
             number: '1',
-            title: 'Define Search Context',
-            description: 'Set your domain, criteria, and preferences to guide the AI analysis',
+            title: t.home.step1Title,
+            description: t.home.step1Desc,
             icon: Search,
             href: '/search-context',
             color: 'text-blue-500',
@@ -47,8 +49,8 @@ export default function Home() {
         },
         {
             number: '2',
-            title: 'Configure Data Source',
-            description: 'Choose between AI web scraping or manual JSON input',
+            title: t.home.step2Title,
+            description: t.home.step2Desc,
             icon: Database,
             href: '/data-source',
             color: 'text-green-500',
@@ -56,8 +58,8 @@ export default function Home() {
         },
         {
             number: '3',
-            title: 'View Analysis Results',
-            description: 'Get AI-powered recommendations with detailed scoring',
+            title: t.home.step3Title,
+            description: t.home.step3Desc,
             icon: LineChart,
             href: '/analysis',
             color: 'text-purple-500',
@@ -66,18 +68,18 @@ export default function Home() {
     ];
 
     const features = [
-        { icon: Sparkles, text: 'AI-Powered Analysis' },
-        { icon: Target, text: 'Contextual Ranking' },
-        { icon: TrendingUp, text: 'Score Visualization' },
-        { icon: Zap, text: 'Real-time Processing' }
+        { icon: Sparkles, text: t.home.badgeAI },
+        { icon: Target, text: t.home.badgeRanking },
+        { icon: TrendingUp, text: t.home.badgeVisualization },
+        { icon: Zap, text: t.home.badgeRealtime }
     ];
 
     return (
         <ModernLayout
             selectedModel={dashboardState.model}
             onModelChange={(modelId) => dashboardState.setModel(modelId)}
-            title="Welcome to OfferAnalyst"
-            description="AI-powered contextual offer analysis and recommendations"
+            title={t.home.heroTitle}
+            description={t.home.heroSubtitle}
         >
             <motion.div 
                 className="space-y-8"
@@ -92,9 +94,9 @@ export default function Home() {
                                     <Sparkles className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl">Get Started with AI Analysis</CardTitle>
+                                    <CardTitle className="text-2xl">{t.home.cardTitle}</CardTitle>
                                     <CardDescription className="text-base mt-1">
-                                        Follow these steps to analyze and rank offers based on your context
+                                        {t.home.cardDescription}
                                     </CardDescription>
                                 </div>
                             </div>
@@ -116,7 +118,7 @@ export default function Home() {
                 <motion.div {...staggerItemProps}>
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary" />
-                        Analysis Workflow
+                        {t.home.workflowTitle}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {steps.map((step, idx) => (
@@ -144,7 +146,7 @@ export default function Home() {
                                         </CardHeader>
                                         <CardContent>
                                             <div className="w-full flex items-center justify-between text-sm font-medium px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
-                                                <span>Get Started</span>
+                                                <span>{t.home.btnGetStarted}</span>
                                                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </div>
                                         </CardContent>
@@ -157,17 +159,17 @@ export default function Home() {
 
                 {/* Example Visualization Skeleton */}
                 <motion.div {...staggerItemProps}>
-                    <h2 className="text-lg font-semibold mb-4">Analysis Preview</h2>
+                    <h2 className="text-lg font-semibold mb-4">{t.home.previewTitle}</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Score Chart Skeleton */}
                         <Card className="border-none shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <TrendingUp className="h-4 w-4 text-primary" />
-                                    Score Distribution
+                                    {t.home.scoreDistTitle}
                                 </CardTitle>
                                 <CardDescription className="text-xs">
-                                    Visual representation of offer scores
+                                    {t.home.scoreDistDesc}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -175,7 +177,7 @@ export default function Home() {
                                     {[85, 72, 68].map((score, idx) => (
                                         <div key={idx} className="space-y-1.5">
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-muted-foreground">Offer {idx + 1}</span>
+                                                <span className="text-muted-foreground">{t.home.offerLabel} {idx + 1}</span>
                                                 <Badge variant="outline">{score}%</Badge>
                                             </div>
                                             <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -197,10 +199,10 @@ export default function Home() {
                             <CardHeader>
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <Target className="h-4 w-4 text-primary" />
-                                    Top Recommendations
+                                    {t.home.topRecTitle}
                                 </CardTitle>
                                 <CardDescription className="text-xs">
-                                    AI-ranked offers based on your context
+                                    {t.home.topRecDesc}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -232,16 +234,16 @@ export default function Home() {
                         <CardContent className="pt-6">
                             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="text-center md:text-left">
-                                    <h3 className="text-lg font-semibold mb-1">Ready to analyze offers?</h3>
+                                    <h3 className="text-lg font-semibold mb-1">{t.home.ctaTitle}</h3>
                                     <p className="text-sm text-muted-foreground">
-                                        Start by defining your search context and let AI do the work
+                                        {t.home.ctaDesc}
                                     </p>
                                 </div>
                                 <div className="flex gap-3">
                                     <Button asChild size="lg" className="gap-2">
                                         <Link href="/search-context">
                                             <Search className="h-4 w-4" />
-                                            Start Analysis
+                                            {t.home.ctaBtn}
                                         </Link>
                                     </Button>
                                 </div>

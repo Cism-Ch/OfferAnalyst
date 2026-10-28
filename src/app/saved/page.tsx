@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, BrainCircuit, Trash2, CalendarDays, Layers, GitCompare } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { organizeOffersAction, OrganizedOffers } from '@/app/actions/organize';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,8 @@ export default function SavedOffersPage() {
     const router = useRouter();
     const { error: toastError } = useToast();
     const { savedOffers, removeOffer } = useSavedOffers();
+    const { t } = useLanguage();
+    const sp = t.savedPage;
     const [organizing, setOrganizing] = useState(false);
     const [organizedData, setOrganizedData] = useState<OrganizedOffers | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -30,7 +33,7 @@ export default function SavedOffersPage() {
             setOrganizedData(data);
         } catch (error) {
             console.error(error);
-            toastError("Failed to organize offers", "Please check your connection and try again.");
+            toastError(sp.toastOrganizeFailed, sp.toastConnectionError);
         } finally {
             setOrganizing(false);
         }
@@ -52,7 +55,6 @@ export default function SavedOffersPage() {
 
     const handleCompare = () => {
         if (selectedIds.size < 2) {
-            // Simply don't navigate if not enough selected
             return;
         }
         const ids = Array.from(selectedIds).join(',');
@@ -61,8 +63,8 @@ export default function SavedOffersPage() {
 
     return (
         <SimpleLayout
-            title="Saved Offers"
-            description="Your personal collection of bookmarked offers"
+            title={sp.title}
+            description={sp.description}
             maxWidth="6xl"
         >
             <div className="space-y-6">
@@ -70,11 +72,11 @@ export default function SavedOffersPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-card text-card-foreground p-4 rounded-xl border shadow-xs">
                     <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-sm px-3 py-1">
-                            {savedOffers.length} {savedOffers.length === 1 ? 'Item' : 'Items'}
+                            {savedOffers.length} {savedOffers.length === 1 ? sp.itemSingular : sp.itemPlural}
                         </Badge>
                         {selectedIds.size > 0 && (
                             <Badge variant="secondary" className="text-sm px-3 py-1">
-                                {selectedIds.size} Selected
+                                {selectedIds.size} {selectedIds.size > 1 ? sp.selectedPlural : sp.selectedSingular}
                             </Badge>
                         )}
                     </div>
@@ -86,7 +88,7 @@ export default function SavedOffersPage() {
                             className="gap-2 w-full sm:w-auto"
                         >
                             <GitCompare className="h-4 w-4" />
-                            Compare ({selectedIds.size}/3)
+                            {sp.btnCompare} ({selectedIds.size}/3)
                         </Button>
                         <Button
                             onClick={handleOrganize}
@@ -94,25 +96,30 @@ export default function SavedOffersPage() {
                             className="gap-2 w-full sm:w-auto"
                         >
                             {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
-                            Smart Organize
+                            {organizing ? sp.btnOrganizing : sp.btnSmartOrganize}
                         </Button>
                     </div>
                 </div>
 
                 {savedOffers.length === 0 ? (
-                    <div className="text-center py-20 text-muted-foreground">
-                        <p>No offers saved yet.</p>
-                        <Link href="/" className="text-primary hover:underline">Go to Dashboard</Link>
+                    <div className="text-center py-20 text-muted-foreground space-y-3">
+                        <p className="text-lg font-medium text-foreground">{sp.emptyTitle}</p>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">{sp.emptyDesc}</p>
+                        <div className="pt-2">
+                            <Button asChild variant="outline">
+                                <Link href="/">{sp.btnDiscover}</Link>
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     <Tabs defaultValue="list" className="w-full">
                         <TabsList className="grid w-full grid-cols-3 max-w-md mb-6">
-                            <TabsTrigger value="list">List View</TabsTrigger>
+                            <TabsTrigger value="list">{sp.tabAll}</TabsTrigger>
                             <TabsTrigger value="categories" disabled={!organizedData} className="gap-2">
-                                <Layers className="h-3 w-3" /> Categories
+                                <Layers className="h-3 w-3" /> {sp.tabClusters}
                             </TabsTrigger>
                             <TabsTrigger value="timeline" disabled={!organizedData} className="gap-2">
-                                <CalendarDays className="h-3 w-3" /> Timeline
+                                <CalendarDays className="h-3 w-3" /> {sp.tabTimeline}
                             </TabsTrigger>
                         </TabsList>
 

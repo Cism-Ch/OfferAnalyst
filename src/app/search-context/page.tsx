@@ -9,6 +9,7 @@
 import React from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,34 +21,12 @@ import { Sparkles, ArrowRight, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-const PRESETS = [
-    {
-        label: 'Emploi Tech',
-        icon: '💼',
-        domain: 'Jobs',
-        criteria: 'Senior Fullstack TypeScript/React, Remote ou Paris, > 65k€',
-        context: 'Priorité à la flexibilité, stack moderne (Next.js, Tailwind), ambiance collaborative et autonomie.'
-    },
-    {
-        label: 'Immobilier',
-        icon: '🏡',
-        domain: 'Real Estate',
-        criteria: 'Appartement 3 pièces, > 60m², Budget max 450 000€, balcon',
-        context: 'Quartier calme, proche écoles et transports, lumineux avec bonne isolation thermique et phonique.'
-    },
-    {
-        label: 'Matériel Tech',
-        icon: '💻',
-        domain: 'Hardware',
-        criteria: 'PC Portable 14-16 pouces, 32 Go RAM, SSD 1 To, autonomie > 10h, sous 1800€',
-        context: 'Développement web et inférence IA locale, écran haute fidélité, silencieux et châssis léger.'
-    }
-];
-
 export default function SearchContextPage() {
     const dashboardState = useDashboardState();
+    const { t } = useLanguage();
+    const sc = t.searchContextPage;
 
-    const applyPreset = (preset: typeof PRESETS[number]) => {
+    const applyPreset = (preset: { label: string; icon: string; domain: string; criteria: string; context: string }) => {
         dashboardState.setDomain(preset.domain);
         dashboardState.setExplicitCriteria(preset.criteria);
         dashboardState.setImplicitContext(preset.context);
@@ -55,8 +34,8 @@ export default function SearchContextPage() {
 
     return (
         <SimpleLayout
-            title="Search Context"
-            description="Define your search parameters and preferences"
+            title={sc.formTitle}
+            description={sc.formDesc}
             maxWidth="5xl"
         >
             <div className="space-y-6">
@@ -66,10 +45,9 @@ export default function SearchContextPage() {
                         <div className="flex gap-3">
                             <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                             <div className="space-y-1">
-                                <p className="text-sm font-medium">Define your search context</p>
+                                <p className="text-sm font-medium">{sc.bannerTitle}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    These parameters will guide the AI to understand what you&apos;re looking for
-                                    and how to rank the offers based on your preferences.
+                                    {sc.bannerDesc}
                                 </p>
                             </div>
                         </div>
@@ -81,10 +59,10 @@ export default function SearchContextPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Sparkles className="text-primary" size={20} />
-                            Search Parameters
+                            {sc.formTitle}
                         </CardTitle>
                         <CardDescription>
-                            Customize your search criteria and context
+                            {sc.formDesc}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -92,12 +70,12 @@ export default function SearchContextPage() {
                         <div className="p-3.5 rounded-lg border bg-muted/30 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Exemples Rapides (1-Clic)
+                                    {sc.presetsTitle}
                                 </span>
-                                <span className="text-xs text-muted-foreground">Cliquez pour préremplir</span>
+                                <span className="text-xs text-muted-foreground">{sc.presetsClick}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {PRESETS.map((p) => (
+                                {sc.presets.map((p) => (
                                     <button
                                         key={p.label}
                                         type="button"
@@ -114,33 +92,33 @@ export default function SearchContextPage() {
                         {/* Domain and Limit Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label>Domain</Label>
+                                <Label>{sc.domainLabel}</Label>
                                 <Input 
                                     value={dashboardState.domain} 
                                     onChange={(e) => dashboardState.setDomain(e.target.value)} 
-                                    placeholder="e.g. Jobs, Real Estate, Products" 
+                                    placeholder={sc.domainPlaceholder} 
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    The type of offers you want to analyze
+                                    {sc.domainHint}
                                 </p>
                             </div>
                             
                             <div className="space-y-2">
-                                <Label>Recommendation Limit</Label>
+                                <Label>{sc.limitLabel}</Label>
                                 <ClientOnlySelect>
                                     <Select value={dashboardState.limit} onValueChange={dashboardState.setLimit}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select limit" />
+                                            <SelectValue placeholder={sc.selectLimit} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="3">Top 3</SelectItem>
-                                            <SelectItem value="5">Top 5</SelectItem>
-                                            <SelectItem value="10">Top 10</SelectItem>
+                                            <SelectItem value="3">{sc.top3}</SelectItem>
+                                            <SelectItem value="5">{sc.top5}</SelectItem>
+                                            <SelectItem value="10">{sc.top10}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </ClientOnlySelect>
                                 <p className="text-xs text-muted-foreground">
-                                    Number of top offers to recommend
+                                    {sc.limitHint}
                                 </p>
                             </div>
                         </div>
@@ -148,48 +126,48 @@ export default function SearchContextPage() {
                         {/* Explicit Criteria */}
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                                <Label>Explicit Criteria</Label>
-                                <Badge variant="secondary" className="text-xs">Required</Badge>
+                                <Label>{sc.explicitLabel}</Label>
+                                <Badge variant="secondary" className="text-xs">{sc.badgeRequired}</Badge>
                             </div>
                             <Input 
                                 value={dashboardState.explicitCriteria} 
                                 onChange={(e) => dashboardState.setExplicitCriteria(e.target.value)} 
-                                placeholder="e.g. Budget under $500k, Location: New York, Remote work" 
+                                placeholder={sc.explicitPlaceholder} 
                             />
                             <p className="text-xs text-muted-foreground">
-                                Hard requirements that offers must meet (comma-separated)
+                                {sc.explicitHint}
                             </p>
                         </div>
 
                         {/* Implicit Context */}
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                                <Label>Implicit Context</Label>
-                                <Badge variant="outline" className="text-xs">Preferences</Badge>
+                                <Label>{sc.implicitLabel}</Label>
+                                <Badge variant="outline" className="text-xs">{sc.badgePreferences}</Badge>
                             </div>
                             <Textarea
                                 value={dashboardState.implicitContext}
                                 onChange={(e) => dashboardState.setImplicitContext(e.target.value)}
-                                placeholder="e.g. I value work-life balance, prefer startup culture, looking for growth opportunities..."
+                                placeholder={sc.implicitPlaceholder}
                                 className="resize-none h-32"
                             />
                             <p className="text-xs text-muted-foreground">
-                                Your preferences, priorities, and soft requirements that help AI understand what matters to you
+                                {sc.implicitHint}
                             </p>
                         </div>
 
                         {/* Action Buttons - Responsive Mobile-First */}
                         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
                             <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-                                Ready to configure your data source?
+                                {sc.readyNext}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
-                                    <Link href="/">Cancel</Link>
+                                    <Link href="/">{sc.btnCancel}</Link>
                                 </Button>
                                 <Button className="w-full sm:w-auto min-h-[44px]" asChild>
                                     <Link href="/data-source" className="gap-2">
-                                        Next: Data Source
+                                        {sc.btnNext}
                                         <ArrowRight className="h-4 w-4" />
                                     </Link>
                                 </Button>
@@ -201,20 +179,20 @@ export default function SearchContextPage() {
                 {/* Tips Card */}
                 <Card className="border-none shadow-sm bg-muted/50">
                     <CardHeader>
-                        <CardTitle className="text-base">Tips for Better Results</CardTitle>
+                        <CardTitle className="text-base">{sc.tipsTitle}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                         <div className="flex gap-2">
                             <span className="text-primary">•</span>
-                            <p>Be specific with explicit criteria - these are hard filters</p>
+                            <p>{sc.tip1}</p>
                         </div>
                         <div className="flex gap-2">
                             <span className="text-primary">•</span>
-                            <p>Use implicit context to describe your priorities and preferences</p>
+                            <p>{sc.tip2}</p>
                         </div>
                         <div className="flex gap-2">
                             <span className="text-primary">•</span>
-                            <p>The AI will rank offers based on both explicit and implicit factors</p>
+                            <p>{sc.tip3}</p>
                         </div>
                     </CardContent>
                 </Card>

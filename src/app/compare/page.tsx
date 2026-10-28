@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, MapPin, DollarSign, Star } from 'lucide-react';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ScoredOffer } from '@/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -14,6 +15,8 @@ function ComparePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { savedOffers, isLoaded } = useSavedOffers();
+    const { t } = useLanguage();
+    const cp = t.comparePage;
 
     const selectedOffers = useMemo(() => {
         const idsParam = searchParams.get('ids');
@@ -42,8 +45,8 @@ function ComparePageContent() {
     if (!isLoaded) {
         return (
             <SimpleLayout
-                title="Compare Offers"
-                description="Side-by-side comparison of selected offers"
+                title={cp.title}
+                description={cp.description}
                 maxWidth="7xl"
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,8 +69,8 @@ function ComparePageContent() {
 
     return (
         <SimpleLayout
-            title="Compare Offers"
-            description="Side-by-side comparison of selected offers"
+            title={cp.title}
+            description={cp.description}
             maxWidth="7xl"
         >
             <div className="space-y-6">
@@ -77,7 +80,7 @@ function ComparePageContent() {
                             <CardHeader className="space-y-3">
                                 <div className="flex items-start justify-between">
                                     <Badge variant="outline" className="text-xs">
-                                        Offer #{index + 1}
+                                        {cp.offerNumber}{index + 1}
                                     </Badge>
                                     {offer.finalScore && (
                                         <Badge className={
@@ -87,7 +90,7 @@ function ComparePageContent() {
                                                     ? "bg-blue-500 hover:bg-blue-600" 
                                                     : "bg-orange-500 hover:bg-orange-600"
                                         }>
-                                            Score: {offer.finalScore}
+                                            {cp.scoreLabel} {offer.finalScore}
                                         </Badge>
                                     )}
                                 </div>
@@ -112,18 +115,18 @@ function ComparePageContent() {
 
                                 {/* Category */}
                                 <div className="flex items-center gap-2">
-                                    <Badge variant="secondary">{offer.category || "Offer"}</Badge>
+                                    <Badge variant="secondary">{offer.category || t.offer.category}</Badge>
                                 </div>
 
                                 {/* Score Breakdown */}
                                 {offer.breakdown && (
                                     <div className="space-y-3 pt-3 border-t">
-                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase">Score Breakdown</h4>
+                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase">{t.offer.scoreBreakdown}</h4>
                                         
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-xs">
                                                 <span className="flex items-center gap-1">
-                                                    <Star className="h-3 w-3" /> Relevance
+                                                    <Star className="h-3 w-3" /> {t.offer.relevance}
                                                 </span>
                                                 <span className="font-medium">{offer.breakdown.relevance}%</span>
                                             </div>
@@ -133,7 +136,7 @@ function ComparePageContent() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-xs">
                                                 <span className="flex items-center gap-1">
-                                                    <TrendingUp className="h-3 w-3" /> Quality
+                                                    <TrendingUp className="h-3 w-3" /> {t.offer.quality}
                                                 </span>
                                                 <span className="font-medium">{offer.breakdown.quality}%</span>
                                             </div>
@@ -143,7 +146,7 @@ function ComparePageContent() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-xs">
                                                 <span className="flex items-center gap-1">
-                                                    <TrendingUp className="h-3 w-3" /> Trend
+                                                    <TrendingUp className="h-3 w-3" /> {t.offer.trend}
                                                 </span>
                                                 <span className="font-medium">{offer.breakdown.trend}%</span>
                                             </div>
@@ -162,7 +165,7 @@ function ComparePageContent() {
                                 {/* Web Insights */}
                                 {offer.webInsights && offer.webInsights.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase">Web Insights</h4>
+                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase">{t.offer.allWebInsights}</h4>
                                         <ul className="space-y-1">
                                             {offer.webInsights.map((insight, idx) => (
                                                 <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1">
@@ -183,14 +186,14 @@ function ComparePageContent() {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-primary" />
-                            Comparison Summary
+                            {cp.summaryTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
                         <p className="text-muted-foreground">
-                            Comparing {selectedOffers.length} offers. 
+                            {cp.comparingText} {selectedOffers.length} {cp.offersCountText}{' '}
                             {selectedOffers.some(o => o.finalScore !== undefined) && (
-                                <> Highest score: <span className="font-semibold text-primary">
+                                <> {cp.highestScoreText} <span className="font-semibold text-primary">
                                     {Math.max(...selectedOffers.filter(o => o.finalScore !== undefined).map(o => o.finalScore))}
                                 </span>.</>
                             )}
@@ -203,10 +206,11 @@ function ComparePageContent() {
 }
 
 export default function ComparePage() {
+    const { t } = useLanguage();
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-background p-6 font-sans text-foreground flex items-center justify-center">
-                <div className="text-muted-foreground">Loading comparison...</div>
+                <div className="text-muted-foreground">{t.comparePage.loadingTitle}</div>
             </div>
         }>
             <ComparePageContent />

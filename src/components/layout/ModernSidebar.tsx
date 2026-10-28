@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useLanguage, type TranslationDictionary } from '@/contexts/LanguageContext';
 import {
     Home,
     Briefcase,
@@ -49,33 +50,6 @@ interface NavItem {
     icon: React.ElementType;
     badge?: string;
 }
-
-const mainNavItems: NavItem[] = [
-    { label: 'Dashboard', href: '/', icon: Home },
-    { label: 'Search Context', href: '/search-context', icon: Search },
-    { label: 'Data Source', href: '/data-source', icon: Database },
-    { label: 'Analysis', href: '/analysis', icon: LineChart },
-];
-
-const secondaryNavItems: NavItem[] = [
-    { label: 'Projects', href: '/projects', icon: Briefcase },
-    { label: 'History', href: '/history', icon: Clock },
-    { label: 'Saved Offers', href: '/saved', icon: Bookmark },
-];
-
-const dashboardNavItems: NavItem[] = [
-    { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    { label: 'API Keys', href: '/dashboard/api-keys', icon: Key },
-    { label: 'Workspace', href: '/dashboard/workspace', icon: Users },
-    { label: 'Settings', href: '/dashboard/settings', icon: Settings },
-    { label: 'Support', href: '/dashboard/support', icon: Coffee },
-    { label: 'Help Center', href: '/help', icon: HelpCircle },
-    { label: 'Changelog', href: '/changelog', icon: FileText },
-];
-
-const adminNavItems: NavItem[] = [
-    { label: 'Admin Console', href: '/admin', icon: Shield, badge: 'Admin' },
-];
 
 interface ModernSidebarProps {
     isCollapsed?: boolean;
@@ -129,7 +103,7 @@ function renderNavItems(
     );
 }
 
-function SidebarUserProfile({ isCollapsed }: { isCollapsed: boolean }) {
+function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: TranslationDictionary }) {
     const { data: session } = useSession();
     const user = session?.user;
     const name = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest User');
@@ -146,7 +120,7 @@ function SidebarUserProfile({ isCollapsed }: { isCollapsed: boolean }) {
                     'flex items-center gap-3 p-2 rounded-xl hover:bg-accent/60 transition-colors group',
                     isCollapsed && 'justify-center p-1.5'
                 )}
-                title={user ? `${name} (${email}) • Account Settings` : 'Sign in to OfferAnalyst'}
+                title={user ? `${name} (${email}) • ${t.nav.settings}` : 'Sign in to OfferAnalyst'}
             >
                 <Avatar className={cn(isCollapsed ? 'h-8 w-8' : 'h-9 w-9', 'border border-border/70 shrink-0')}>
                     {image && <AvatarImage src={image} alt={name} />}
@@ -168,7 +142,7 @@ function SidebarUserProfile({ isCollapsed }: { isCollapsed: boolean }) {
                                 'inline-block w-2 h-2 rounded-full shrink-0',
                                 user ? 'bg-emerald-500' : 'bg-muted-foreground/40'
                             )}></span>
-                            <span className="truncate">{user ? 'Active Session' : 'Free / Guest'}</span>
+                            <span className="truncate">{user ? t.nav.activeSession : t.nav.guestSession}</span>
                         </p>
                     </motion.div>
                 )}
@@ -182,8 +156,36 @@ function renderSidebarContent(
     isCollapsed: boolean,
     onToggle: (() => void) | undefined,
     isActive: (href: string) => boolean,
-    setMobileOpen: (open: boolean) => void
+    setMobileOpen: (open: boolean) => void,
+    t: TranslationDictionary
 ) {
+    const mainNavItems: NavItem[] = [
+        { label: t.nav.dashboard, href: '/', icon: Home },
+        { label: t.nav.searchContext, href: '/search-context', icon: Search },
+        { label: t.nav.dataSource, href: '/data-source', icon: Database },
+        { label: t.nav.analysis, href: '/analysis', icon: LineChart },
+    ];
+
+    const secondaryNavItems: NavItem[] = [
+        { label: t.nav.projects, href: '/projects', icon: Briefcase },
+        { label: t.nav.history, href: '/history', icon: Clock },
+        { label: t.nav.saved, href: '/saved', icon: Bookmark },
+    ];
+
+    const dashboardNavItems: NavItem[] = [
+        { label: t.nav.dashboard, href: '/dashboard/analytics', icon: BarChart3 },
+        { label: t.nav.apiKeys, href: '/dashboard/api-keys', icon: Key },
+        { label: t.nav.workspace, href: '/dashboard/workspace', icon: Users },
+        { label: t.nav.settings, href: '/dashboard/settings', icon: Settings },
+        { label: t.nav.support, href: '/dashboard/support', icon: Coffee },
+        { label: t.nav.help, href: '/help', icon: HelpCircle },
+        { label: t.nav.changelog, href: '/changelog', icon: FileText },
+    ];
+
+    const adminNavItems: NavItem[] = [
+        { label: t.nav.adminConsole, href: '/admin', icon: Shield, badge: 'Admin' },
+    ];
+
     return (
         <>
             {/* Logo and Brand */}
@@ -208,22 +210,22 @@ function renderSidebarContent(
             <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
                 {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen)}
                 <Separator className="my-4" />
-                {renderNavItems(secondaryNavItems, !isCollapsed ? 'More' : undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen)}
                 <Separator className="my-4" />
-                {renderNavItems(dashboardNavItems, !isCollapsed ? 'Dashboard' : undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(dashboardNavItems, !isCollapsed ? t.nav.sectionDashboard : undefined, isCollapsed, isActive, setMobileOpen)}
                 <Separator className="my-4" />
-                {renderNavItems(adminNavItems, !isCollapsed ? 'Admin' : undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen)}
             </nav>
 
             {/* User Profile */}
-            <SidebarUserProfile isCollapsed={isCollapsed} />
+            <SidebarUserProfile isCollapsed={isCollapsed} t={t} />
 
             {/* Collapse Toggle - Desktop */}
             {onToggle && (
                 <button
                     onClick={onToggle}
                     className="hidden md:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md hover:bg-accent transition-colors"
-                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    aria-label={isCollapsed ? t.nav.expandSidebar : t.nav.collapseSidebar}
                 >
                     {isCollapsed ? (
                         <ChevronRight className="h-3 w-3" />
@@ -238,6 +240,7 @@ function renderSidebarContent(
 
 export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarProps) {
     const pathname = usePathname();
+    const { t } = useLanguage();
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const isActive = (href: string) => {
@@ -250,7 +253,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <button
                 onClick={() => setMobileOpen(true)}
                 className="md:hidden fixed top-3 left-3 z-40 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors"
-                aria-label="Open menu"
+                aria-label={t.nav.openMenu}
             >
                 <Menu className="h-5 w-5" />
             </button>
@@ -276,11 +279,11 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             <button
                                 onClick={() => setMobileOpen(false)}
                                 className="absolute top-4 right-4 p-2 rounded-lg hover:bg-accent"
-                                aria-label="Close menu"
+                                aria-label={t.nav.closeMenu}
                             >
                                 <X className="h-5 w-5" />
                             </button>
-                            {renderSidebarContent(false, undefined, isActive, setMobileOpen)}
+                            {renderSidebarContent(false, undefined, isActive, setMobileOpen, t)}
                         </motion.aside>
                     </>
                 )}
@@ -292,7 +295,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="hidden md:flex flex-col relative border-r bg-background min-h-screen sticky top-0"
             >
-                {renderSidebarContent(isCollapsed, onToggle, isActive, setMobileOpen)}
+                {renderSidebarContent(isCollapsed, onToggle, isActive, setMobileOpen, t)}
             </motion.aside>
         </>
     );

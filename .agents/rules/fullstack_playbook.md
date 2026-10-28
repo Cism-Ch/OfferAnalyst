@@ -32,6 +32,8 @@
 - [R-UI-09] Hygiène Visuelle & Emojis : Bannir les emojis natifs OS dans l'interface utilisateur au profit d'icônes vectorielles SVG (Lucide) adaptées aux tokens HSL du thème actif. Utiliser le composant 'OffanLogo' / 'OffanIcon' pour l'identité de marque.
 - [R-UI-10] Synchronisation État Externe (React 19 / ESLint react-hooks/set-state-in-effect) : Ne jamais appeler setState() directement dans le corps d'un useEffect() pour lire du localStorage ou synchroniser une préférence (thème, langue). Utiliser systématiquement useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) avec un Set de listeners et window.addEventListener('storage') pour une réactivité instantanée sans flash ni render en cascade.
 - [R-UI-11] Lisibilité des Cartes d'Analyse : Pour les entités riches (offres, analyses), bannir les vues tassées (< 60% de largeur). Déployer une grille 12 colonnes (8 cols pour les résultats), des bordures définies (border-border/80), et un modal d'exploration plein écran (`OfferDetailModal`) pour révéler la justification complète, le score 3 axes et tous les web insights.
+- [R-UI-12] Internationalisation Réactive & Symétrique (i18n) : Maintenir un dictionnaire TypeScript typé et symétrique (FR/EN) dans `LanguageContext.tsx`. Dans les shells et layouts (`ModernHeader`, `SimpleLayout`), mapper dynamiquement `pathname` vers `routes[pathname]` avec fallback sûr. Localiser dynamiquement les presets et sélecteurs selon la langue active sans régression SSR.
+
 
 ## [INTEGRATION, SECURITY & TYPES]
 - [R-INT-01] Bannir strictement `any`. Définir des interfaces TypeScript explicites ou inférer les types via `z.infer<typeof Schema>`.

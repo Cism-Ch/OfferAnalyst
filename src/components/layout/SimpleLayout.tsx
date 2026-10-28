@@ -15,7 +15,8 @@ import { PremiumThemeSelector } from '@/components/theme-selector';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 import { AIModelSelector } from './AIModelSelector';
 
 interface SimpleLayoutProps {
@@ -25,98 +26,6 @@ interface SimpleLayoutProps {
     maxWidth?: 'full' | '7xl' | '6xl' | '5xl';
 }
 
-const getPageInfo = (pathname: string) => {
-    const routes: Record<string, { title: string; description: string; breadcrumbs: string[] }> = {
-        '/': {
-            title: 'Dashboard',
-            description: 'AI-powered offer analysis and insights',
-            breadcrumbs: ['Home', 'Dashboard']
-        },
-        '/search-context': {
-            title: 'Search Context',
-            description: 'Define your search parameters and preferences',
-            breadcrumbs: ['Home', 'Search Context']
-        },
-        '/data-source': {
-            title: 'Data Source',
-            description: 'Configure offer data inputs',
-            breadcrumbs: ['Home', 'Data Source']
-        },
-        '/analysis': {
-            title: 'Analysis Results',
-            description: 'AI-powered recommendations and scores',
-            breadcrumbs: ['Home', 'Analysis']
-        },
-        '/projects': {
-            title: 'Projects',
-            description: 'Manage your analysis projects',
-            breadcrumbs: ['Home', 'Projects']
-        },
-        '/history': {
-            title: 'History',
-            description: 'View your search history',
-            breadcrumbs: ['Home', 'History']
-        },
-        '/saved': {
-            title: 'Saved Offers',
-            description: 'Your bookmarked offers',
-            breadcrumbs: ['Home', 'Saved Offers']
-        },
-        '/compare': {
-            title: 'Compare',
-            description: 'Side-by-side comparison',
-            breadcrumbs: ['Home', 'Compare']
-        },
-        '/help': {
-            title: 'Help Center',
-            description: 'Find answers to common questions and troubleshooting guides',
-            breadcrumbs: ['Home', 'Help Center']
-        },
-        '/changelog': {
-            title: 'Changelog',
-            description: 'Track new features, improvements, and bug fixes',
-            breadcrumbs: ['Home', 'Changelog']
-        },
-        '/privacy': {
-            title: 'Privacy Policy',
-            description: 'Our commitment to data protection and user privacy',
-            breadcrumbs: ['Home', 'Privacy Policy']
-        },
-        '/terms': {
-            title: 'Terms of Service',
-            description: 'Rules and terms governing the use of OfferAnalyst',
-            breadcrumbs: ['Home', 'Terms of Service']
-        },
-        '/cookies': {
-            title: 'Cookie Preferences',
-            description: 'Manage tracking cookies and telemetry preferences',
-            breadcrumbs: ['Home', 'Cookie Preferences']
-        },
-        '/dashboard/settings': {
-            title: 'Settings',
-            description: 'Account preferences, themes, and configuration',
-            breadcrumbs: ['Home', 'Dashboard', 'Settings']
-        },
-        '/dashboard/workspace': {
-            title: 'Workspace',
-            description: 'Team spaces, saved prompts, and shared environments',
-            breadcrumbs: ['Home', 'Dashboard', 'Workspace']
-        },
-        '/dashboard/support': {
-            title: 'Support & Assistance',
-            description: 'Get in touch with support or sponsor development',
-            breadcrumbs: ['Home', 'Dashboard', 'Support']
-        },
-        '/dashboard/analytics': {
-            title: 'Analytics & Insights',
-            description: 'Personal usage trends, searches, and AI performance metrics',
-            breadcrumbs: ['Home', 'Dashboard', 'Analytics']
-        },
-    };
-
-    return routes[pathname] || routes['/'];
-};
-
 export function SimpleLayout({
     children,
     title,
@@ -125,7 +34,10 @@ export function SimpleLayout({
 }: SimpleLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const pathname = usePathname();
-    const pageInfo = getPageInfo(pathname);
+    const { t } = useLanguage();
+    const routeInfo = (t.routes as Record<string, { title: string; description: string; breadcrumbs: string[] }>)[pathname] || t.routes['/'];
+    const pageTitle = title || routeInfo.title;
+    const pageDescription = description || routeInfo.description;
 
     const maxWidthClasses = {
         'full': 'max-w-full',
@@ -147,20 +59,20 @@ export function SimpleLayout({
                 {/* Simple Header */}
                 <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
                     <div className="px-4 sm:px-6 py-3 sm:py-4 pl-16 md:pl-6">
-                        {/* Top Row: Breadcrumbs & Actions (Model Switcher & Theme Selector) */}
+                        {/* Top Row: Breadcrumbs & Actions (Language Switcher, Model Switcher & Theme Selector) */}
                         <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
                             <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
                                 {/* Mobile Single Crumb */}
                                 <span className="sm:hidden text-xs text-foreground font-semibold truncate max-w-[160px]">
-                                    {pageInfo.breadcrumbs[pageInfo.breadcrumbs.length - 1]}
+                                    {routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}
                                 </span>
                                 {/* Desktop Full Trail */}
                                 <div className="hidden sm:flex items-center gap-2">
-                                    {pageInfo.breadcrumbs.map((crumb, index) => (
+                                    {routeInfo.breadcrumbs.map((crumb, index) => (
                                         <React.Fragment key={crumb}>
                                             {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />}
                                             <span className={cn(
-                                                index === pageInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
+                                                index === routeInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
                                             )}>
                                                 {crumb}
                                             </span>
@@ -169,6 +81,7 @@ export function SimpleLayout({
                                 </div>
                             </div>
                             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                                <LanguageToggle />
                                 <AIModelSelector compact />
                                 <PremiumThemeSelector />
                             </div>
@@ -177,10 +90,10 @@ export function SimpleLayout({
                         {/* Page Title */}
                         <div>
                             <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                                {title || pageInfo.title}
+                                {pageTitle}
                             </h1>
                             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                                {description || pageInfo.description}
+                                {pageDescription}
                             </p>
                         </div>
                     </div>

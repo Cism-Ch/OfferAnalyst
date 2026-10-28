@@ -9,6 +9,7 @@
 import React from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useAnalysis } from '@/contexts/AnalysisContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +26,8 @@ import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 export default function DataSourcePage() {
     const dashboardState = useAnalysis();
     const router = useRouter();
+    const { t } = useLanguage();
+    const ds = t.dataSourcePage;
 
     const onAnalyze = () => {
         dashboardState.startAnalysis();
@@ -33,8 +36,8 @@ export default function DataSourcePage() {
 
     return (
         <SimpleLayout
-            title="Data Source"
-            description="Choose your data input method"
+            title={ds.methodTitle}
+            description={ds.methodDesc}
             maxWidth="5xl"
         >
             <div className="space-y-6">
@@ -47,9 +50,9 @@ export default function DataSourcePage() {
                         <div className="flex gap-3">
                             <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                             <div className="space-y-1">
-                                <p className="text-sm font-medium">Configure your data source</p>
+                                <p className="text-sm font-medium">{ds.bannerTitle}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    Choose between AI-powered web scraping or manual JSON input for your offer data.
+                                    {ds.bannerDesc}
                                 </p>
                             </div>
                         </div>
@@ -63,10 +66,10 @@ export default function DataSourcePage() {
                             <div>
                                 <CardTitle className="flex items-center gap-2">
                                     <Database className="text-primary" size={20} />
-                                    Data Input Method
+                                    {ds.methodTitle}
                                 </CardTitle>
                                 <CardDescription>
-                                    Select how you want to provide offer data
+                                    {ds.methodDesc}
                                 </CardDescription>
                             </div>
                             <Badge variant="outline" className="gap-2">
@@ -79,13 +82,13 @@ export default function DataSourcePage() {
                         {/* Auto-Fetch Toggle */}
                         <div className="flex items-center justify-between rounded-lg border-2 p-4 bg-muted/50">
                             <div className="space-y-1">
-                                <Label className="text-base font-semibold">Auto-Fetch Offers</Label>
+                                <Label className="text-base font-semibold">{ds.autoFetchTitle}</Label>
                                 <p className="text-sm text-muted-foreground">
-                                    AI will automatically search the web for relevant offers based on your context
+                                    {ds.autoFetchDesc}
                                 </p>
                                 <div className="flex gap-2 mt-2">
-                                    <Badge variant="secondary" className="text-xs">Recommended</Badge>
-                                    <Badge variant="outline" className="text-xs">Real-time data</Badge>
+                                    <Badge variant="secondary" className="text-xs">{ds.badgeRecommended}</Badge>
+                                    <Badge variant="outline" className="text-xs">{ds.badgeRealtime}</Badge>
                                 </div>
                             </div>
                             <ClientOnlySwitch>
@@ -93,6 +96,7 @@ export default function DataSourcePage() {
                                     checked={dashboardState.autoFetch}
                                     onCheckedChange={dashboardState.setAutoFetch}
                                     className="data-[state=checked]:bg-primary"
+                                    aria-label={ds.autoFetchTitle}
                                 />
                             </ClientOnlySwitch>
                         </div>
@@ -101,11 +105,11 @@ export default function DataSourcePage() {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <Label className="text-base">
-                                    Manual JSON Input
+                                    {ds.jsonTitle}
                                 </Label>
                                 {dashboardState.autoFetch && (
                                     <Badge variant="secondary" className="text-xs">
-                                        Disabled (Auto-fetch enabled)
+                                        {ds.jsonDisabled}
                                     </Badge>
                                 )}
                             </div>
@@ -118,8 +122,8 @@ export default function DataSourcePage() {
                             />
                             <p className="text-xs text-muted-foreground">
                                 {dashboardState.autoFetch 
-                                    ? 'Disable auto-fetch to manually input offer data in JSON format'
-                                    : 'Paste your offer data as a JSON array. Each offer should have: id, title, description'}
+                                    ? ds.jsonHintDisabled
+                                    : ds.jsonHintEnabled}
                             </p>
                         </div>
 
@@ -128,12 +132,12 @@ export default function DataSourcePage() {
                             <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
                                 <Link href="/search-context" className="gap-2">
                                     <ArrowLeft className="h-4 w-4" />
-                                    Back to Context
+                                    {ds.btnBack}
                                 </Link>
                             </Button>
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
-                                    <Link href="/">Cancel</Link>
+                                    <Link href="/">{ds.btnCancel}</Link>
                                 </Button>
                                 <Button 
                                     onClick={onAnalyze} 
@@ -143,11 +147,11 @@ export default function DataSourcePage() {
                                     {dashboardState.loading ? (
                                         <>
                                             <Loader2 className="h-4 w-4 animate-spin" />
-                                            {dashboardState.fetching ? "Fetching..." : "Analyzing..."}
+                                            {dashboardState.fetching ? ds.btnFetching : ds.btnAnalyzing}
                                         </>
                                     ) : (
                                         <>
-                                            Start Analysis
+                                            {ds.btnAnalyze}
                                             <ArrowRight className="h-4 w-4" />
                                         </>
                                     )}
@@ -163,23 +167,23 @@ export default function DataSourcePage() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Bot className="h-4 w-4 text-blue-500" />
-                                Auto-Fetch (Recommended)
+                                {ds.helpAutoTitle}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
-                            <p className="text-muted-foreground">Perfect for:</p>
+                            <p className="text-muted-foreground">{ds.helpAutoDesc}</p>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-blue-500 shrink-0" />
-                                    <p>Real-time market data</p>
+                                    <p>{ds.helpAutoPoint1}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-blue-500 shrink-0" />
-                                    <p>Discovering new offers</p>
+                                    <p>{ds.helpAutoPoint2}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-blue-500 shrink-0" />
-                                    <p>Automated data collection</p>
+                                    <p>{ds.helpAutoPoint3}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -189,23 +193,23 @@ export default function DataSourcePage() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Database className="h-4 w-4 text-purple-500" />
-                                Manual JSON Input
+                                {ds.helpJsonTitle}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
-                            <p className="text-muted-foreground">Perfect for:</p>
+                            <p className="text-muted-foreground">{ds.helpJsonDesc}</p>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-purple-500 shrink-0" />
-                                    <p>Pre-collected data</p>
+                                    <p>{ds.helpJsonPoint1}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-purple-500 shrink-0" />
-                                    <p>Specific offer comparison</p>
+                                    <p>{ds.helpJsonPoint2}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-purple-500 shrink-0" />
-                                    <p>Custom data sources</p>
+                                    <p>{ds.helpJsonPoint3}</p>
                                 </div>
                             </div>
                         </CardContent>
