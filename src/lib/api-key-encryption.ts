@@ -57,11 +57,64 @@ export function encryptAPIKey(apiKey: string): string {
     return combined.toString('base64');
 }
 
+export interface EncryptedApiKeyParts {
+    ciphertext: string;
+    iv: string;
+    tag: string;
+}
+
+/**
+ * Encrypt an API key into structured parts (iv, tag, ciphertext in hex)
+ * Ideal for structured cookie payloads.
+ */
+export function encryptApiKeyToParts(apiKey: string): EncryptedApiKeyParts {
+    const key = getEncryptionKey();
+    const iv = randomBytes(IV_LENGTH);
+    const cipher = createCipheriv(ALGORITHM, key, iv);
+    
+    let encrypted = cipher.update(apiKey, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const tag = cipher.getAuthTag();
+    
+    return {
+        ciphertext: encrypted,
+        iv: iv.toString('hex'),
+        tag: tag.toString('hex')
+    };
+}
+
+/**
+ * Decrypt an API key from structured hex parts (iv, tag, ciphertext)
+ */
+export function decryptApiKeyFromParts(parts: EncryptedApiKeyParts): string {
+    try {
+        const key = getEncryptionKey();
+        const iv = Buffer.from(parts.iv, 'hex');
+        const tag = Buffer.from(parts.tag, 'hex');
+        const encrypted = Buffer.from(parts.ciphertext, 'hex');
+        
+        const decipher = createDecipheriv(ALGORITHM, key, iv);
+        decipher.setAuthTag(tag);
+        
+        let decrypted = decipher.update(encrypted);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        
+        return decrypted.toString('utf8');
+    } catch (error) {
+        console.error('Failed to decrypt API key from parts:', error);
+        throw new Error('Failed to decrypt API key');
+    }
+}
+
 /**
  * Decrypt an API key from storage
- * Expects a base64-encoded string containing: iv + tag + ciphertext
+ * Expects a base64-encoded string (iv + tag + ciphertext) or an EncryptedApiKeyParts object.
  */
-export function decryptAPIKey(encryptedData: string): string {
+export function decryptAPIKey(encryptedData: string | EncryptedApiKeyParts): string {
+    if (typeof encryptedData === 'object' && encryptedData !== null) {
+        return decryptApiKeyFromParts(encryptedData);
+    }
+    
     try {
         const key = getEncryptionKey();
         const combined = Buffer.from(encryptedData, 'base64');

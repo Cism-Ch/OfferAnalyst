@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from '@/lib/auth-client';
 import { useLanguage, type TranslationDictionary } from '@/contexts/LanguageContext';
+import { Progress } from "@/components/ui/progress";
 import {
     Home,
     Briefcase,
@@ -41,10 +42,26 @@ import {
     HelpCircle,
     FileText,
     LogOut,
-    LogIn
+    LogIn,
+    Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OffanIcon, OffanLogo } from '@/components/brand/OffanBrand';
+import { FluidAuthModal } from '@/components/auth/FluidAuthModal';
+import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
+import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
+
+const PROTECTED_NAV_ROUTES = [
+    '/saved',
+    '/projects',
+    '/compare',
+    '/dashboard/analytics',
+    '/dashboard/api-keys',
+    '/dashboard/workspace',
+    '/dashboard/settings',
+    '/dashboard/support',
+    '/admin',
+];
 
 interface NavItem {
     label: string;
@@ -63,7 +80,10 @@ function renderNavItems(
     section: string | undefined,
     isCollapsed: boolean,
     isActive: (href: string) => boolean,
-    setMobileOpen: (open: boolean) => void
+    setMobileOpen: (open: boolean) => void,
+    isGuest: boolean,
+    onProtectedClick: (href: string) => void,
+    t: TranslationDictionary
 ) {
     return (
         <div className="space-y-1">
@@ -72,34 +92,53 @@ function renderNavItems(
                     {section}
                 </p>
             )}
-            {items.map((item) => (
-                <Link key={item.href} href={item.href}>
-                    <Button
-                        variant="ghost"
-                        className={cn(
-                            'w-full justify-start gap-3 transition-all duration-200',
-                            isCollapsed ? 'px-2' : 'px-3',
-                            isActive(item.href)
-                                ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                        )}
-                        title={item.label}
-                        onClick={() => setMobileOpen(false)}
+            {items.map((item) => {
+                const isProtectedItem = PROTECTED_NAV_ROUTES.some(
+                    (route) => item.href === route || item.href.startsWith(route + '/')
+                );
+                const isRestrictedForGuest = isGuest && isProtectedItem;
+
+                const handleClick = (e: React.MouseEvent) => {
+                    if (isRestrictedForGuest) {
+                        e.preventDefault();
+                        onProtectedClick(item.href);
+                    } else {
+                        setMobileOpen(false);
+                    }
+                };
+
+                return (
+                    <Link
+                        key={item.href}
+                        href={isRestrictedForGuest ? '#' : item.href}
+                        onClick={handleClick}
                     >
-                        <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed && 'mx-auto')} />
-                        {!isCollapsed && (
-                            <>
-                                <span className="flex-1 text-left">{item.label}</span>
-                                {item.badge && (
-                                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                                        {item.badge}
-                                    </span>
-                                )}
-                            </>
-                        )}
-                    </Button>
-                </Link>
-            ))}
+                        <Button
+                            variant="ghost"
+                            className={cn(
+                                'w-full justify-start gap-3 transition-all duration-200',
+                                isCollapsed ? 'px-2' : 'px-3',
+                                isActive(item.href)
+                                    ? 'bg-primary/10 text-primary hover:bg-primary/15'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                            )}
+                            title={isRestrictedForGuest ? `${item.label} (${t.auth.signInCta})` : item.label}
+                        >
+                            <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed && 'mx-auto')} />
+                            {!isCollapsed && (
+                                <>
+                                    <span className="flex-1 text-left">{item.label}</span>
+                                    {item.badge && (
+                                        <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                        </Button>
+                    </Link>
+                );
+            })}
         </div>
     );
 }
@@ -200,18 +239,108 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
     );
 }
 
+function SidebarDailyQuotaWidget({
+    isCollapsed,
+    onOpenKeyDialog,
+    isFr
+}: {
+    isCollapsed: boolean;
+    onOpenKeyDialog: () => void;
+    isFr: boolean;
+}) {
+    const [quota, setQuota] = useState<{ used: number; total: number; remaining: number; isByok: boolean } | null>(null);
+
+    const loadQuota = React.useCallback(async () => {
+        try {
+            const res = await getDailyQuotaAction();
+            if (res.success && res.data) {
+                setQuota(res.data);
+            }
+        } catch {
+            // Ignore in background
+        }
+    }, []);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            loadQuota();
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [loadQuota]);
+
+    if (!quota) return null;
+
+    if (isCollapsed) {
+        return (
+            <div className="px-2 py-3 border-t flex justify-center">
+                <button
+                    onClick={onOpenKeyDialog}
+                    className="p-2 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                    title={quota.isByok ? (isFr ? "BYOK Actif (Recherches illimitées)" : "BYOK Active (Unlimited searches)") : `Quota: ${quota.remaining}/${quota.total} ${isFr ? 'recherches' : 'searches'}`}
+                >
+                    <Zap className={cn("h-4 w-4", quota.isByok ? "text-emerald-500 fill-emerald-500/20" : "text-amber-500 fill-amber-500/20")} />
+                </button>
+            </div>
+        );
+    }
+
+    const pct = quota.isByok ? 100 : Math.round((quota.remaining / quota.total) * 100);
+
+    return (
+        <div className="px-3 py-3 border-t">
+            <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                        <Zap className={cn("h-3.5 w-3.5", quota.isByok ? "text-emerald-500 fill-emerald-500/20" : "text-amber-500 fill-amber-500/20")} />
+                        <span>{quota.isByok ? (isFr ? "BYOK Illimité" : "BYOK Unlimited") : (isFr ? "Quota Quotidien" : "Daily Quota")}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                        {quota.isByok ? (isFr ? "Actif" : "Active") : `${quota.remaining}/${quota.total}`}
+                    </span>
+                </div>
+
+                <Progress
+                    value={pct}
+                    className={cn(
+                        "h-1.5",
+                        quota.isByok && "[&>[data-slot=progress-indicator]]:bg-emerald-500",
+                        !quota.isByok && quota.remaining <= 2 && "[&>[data-slot=progress-indicator]]:bg-destructive"
+                    )}
+                />
+
+                {!quota.isByok && (
+                    <button
+                        onClick={onOpenKeyDialog}
+                        className="text-[11px] text-primary hover:underline font-medium block pt-0.5 text-left"
+                    >
+                        {isFr ? "+ Ajouter clé API (BYOK)" : "+ Add API Key (BYOK)"}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function SidebarBody({
     isCollapsed,
     onToggle,
     isActive,
     setMobileOpen,
-    t
+    t,
+    isGuest,
+    onProtectedClick,
+    onOpenKeyDialog,
+    isFr,
 }: {
     isCollapsed: boolean;
     onToggle: (() => void) | undefined;
     isActive: (href: string) => boolean;
     setMobileOpen: (open: boolean) => void;
     t: TranslationDictionary;
+    isGuest: boolean;
+    onProtectedClick: (href: string) => void;
+    onOpenKeyDialog: () => void;
+    isFr: boolean;
 }) {
     const { data: session } = useSession();
     const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
@@ -265,18 +394,25 @@ function SidebarBody({
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
-                {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-4" />
-                {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-4" />
-                {renderNavItems(dashboardNavItems, !isCollapsed ? t.nav.sectionDashboard : undefined, isCollapsed, isActive, setMobileOpen)}
+                {renderNavItems(dashboardNavItems, !isCollapsed ? t.nav.sectionDashboard : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 {isAdmin && (
                     <>
                         <Separator className="my-4" />
-                        {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen)}
+                        {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                     </>
                 )}
             </nav>
+
+            {/* Daily Quota Widget */}
+            <SidebarDailyQuotaWidget
+                isCollapsed={isCollapsed}
+                onOpenKeyDialog={onOpenKeyDialog}
+                isFr={isFr}
+            />
 
             {/* User Profile */}
             <SidebarUserProfile isCollapsed={isCollapsed} t={t} />
@@ -301,8 +437,20 @@ function SidebarBody({
 
 export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarProps) {
     const pathname = usePathname();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isFr = language === 'fr';
+    const { data: session } = useSession();
+    const isGuest = !session?.user;
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
+    const [targetProtectedPath, setTargetProtectedPath] = useState<string>('/saved');
+
+    const handleProtectedClick = (href: string) => {
+        setTargetProtectedPath(href);
+        setAuthModalOpen(true);
+        setMobileOpen(false);
+    };
 
     const isActive = (href: string) => {
         return pathname === href;
@@ -350,6 +498,10 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                                 isActive={isActive}
                                 setMobileOpen={setMobileOpen}
                                 t={t}
+                                isGuest={isGuest}
+                                onProtectedClick={handleProtectedClick}
+                                onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
+                                isFr={isFr}
                             />
                         </motion.aside>
                     </>
@@ -368,8 +520,25 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     isActive={isActive}
                     setMobileOpen={setMobileOpen}
                     t={t}
+                    isGuest={isGuest}
+                    onProtectedClick={handleProtectedClick}
+                    onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
+                    isFr={isFr}
                 />
             </motion.aside>
+
+            {/* Fluid Authentication Modal for Guests */}
+            <FluidAuthModal
+                open={authModalOpen}
+                onOpenChange={setAuthModalOpen}
+                targetPath={targetProtectedPath}
+            />
+
+            {/* Guest API Key Dialog */}
+            <GuestApiKeyDialog
+                open={guestKeyDialogOpen}
+                onOpenChange={setGuestKeyDialogOpen}
+            />
         </>
     );
 }

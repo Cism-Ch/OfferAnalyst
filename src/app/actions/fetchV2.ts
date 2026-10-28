@@ -98,6 +98,20 @@ export async function fetchOffersActionV2(
         };
     }
 
+    // Quota Enforcement: Check 10 searches/day limit for free tier
+    const isByok = apiKeyResult?.source === 'byok' || apiKeyResult?.source === 'guest_cookie';
+    const { checkDailyQuota, incrementDailyQuota } = await import('./shared/quota-limiter');
+    const quotaCheck = await checkDailyQuota(isByok);
+    if (!quotaCheck.allowed) {
+        return {
+            success: false,
+            error: {
+                code: 'RATE_LIMIT_EXCEEDED',
+                message: 'Quota quotidien de 10 recherches atteint. Réinitialisation à minuit UTC ou utilisez votre propre clé API.'
+            }
+        };
+    }
+
     const openrouter = new OpenRouter({
         apiKey: apiKey,
     });
@@ -201,6 +215,10 @@ export async function fetchOffersActionV2(
     try {
         const offers = await retryWithBackoff(operation, 3, 'fetch offers v2');
         
+        await incrementDailyQuota(isByok).catch(err =>
+            console.error('Failed to increment daily quota:', err)
+        );
+
         return {
             success: true,
             data: offers,

@@ -88,6 +88,20 @@ export async function analyzeOffersActionV2(
         };
     }
 
+    // Quota Enforcement: Check 10 searches/day limit for free tier
+    const isByok = keyResult?.source === 'byok' || keyResult?.source === 'guest_cookie' || Boolean(clientApiKey);
+    const { checkDailyQuota, incrementDailyQuota } = await import('./shared/quota-limiter');
+    const quotaCheck = await checkDailyQuota(isByok);
+    if (!quotaCheck.allowed) {
+        return {
+            success: false,
+            error: {
+                code: 'RATE_LIMIT_EXCEEDED',
+                message: 'Quota quotidien de 10 recherches atteint. Réinitialisation à minuit UTC ou utilisez votre propre clé API.'
+            }
+        };
+    }
+
     if (offers.length >= 100 && !async) {
         console.warn(`Analyzing ${offers.length} offers synchronously. Consider using async mode.`);
     }
@@ -253,6 +267,10 @@ export async function analyzeOffersActionV2(
 
     try {
         const data = await retryWithBackoff(operation, 3, 'analyze offers v2');
+
+        await incrementDailyQuota(isByok).catch(err =>
+            console.error('Failed to increment daily quota:', err)
+        );
 
         return {
             success: true,

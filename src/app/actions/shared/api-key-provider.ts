@@ -17,7 +17,7 @@ import { decryptAPIKey } from '@/lib/api-key-encryption';
 
 export interface APIKeyResult {
     key: string;
-    source: 'byok' | 'temp' | 'env';
+    source: 'byok' | 'temp' | 'env' | 'guest_cookie';
     provider: string;
     keyId?: string;
     userId?: string;
@@ -116,7 +116,31 @@ export async function getAPIKey(
         // Fall through to next options
     }
 
-    // If client provided a temporary key, use it
+    // 2. Try ephemeral guest encrypted cookie (offeranalyst.guest_key)
+    try {
+        const { getGuestDecryptedApiKey } = await import('./guest-api-key');
+        const guestKeyData = await getGuestDecryptedApiKey();
+        if (guestKeyData && guestKeyData.apiKey) {
+            const guestProvider = guestKeyData.provider.toLowerCase();
+            const requestedProvider = provider.toLowerCase();
+
+            // Match provider or allow openrouter keys for all
+            if (guestProvider === requestedProvider || guestProvider === 'openrouter' || requestedProvider === 'openrouter') {
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`[getAPIKey] Using guest 24h encrypted cookie key for ${provider}`);
+                }
+                return {
+                    key: guestKeyData.apiKey,
+                    source: 'guest_cookie',
+                    provider: guestKeyData.provider
+                };
+            }
+        }
+    } catch (guestErr) {
+        console.error('[getAPIKey] Error checking guest encrypted cookie:', guestErr);
+    }
+
+    // 3. If client provided an explicit temporary key argument, use it
     if (clientApiKey) {
         // Only log in development mode
         if (process.env.NODE_ENV === 'development') {

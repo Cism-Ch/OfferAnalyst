@@ -11,17 +11,20 @@
  * - Action buttons on right (Search, Theme Selector, AI Model Switcher)
  */
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { PremiumThemeSelector } from "@/components/theme-selector";
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, Zap, KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fadeInUpProps } from '@/lib/motion';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AIModelSelector } from './AIModelSelector';
 import { LanguageToggle } from './LanguageToggle';
+import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
+import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
 
 interface ModernHeaderProps {
     selectedModel?: string;
@@ -32,7 +35,28 @@ interface ModernHeaderProps {
 
 export function ModernHeader({ selectedModel, onModelChange, title, description }: ModernHeaderProps) {
     const pathname = usePathname();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
+    const [quota, setQuota] = useState<{ remaining: number; total: number; isByok: boolean } | null>(null);
+
+    const fetchQuota = useCallback(async () => {
+        try {
+            const res = await getDailyQuotaAction();
+            if (res.success && res.data) {
+                setQuota(res.data);
+            }
+        } catch {
+            // Background fetch fallback
+        }
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchQuota();
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [fetchQuota]);
+
     const routeInfo = (t.routes as Record<string, { title: string; description: string; breadcrumbs: string[] }>)[pathname] || t.routes['/'];
     const pageTitle = title || routeInfo.title;
     const pageDescription = description || routeInfo.description;
@@ -85,6 +109,49 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                             />
                         </motion.div>
 
+                        {/* Daily Quota Badge & Key Dialog Trigger */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.12 }}
+                            className="flex items-center gap-1.5"
+                        >
+                            {quota && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setGuestKeyDialogOpen(true)}
+                                    className={cn(
+                                        "h-8 px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5",
+                                        quota.isByok
+                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                                            : quota.remaining === 0
+                                            ? "bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20"
+                                            : "bg-muted/50 text-foreground border-border hover:bg-muted"
+                                    )}
+                                    title={quota.isByok ? (language === 'fr' ? "BYOK Actif (Recherches illimitées)" : "BYOK Active (Unlimited searches)") : `Quota: ${quota.remaining}/${quota.total} ${language === 'fr' ? 'recherches' : 'searches'}`}
+                                >
+                                    <Zap className={cn("h-3.5 w-3.5", quota.isByok ? "text-emerald-500 fill-emerald-500/30" : "text-amber-500 fill-amber-500/20")} />
+                                    <span>
+                                        {quota.isByok
+                                            ? (language === 'fr' ? "BYOK Actif" : "BYOK Active")
+                                            : `${quota.remaining}/${quota.total} ${language === 'fr' ? 'recherches' : 'searches'}`}
+                                    </span>
+                                </Button>
+                            )}
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setGuestKeyDialogOpen(true)}
+                                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
+                                title={language === 'fr' ? "Configurer clé API (BYOK)" : "Configure API Key (BYOK)"}
+                                aria-label="API Key Dialog"
+                            >
+                                <KeyRound className="h-4 w-4" />
+                            </Button>
+                        </motion.div>
+
                         {/* Language Switcher */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -135,6 +202,13 @@ export function ModernHeader({ selectedModel, onModelChange, title, description 
                     </motion.p>
                 </div>
             </div>
+
+            {/* Guest API Key Dialog */}
+            <GuestApiKeyDialog
+                open={guestKeyDialogOpen}
+                onOpenChange={setGuestKeyDialogOpen}
+                onKeyUpdated={fetchQuota}
+            />
         </motion.header>
     );
 }

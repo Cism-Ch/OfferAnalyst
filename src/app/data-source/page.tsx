@@ -6,7 +6,7 @@
  * Dedicated page for configuring data input (AI fetch or manual JSON)
  */
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,20 +16,47 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { ClientOnlySwitch } from '@/components/ClientOnlySwitch';
-import { Database, Bot, Loader2, ArrowRight, Info, ArrowLeft, Check } from 'lucide-react';
+import { Database, Bot, Loader2, ArrowRight, Info, ArrowLeft, Check, Zap, KeyRound, Sparkles, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
+import { getDailyQuotaAction, type DailyQuotaResult } from '@/app/actions/shared/quota-limiter';
+import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 
 export default function DataSourcePage() {
     const dashboardState = useAnalysis();
     const router = useRouter();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isFr = language === 'fr';
     const ds = t.dataSourcePage;
 
+    const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
+    const [quota, setQuota] = useState<DailyQuotaResult | null>(null);
+
+    const fetchQuota = useCallback(async () => {
+        try {
+            const res = await getDailyQuotaAction();
+            if (res.success && res.data) {
+                setQuota(res.data);
+            }
+        } catch {
+            // Ignore in background
+        }
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchQuota();
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [fetchQuota]);
+
+    const isQuotaExhausted = Boolean(quota && !quota.isByok && quota.remaining <= 0);
+
     const onAnalyze = () => {
+        if (isQuotaExhausted) return;
         dashboardState.startAnalysis();
         router.push('/analysis');
     };
@@ -127,6 +154,92 @@ export default function DataSourcePage() {
                             </p>
                         </div>
 
+                        {/* Daily Quota & BYOK Status Banner */}
+                        {quota && (
+                            <div className="space-y-3 pt-2">
+                                {quota.isByok ? (
+                                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
+                                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
+                                            <Sparkles className="h-4 w-4 shrink-0" />
+                                            <span>
+                                                {isFr
+                                                    ? "Clé API personnelle active (BYOK) — Recherches illimitées"
+                                                    : "Personal API key active (BYOK) — Unlimited searches"}
+                                            </span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setGuestKeyDialogOpen(true)}
+                                            className="text-xs h-7 px-2.5 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-medium"
+                                        >
+                                            {isFr ? "Gérer ma clé" : "Manage Key"}
+                                        </Button>
+                                    </div>
+                                ) : isQuotaExhausted ? (
+                                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 space-y-2.5 text-xs">
+                                        <div className="flex items-center gap-2 text-destructive font-semibold">
+                                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                                            <span>
+                                                {isFr
+                                                    ? "Quota quotidien de 10 recherches atteint."
+                                                    : "Daily quota of 10 searches reached."}
+                                            </span>
+                                        </div>
+                                        <p className="text-muted-foreground leading-relaxed">
+                                            {isFr
+                                                ? "Votre quota gratuit se réinitialise à minuit UTC. Pour continuer immédiatement sans attendre, ajoutez votre propre clé API ou créez un compte."
+                                                : "Your free quota resets at midnight UTC. To continue immediately without waiting, enter your own API key or sign up."}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                onClick={() => setGuestKeyDialogOpen(true)}
+                                                className="text-xs min-h-[36px] gap-1.5"
+                                            >
+                                                <KeyRound className="h-3.5 w-3.5" />
+                                                {isFr ? "Entrer une clé API (BYOK)" : "Enter API Key (BYOK)"}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                asChild
+                                                className="text-xs min-h-[36px]"
+                                            >
+                                                <Link href="/auth/signup">
+                                                    {isFr ? "Créer un compte gratuit" : "Sign up for free"}
+                                                </Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-3.5 rounded-xl bg-muted/50 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                                        <div className="flex items-center gap-2 text-foreground font-medium">
+                                            <Zap className="h-4 w-4 text-amber-500 fill-amber-500/20 shrink-0" />
+                                            <span>
+                                                {isFr
+                                                    ? `Quota quotidien gratuit : ${quota.remaining}/${quota.total} recherches restantes aujourd'hui.`
+                                                    : `Daily free quota: ${quota.remaining}/${quota.total} searches remaining today.`}
+                                            </span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setGuestKeyDialogOpen(true)}
+                                            className="text-xs h-8 gap-1.5 shrink-0 self-start sm:self-auto font-medium"
+                                        >
+                                            <KeyRound className="h-3.5 w-3.5" />
+                                            {isFr ? "Ajouter ma clé API (BYOK)" : "Add API Key (BYOK)"}
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Action Buttons - Responsive Mobile-First */}
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
                             <Button variant="outline" className="w-full sm:w-auto min-h-[44px]" asChild>
@@ -141,8 +254,9 @@ export default function DataSourcePage() {
                                 </Button>
                                 <Button 
                                     onClick={onAnalyze} 
-                                    disabled={dashboardState.loading || (!dashboardState.autoFetch && !dashboardState.offersInput)}
+                                    disabled={dashboardState.loading || (!dashboardState.autoFetch && !dashboardState.offersInput) || isQuotaExhausted}
                                     className="gap-2 w-full sm:w-auto min-h-[44px]"
+                                    title={isQuotaExhausted ? (isFr ? "Quota quotidien atteint. Ajoutez une clé API pour continuer." : "Daily quota reached. Add an API key to continue.") : undefined}
                                 >
                                     {dashboardState.loading ? (
                                         <>
@@ -216,6 +330,13 @@ export default function DataSourcePage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Guest API Key Dialog */}
+            <GuestApiKeyDialog
+                open={guestKeyDialogOpen}
+                onOpenChange={setGuestKeyDialogOpen}
+                onKeyUpdated={fetchQuota}
+            />
         </SimpleLayout>
     );
 }
