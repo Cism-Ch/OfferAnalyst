@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/ui/toast";
+import { AnalysisProvider } from "@/contexts/AnalysisContext";
 
 export const metadata: Metadata = {
   title: "Offer Analyst - AI-Powered Contextual Recommendations",
@@ -24,7 +26,11 @@ export default function RootLayout({
             disableTransitionOnChange
             themes={['light', 'dark', 'gold', 'ocean', 'forest', 'neon', 'silver', 'system']}
           >
-            {children}
+            <ToastProvider>
+              <AnalysisProvider>
+                {children}
+              </AnalysisProvider>
+            </ToastProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>

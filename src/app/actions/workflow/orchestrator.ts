@@ -19,6 +19,7 @@ import { fetchOffersActionV2 } from "../fetchV2";
 import { analyzeOffersActionV2 } from "../analyzeV2";
 import { organizeOffersActionV2, OrganizedOffersV2 } from "../organizeV2";
 import { getCache, setCache } from "@/lib/cache";
+import { DEFAULT_MODEL_ID } from "@/lib/ai-models";
 
 export type WorkflowState = 
     | 'pending' 
@@ -91,7 +92,7 @@ export async function executeWorkflow(
         enableFetch = !offers,
         enableAnalyze = true,
         enableOrganize = false,
-        modelName = 'google/gemini-2.0-flash-exp:free',
+        modelName = DEFAULT_MODEL_ID,
         language = 'en',
         criteriaWeights,
         organizationTemplate = 'grid'

@@ -16,7 +16,8 @@
  * - Unauthenticated users: Keys stored in browser localStorage (temporary, 24h max)
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,9 +117,10 @@ function HealthBadge({ status, latency, error }: { status?: string; latency?: nu
     );
 }
 
-export default function APIKeysPage() {
+function APIKeysContent() {
     const { data: session, isPending } = useSession();
     const temporaryKeys = useTemporaryApiKeys();
+    const searchParams = useSearchParams();
     
     const [displayKeys, setDisplayKeys] = useState<DisplayAPIKey[]>([]);
     const [stats, setStats] = useState({
@@ -128,6 +130,7 @@ export default function APIKeysPage() {
     });
     const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
     const [showAddDialog, setShowAddDialog] = useState(false);
+    const [initialProvider, setInitialProvider] = useState<string>('openrouter');
     const [isLoading, setIsLoading] = useState(true);
     const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -136,6 +139,26 @@ export default function APIKeysPage() {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3500);
     }, []);
+
+    // Auto-open Add Dialog when redirected with ?action=add
+    useEffect(() => {
+        const action = searchParams.get('action');
+        const providerParam = searchParams.get('provider');
+        const modelParam = searchParams.get('model');
+
+        if (action === 'add') {
+            const timer = setTimeout(() => {
+                if (providerParam) {
+                    setInitialProvider(providerParam);
+                }
+                setShowAddDialog(true);
+                if (modelParam) {
+                    showToast(`Configuration requise : renseignez votre clé pour débloquer ${modelParam}.`, 'success');
+                }
+            }, 0);
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams, showToast]);
 
     const isAuthenticated = !!session?.user && !isPending;
 
@@ -693,8 +716,23 @@ export default function APIKeysPage() {
                     onOpenChange={setShowAddDialog}
                     onAdd={handleAddKey}
                     isAuthenticated={isAuthenticated}
+                    initialProvider={initialProvider}
                 />
             </div>
         </ModernLayout>
+    );
+}
+
+export default function APIKeysPage() {
+    return (
+        <Suspense fallback={
+            <ModernLayout>
+                <div className="container mx-auto py-16 px-4 max-w-6xl text-center">
+                    <p className="text-muted-foreground animate-pulse">Chargement de la gestion des clés API...</p>
+                </div>
+            </ModernLayout>
+        }>
+            <APIKeysContent />
+        </Suspense>
     );
 }

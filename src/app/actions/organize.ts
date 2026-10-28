@@ -4,8 +4,9 @@ import { OpenRouter } from "@openrouter/sdk";
 import { Offer } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod } from "./shared/agent-utils";
 import { z } from 'zod';
+import { DEFAULT_MODEL_ID } from "@/lib/ai-models";
 
-const MODEL_NAME = "google/gemini-2.0-flash-exp:free";
+const MODEL_NAME = DEFAULT_MODEL_ID;
 
 const CategorySchema = z.object({
     name: z.string(),
@@ -103,12 +104,14 @@ export async function organizeOffersAction(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: MODEL_NAME,
-            messages: [
-                { role: "system", content: systemInstruction },
-                { role: "user", content: `Organize these ${simplifiedOffers.length} offers: ${JSON.stringify(simplifiedOffers)}` }
-            ],
-            responseFormat: { type: "json_object" }
+            chatRequest: {
+                model: MODEL_NAME,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `Organize these ${simplifiedOffers.length} offers: ${JSON.stringify(simplifiedOffers)}` }
+                ],
+                responseFormat: { type: "json_object" }
+            }
         });
 
         if (response?.usage) {

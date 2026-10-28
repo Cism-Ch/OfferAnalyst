@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
+import { AIModelSelector } from './AIModelSelector';
+
 interface SimpleLayoutProps {
     children: React.ReactNode;
     title?: string;
@@ -29,6 +31,21 @@ const getPageInfo = (pathname: string) => {
             title: 'Dashboard',
             description: 'AI-powered offer analysis and insights',
             breadcrumbs: ['Home', 'Dashboard']
+        },
+        '/search-context': {
+            title: 'Search Context',
+            description: 'Define your search parameters and preferences',
+            breadcrumbs: ['Home', 'Search Context']
+        },
+        '/data-source': {
+            title: 'Data Source',
+            description: 'Configure offer data inputs',
+            breadcrumbs: ['Home', 'Data Source']
+        },
+        '/analysis': {
+            title: 'Analysis Results',
+            description: 'AI-powered recommendations and scores',
+            breadcrumbs: ['Home', 'Analysis']
         },
         '/projects': {
             title: 'Projects',
@@ -85,7 +102,7 @@ export function SimpleLayout({
                 {/* Simple Header */}
                 <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
                     <div className="px-4 sm:px-6 py-3 sm:py-4 pl-16 md:pl-6">
-                        {/* Top Row: Breadcrumbs & Theme Selector */}
+                        {/* Top Row: Breadcrumbs & Actions (Model Switcher & Theme Selector) */}
                         <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
                             <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
                                 {/* Mobile Single Crumb */}
@@ -106,7 +123,8 @@ export function SimpleLayout({
                                     ))}
                                 </div>
                             </div>
-                            <div className="shrink-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                                <AIModelSelector compact />
                                 <PremiumThemeSelector />
                             </div>
                         </div>

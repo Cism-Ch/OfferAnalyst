@@ -134,12 +134,14 @@ export async function fetchOffersActionV2(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: modelName,
-            messages: [
-                { role: "system", content: systemInstruction },
-                { role: "user", content: `Find ${batchSize} live offers for domain "${domain}" with context: "${context}". Return as JSON array with source prioritization.` }
-            ],
-            responseFormat: { type: "json_object" }
+            chatRequest: {
+                model: modelName,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `Find ${batchSize} live offers for domain "${domain}" with context: "${context}". Return as JSON array with source prioritization.` }
+                ],
+                responseFormat: { type: "json_object" }
+            }
         });
 
         const content = response.choices[0]?.message?.content;

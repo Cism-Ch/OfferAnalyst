@@ -54,11 +54,11 @@ export default function SupportPage() {
         },
         {
             question: 'Which models are recommended for free tier?',
-            answer: 'We recommend Gemini 2.5 Flash and DeepSeek R1 (free) for best results with free tier limits.'
+            answer: 'We recommend Gemini 3.5 Flash Lite (included by default) and NVIDIA Nemotron 3.5 Lightning (free) for fast extraction and structured parsing.'
         },
         {
             question: 'Which models should I use with BYOK?',
-            answer: 'GPT-4o Mini offers great speed and quality. Mistral Large is excellent for multilingual analysis. Choose based on your needs and budget.'
+            answer: 'Claude 3.7 Sonnet, GPT-4o, and DeepSeek R1 offer state-of-the-art reasoning and precision. For large context windows, Kimi 2.6 (256k) is ideal. Mistral Large provides top European multilingual analysis.'
         },
         {
             question: 'What are the free tier limits?',
@@ -74,16 +74,18 @@ export default function SupportPage() {
         {
             tier: 'Free Tier',
             models: [
-                { name: 'Gemini 2.5 Flash', provider: 'Google', description: 'Fast and efficient' },
-                { name: 'DeepSeek R1', provider: 'DeepSeek', description: 'Free reasoning model' }
+                { name: 'Gemini 3.5 Flash Lite', provider: 'Google', description: 'Default ultra-fast 1M context engine' },
+                { name: 'NVIDIA Nemotron 3.5', provider: 'NVIDIA', description: 'Free GPU-accelerated lightning model' }
             ]
         },
         {
             tier: 'BYOK (Your Keys)',
             models: [
-                { name: 'GPT-4o Mini', provider: 'OpenAI', description: 'Best speed/quality balance' },
-                { name: 'Mistral Large', provider: 'Mistral', description: 'Excellent multilingual' },
-                { name: 'Claude Sonnet', provider: 'Anthropic', description: 'Superior reasoning' }
+                { name: 'Claude 3.7 Sonnet', provider: 'Anthropic', description: 'Frontier hybrid reasoning' },
+                { name: 'GPT-4o & o3-mini', provider: 'OpenAI', description: 'Multimodal flagship & high-speed STEM logic' },
+                { name: 'DeepSeek R1 & V3', provider: 'DeepSeek', description: 'Deep reasoning & ultra-efficient MoE' },
+                { name: 'Kimi 2.6', provider: 'Moonshot AI', description: 'Agentic multimodal with 256k context' },
+                { name: 'Mistral Large', provider: 'Mistral AI', description: 'Premier European multilingual model' }
             ]
         }
     ];

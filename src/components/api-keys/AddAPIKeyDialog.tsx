@@ -32,14 +32,17 @@ interface AddAPIKeyDialogProps {
     onOpenChange: (open: boolean) => void;
     onAdd: (name: string, provider: string, key: string, expiresAt?: Date | null, rateLimit?: number | null) => Promise<void>;
     isAuthenticated: boolean;
+    initialProvider?: string;
 }
 
 const AI_PROVIDERS = [
-    { value: 'openrouter', label: 'OpenRouter', prefix: 'sk-or-v1-' },
-    { value: 'openai', label: 'OpenAI', prefix: 'sk-' },
-    { value: 'anthropic', label: 'Anthropic', prefix: 'sk-ant-' },
+    { value: 'openrouter', label: 'OpenRouter (Recommandé - Tous Modèles)', prefix: 'sk-or-v1-' },
+    { value: 'openai', label: 'OpenAI (GPT-4o, o3-mini)', prefix: 'sk-' },
+    { value: 'anthropic', label: 'Anthropic (Claude 3.7 Sonnet)', prefix: 'sk-ant-' },
+    { value: 'deepseek', label: 'DeepSeek (R1 & V3)', prefix: 'sk-' },
+    { value: 'moonshot', label: 'Moonshot AI / Kimi (Kimi 2.6)', prefix: 'sk-' },
+    { value: 'mistral', label: 'Mistral AI (Mistral Large)', prefix: '' },
     { value: 'google', label: 'Google Gemini', prefix: 'AIza' },
-    { value: 'mistral', label: 'Mistral AI', prefix: '' },
 ] as const;
 
 const EXPIRATION_OPTIONS = [
@@ -55,16 +58,26 @@ export function AddAPIKeyDialog({
     open,
     onOpenChange,
     onAdd,
-    isAuthenticated
+    isAuthenticated,
+    initialProvider = 'openrouter'
 }: AddAPIKeyDialogProps) {
     const [name, setName] = useState('');
-    const [provider, setProvider] = useState<string>('openrouter');
+    const [provider, setProvider] = useState<string>(initialProvider);
     const [key, setKey] = useState('');
     const [expirationOption, setExpirationOption] = useState<string>('never');
     const [customExpiration, setCustomExpiration] = useState('');
     const [rateLimit, setRateLimit] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (initialProvider) {
+            const timer = setTimeout(() => {
+                setProvider(initialProvider);
+            }, 0);
+            return () => clearTimeout(timer);
+        }
+    }, [initialProvider, open]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -154,7 +167,7 @@ export function AddAPIKeyDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="provider">Provider</Label>
+                            <Label htmlFor="provider">Fournisseur d&apos;IA (Provider)</Label>
                             <Select
                                 value={provider}
                                 onValueChange={setProvider}
@@ -171,6 +184,27 @@ export function AddAPIKeyDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
+
+                            {/* Informative Guidance Banner based on provider choice */}
+                            {provider === 'openrouter' ? (
+                                <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-lg p-2.5 text-xs text-emerald-600 dark:text-emerald-400">
+                                    <p className="font-semibold flex items-center gap-1.5 mb-0.5">
+                                        <span>✨</span> Clé Universelle Recommandée
+                                    </p>
+                                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                                        Une seule clé OpenRouter (commençant par <code className="font-mono bg-muted/60 px-1 py-0.5 rounded text-foreground">sk-or-v1-</code>) active immédiatement l&apos;ensemble des 9 modèles (Claude 3.7, GPT-4o, DeepSeek R1, Kimi, Mistral, Gemini, Nemotron) sans nécessiter de comptes tiers multiples.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="bg-blue-500/10 border border-blue-500/25 rounded-lg p-2.5 text-xs text-blue-600 dark:text-blue-400">
+                                    <p className="font-semibold flex items-center gap-1.5 mb-0.5">
+                                        <span>ℹ️</span> Passerelle Unifiée OpenRouter
+                                    </p>
+                                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                                        OfferAnalyst achemine l&apos;ensemble des requêtes d&apos;inférence via le hub OpenRouter. Pour utiliser vos propres crédits {selectedProvider?.label}, vous pouvez soit associer votre compte sur <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary">openrouter.ai/keys</a> (BYOK), soit utiliser une clé OpenRouter universelle.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-2">

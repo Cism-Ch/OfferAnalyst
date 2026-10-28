@@ -42,19 +42,40 @@ export interface AnalysisResponse {
 
 export type AgentErrorCode =
   | 'API_KEY_MISSING'
+  | 'API_KEY_INVALID'
   | 'API_KEY_EXPIRED'
+  | 'INSUFFICIENT_CREDITS'
+  | 'RATE_LIMITED'
+  | 'MODEL_OVERLOADED'
+  | 'TIMEOUT'
   | 'NO_RESPONSE'
   | 'INVALID_JSON'
   | 'VALIDATION_FAILED'
   | 'SEARCH_FAILED'
+  | 'EMPTY_OFFERS'
   | 'API_ERROR'
   | 'OPENROUTER_ERROR';
+
+export type ErrorRemedyType =
+  | 'configure_api_key'
+  | 'switch_to_free'
+  | 'switch_model'
+  | 'retry'
+  | 'adjust_criteria'
+  | 'none';
 
 export interface AgentActionError {
   message: string;
   code: AgentErrorCode | string;
   context?: string;
   raw?: string;
+  remedy?: {
+    type: ErrorRemedyType;
+    label: string;
+    targetUrl?: string;
+    suggestedModel?: string;
+  };
+  httpStatus?: number;
 }
 
 export type AgentActionResult<T> =
@@ -67,6 +88,25 @@ export interface ProviderErrorState extends AgentActionError {
   phase: ProviderErrorPhase;
   timestamp: number;
   model?: string;
+}
+
+export type LLMExecutionStatus =
+  | 'idle'
+  | 'initializing'
+  | 'fetching'
+  | 'analyzing'
+  | 'scoring'
+  | 'completed'
+  | 'error';
+
+export interface LLMProgressState {
+  status: LLMExecutionStatus;
+  stepMessage: string;
+  modelId: string;
+  modelName: string;
+  elapsedSeconds: number;
+  phase: 'idle' | 'fetch' | 'analyze';
+  error: ProviderErrorState | null;
 }
 
 export interface SearchHistoryItem {

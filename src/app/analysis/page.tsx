@@ -13,6 +13,8 @@ import { useSavedOffers } from '@/hooks/use-saved-offers';
 import { ScoreChart } from '@/components/offers/ScoreChart';
 import { ResultsSection } from '@/components/offers/ResultsSection';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
+import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
+import { Skeleton } from '@/components/ui/skeleton-premium';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, RefreshCw, ArrowLeft } from 'lucide-react';
@@ -23,6 +25,7 @@ export default function AnalysisPage() {
     const { saveOffer, isSaved } = useSavedOffers();
 
     const hasResults = dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0;
+    const isLoading = dashboardState.loading;
 
     return (
         <SimpleLayout
@@ -31,16 +34,45 @@ export default function AnalysisPage() {
             maxWidth="7xl"
         >
             <div className="space-y-6">
-                {/* Provider Error */}
-                <ProviderErrorPanel
-                    error={dashboardState.providerError}
-                    onDismiss={() => dashboardState.setProviderError(null)}
-                    onRetry={() => {}}
-                    activeModelId={dashboardState.model}
-                />
+                {/* Real-time Processing Indicator */}
+                <LiveAIStatusIndicator />
 
-                {/* Results or Empty State */}
-                {hasResults ? (
+                {/* Intelligent Provider Error Diagnostic Panel */}
+                <ProviderErrorPanel />
+
+                {/* State 1: Active Analysis Loading Skeletons */}
+                {isLoading ? (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            {/* Left column loading preview */}
+                            <div className="lg:col-span-2 space-y-4">
+                                <Card className="border-border/60 p-6 space-y-4">
+                                    <Skeleton height={24} width="60%" rounded="md" gradient />
+                                    <Skeleton height={200} rounded="lg" gradient />
+                                    <Skeleton height={16} width="80%" rounded="sm" gradient />
+                                </Card>
+                            </div>
+                            {/* Right column loading preview */}
+                            <div className="lg:col-span-3 space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <Card key={i} className="border-border/60 p-5 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton height={22} width="50%" rounded="md" gradient />
+                                            <Skeleton height={20} width={60} rounded="full" gradient />
+                                        </div>
+                                        <Skeleton height={14} width="90%" rounded="sm" gradient />
+                                        <Skeleton height={14} width="75%" rounded="sm" gradient />
+                                        <div className="flex gap-2 pt-2">
+                                            <Skeleton height={28} width={80} rounded="md" gradient />
+                                            <Skeleton height={28} width={80} rounded="md" gradient />
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                ) : hasResults ? (
+                    /* State 2: Successful Results */
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                         {/* Left Column - Score Chart */}
                         <div className="lg:col-span-2 space-y-4">
@@ -76,8 +108,8 @@ export default function AnalysisPage() {
                             />
                         </div>
                     </div>
-                ) : (
-                    /* Empty State */
+                ) : !dashboardState.providerError ? (
+                    /* State 3: Empty State (When no analysis and no error) */
                     <Card className="border-2 border-dashed">
                         <CardContent className="pt-12 pb-12">
                             <div className="text-center space-y-4">
@@ -108,7 +140,7 @@ export default function AnalysisPage() {
                             </div>
                         </CardContent>
                     </Card>
-                )}
+                ) : null}
             </div>
         </SimpleLayout>
     );

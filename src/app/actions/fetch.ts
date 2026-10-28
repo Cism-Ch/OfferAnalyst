@@ -99,12 +99,14 @@ export async function fetchOffersAction(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: modelName,
-            messages: [
-                { role: "system", content: systemInstruction },
-                { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return as JSON array.` }
-            ],
-            responseFormat: { type: "json_object" }
+            chatRequest: {
+                model: modelName,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return as JSON array.` }
+                ],
+                responseFormat: { type: "json_object" }
+            }
         });
 
         if (response?.usage) {

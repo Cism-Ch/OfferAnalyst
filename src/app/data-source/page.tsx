@@ -8,9 +8,7 @@
 
 import React from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
-import { useDashboardState } from '@/hooks/use-dashboard-state';
-import { useOfferAnalysis } from '@/hooks/use-offer-analysis';
-import { useSearchHistory } from '@/hooks/use-search-history';
+import { useAnalysis } from '@/contexts/AnalysisContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,32 +19,15 @@ import { Database, Bot, Loader2, ArrowRight, Info, ArrowLeft, Check } from 'luci
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
+import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
+import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 
 export default function DataSourcePage() {
-    const dashboardState = useDashboardState();
-    const { addToHistory } = useSearchHistory();
+    const dashboardState = useAnalysis();
     const router = useRouter();
 
-    const { handleAnalyze } = useOfferAnalysis({
-        setLoading: dashboardState.setLoading,
-        setFetching: dashboardState.setFetching,
-        setResults: dashboardState.setResults,
-        setOffersInput: dashboardState.setOffersInput,
-        addToHistory,
-        selectedModel: dashboardState.model,
-        setProviderError: dashboardState.setProviderError
-    });
-
     const onAnalyze = () => {
-        handleAnalyze({
-            autoFetch: dashboardState.autoFetch,
-            offersInput: dashboardState.offersInput,
-            domain: dashboardState.domain,
-            explicitCriteria: dashboardState.explicitCriteria,
-            implicitContext: dashboardState.implicitContext,
-            limit: dashboardState.limit
-        });
-        // Navigate to analysis page after starting
+        dashboardState.startAnalysis();
         router.push('/analysis');
     };
 
@@ -57,6 +38,9 @@ export default function DataSourcePage() {
             maxWidth="5xl"
         >
             <div className="space-y-6">
+                {/* Live AI Status or Provider Error */}
+                <LiveAIStatusIndicator />
+                <ProviderErrorPanel />
                 {/* Info Banner */}
                 <Card className="border-primary/20 bg-primary/5">
                     <CardContent className="pt-6">

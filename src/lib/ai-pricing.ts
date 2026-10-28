@@ -16,37 +16,52 @@ export interface ModelPricing {
  * Updatable dynamically via OpenRouter /models API.
  */
 export const MODEL_PRICING_TABLE: Record<string, ModelPricing> = {
-  // Free Tier Models
-  'google/gemini-2.5-flash-preview-09-2025': {
+  // Modèles Standards Inclus & Gratuits
+  'google/gemini-3.5-flash-lite': {
     promptPricePer1M: 0,
     completionPricePer1M: 0,
     isFree: true,
   },
-  'google/gemini-2.0-flash-exp:free': {
-    promptPricePer1M: 0,
-    completionPricePer1M: 0,
-    isFree: true,
-  },
-  'deepseek/deepseek-r1:free': {
-    promptPricePer1M: 0,
-    completionPricePer1M: 0,
-    isFree: true,
-  },
-  'meta-llama/llama-3.3-70b-instruct:free': {
+  'nvidia/nemotron-3.5-lightning:free': {
     promptPricePer1M: 0,
     completionPricePer1M: 0,
     isFree: true,
   },
 
-  // Paid BYOK Models
-  'openai/gpt-4o-mini': {
-    promptPricePer1M: 0.15,      // $0.15 / 1M prompt
-    completionPricePer1M: 0.60,  // $0.60 / 1M completion
-    isFree: false,
-  },
+  // Modèles Payants (BYOK)
   'openai/gpt-4o': {
     promptPricePer1M: 2.50,
     completionPricePer1M: 10.00,
+    isFree: false,
+  },
+  'anthropic/claude-3.7-sonnet': {
+    promptPricePer1M: 3.00,
+    completionPricePer1M: 15.00,
+    isFree: false,
+  },
+  'openai/o3-mini': {
+    promptPricePer1M: 1.10,
+    completionPricePer1M: 4.40,
+    isFree: false,
+  },
+  'deepseek/deepseek-r1': {
+    promptPricePer1M: 0.55,
+    completionPricePer1M: 2.19,
+    isFree: false,
+  },
+  'deepseek/deepseek-chat': {
+    promptPricePer1M: 0.14,
+    completionPricePer1M: 0.28,
+    isFree: false,
+  },
+  'moonshotai/kimi-k2.6': {
+    promptPricePer1M: 0.39,
+    completionPricePer1M: 1.64,
+    isFree: false,
+  },
+  'mistralai/mistral-large': {
+    promptPricePer1M: 2.00,
+    completionPricePer1M: 6.00,
     isFree: false,
   },
   'anthropic/claude-3.5-sonnet': {
@@ -59,19 +74,9 @@ export const MODEL_PRICING_TABLE: Record<string, ModelPricing> = {
     completionPricePer1M: 1.25,
     isFree: false,
   },
-  'mistralai/mistral-large': {
-    promptPricePer1M: 2.00,
-    completionPricePer1M: 6.00,
-    isFree: false,
-  },
   'mistralai/mistral-small': {
     promptPricePer1M: 0.20,
     completionPricePer1M: 0.60,
-    isFree: false,
-  },
-  'deepseek/deepseek-chat': {
-    promptPricePer1M: 0.14,
-    completionPricePer1M: 0.28,
     isFree: false,
   },
 };

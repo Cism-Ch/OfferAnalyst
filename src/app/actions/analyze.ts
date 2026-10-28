@@ -121,12 +121,14 @@ export async function analyzeOffersAction(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: modelName,
-            messages: [
-                { role: "system", content: systemInstruction },
-                { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}: ${JSON.stringify(simplifiedOffers)}` }
-            ],
-            responseFormat: { type: "json_object" }
+            chatRequest: {
+                model: modelName,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `Analyze these ${simplifiedOffers.length} offers and rank top ${limit}: ${JSON.stringify(simplifiedOffers)}` }
+                ],
+                responseFormat: { type: "json_object" }
+            }
         });
 
         if (response?.usage) {

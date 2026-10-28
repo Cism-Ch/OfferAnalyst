@@ -15,12 +15,18 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │   🔴 SPRINT 6 (ACTIF)   │  │    🟢 BACKLOG FUTUR     │  │       ✅ TERMINÉ        │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-AI-01          │
-│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │     (FinOps & Health AI)│
-│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-BRAND-02       │
-│     (Stripe Billing)    │  │     Automatisées        │  │     (Lisibilité Logo/Th)│
-│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-BRAND-01       │
-│     (Realtime Collab)   │  │                         │  │     (Offan, Emojis, UI) │
+│ [ ] TASK-GROWTH-01      │  │ [ ] App Mobile (React   │  │ [x] TASK-AI-06          │
+│     (Chrome Ext. MV3)   │  │     Native / Expo)      │  │     (Sélecteur Global)  │
+│ [ ] TASK-GROWTH-02      │  │ [ ] Alertes Scraping    │  │ [x] TASK-AI-05          │
+│     (Stripe Billing)    │  │     Automatisées        │  │     (Suivi LLM & Err.)  │
+│ [ ] TASK-GROWTH-03      │  │ [ ] Multi-tenant Org    │  │ [x] TASK-AI-04          │
+│     (Realtime Collab)   │  │                         │  │     (Gemini 3.5 & BYOK) │
+│                         │  │                         │  │ [x] TASK-AI-03          │
+│                         │  │                         │  │     (Nemotron 3.5 Light)│
+│                         │  │                         │  │ [x] TASK-BRAND-02       │
+│                         │  │                         │  │     (Lisibilité Logo/Th)│
+│                         │  │                         │  │ [x] TASK-BRAND-01       │
+│                         │  │                         │  │     (Offan, Emojis, UI) │
 │                         │  │                         │  │ [x] TASK-THEME-01       │
 │                         │  │                         │  │     (Audit & Fix Thèmes)│
 │                         │  │                         │  │ [x] TASK-UX-01 (UI/UX)  │
@@ -36,6 +42,55 @@
 
 ### 📊 Observabilité FinOps, Télémétrie Tokens & Diagnostic de Santé des Modèles
 > 📄 **Rapport d'Audit Télémétrie :** [Consulter le Rapport d'Audit & Télémétrie IA (AUDIT_TELEMETRIE_AI_2026-10-26.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_TELEMETRIE_AI_2026-10-26.md)
+
+- [x] **`TASK-AI-06` — Sélecteur de Modèle Universel (Toutes Pages) & Clarification BYOK / Passerelle OpenRouter**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/components/layout/AIModelSelector.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernLayout.tsx`, `src/components/layout/SimpleLayout.tsx`, `src/components/api-keys/AddAPIKeyDialog.tsx`, `src/contexts/AnalysisContext.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AI-06.01` : Composant autonome `AIModelSelector.tsx` connecté au singleton `AnalysisContext` avec filtres et redirection BYOK.
+    - [x] `TASK-AI-06.02` : `ModernHeader.tsx` et `ModernLayout.tsx` fiabilisés pour afficher systématiquement le header avec le sélecteur de modèle sur toutes les pages.
+    - [x] `TASK-AI-06.03` : Intégration du sélecteur de modèle dans la barre supérieure de `SimpleLayout.tsx` (`/search-context`, `/data-source`, `/analysis`).
+    - [x] `TASK-AI-06.04` : Bannière explicative dans `AddAPIKeyDialog.tsx` clarifiant le rôle de la clé OpenRouter universelle vs clés spécifiques.
+    - [x] `TASK-AI-06.05` : Résolution intelligente de `clientKey` dans `AnalysisContext.tsx` couvrant `openrouter` et les providers spécifiques.
+    - [x] `TASK-AI-06.06` : Validation déterministe stricte (`npx tsc --noEmit` & `db_schema_validator.py` validés à 0 erreur).
+
+- [x] **`TASK-AI-05` — Signalement d'Erreur Transparent, Suivi Temps Réel de l'État du Modèle LLM & Diagnostic Actionnable**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/types/index.ts`, `src/app/actions/shared/agent-utils.ts`, `src/contexts/AnalysisContext.tsx`, `src/components/offers/LiveAIStatusIndicator.tsx`, `src/components/offers/ProviderErrorPanel.tsx`, `src/app/analysis/page.tsx`, `src/app/data-source/page.tsx`, `src/app/layout.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AI-05.01` : Typage standardisé pour `LLMProgressState` et codes d'erreur granulaires (`src/types/index.ts`).
+    - [x] `TASK-AI-05.02` : Détection et traduction en français clair des causes d'erreur OpenRouter (401, 402, 429, 503, timeout) avec remèdes (`agent-utils.ts`).
+    - [x] `TASK-AI-05.03` : `AnalysisContext` global singleton pour partager la progression, chrono et résultats sans perte de contexte inter-pages.
+    - [x] `TASK-AI-05.04` : Composants `LiveAIStatusIndicator` et `ProviderErrorPanel` avec remèdes en 1 clic.
+    - [x] `TASK-AI-05.05` : Intégration sur `/analysis` et `/data-source` avec skeletons actifs et diagnostic.
+    - [x] `TASK-AI-05.06` : Validation déterministe stricte (`npx tsc --noEmit` & `db_schema_validator.py`).
+
+- [x] **`TASK-AI-04` — Modernisation du Registre IA : Gemini 3.5 Flash Lite par Défaut, Nemotron, Modèles Flagship Récents & Redirection BYOK**
+  - **Priorité :** 🟡 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `src/lib/ai-pricing.ts`, `src/components/layout/ModernHeader.tsx`, `src/components/api-keys/AddAPIKeyDialog.tsx`, `src/app/dashboard/api-keys/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AI-04.01` : Registre `AI_MODEL_OPTIONS` modernisé avec Gemini 3.5 Flash Lite, Nemotron 3.5, Claude 3.7, GPT-4o, o3-mini, DeepSeek R1/V3, Kimi 2.6, Mistral.
+    - [x] `TASK-AI-04.02` : Tarifs synchronisés dans `MODEL_PRICING_TABLE` (`src/lib/ai-pricing.ts`).
+    - [x] `TASK-AI-04.03` : Redirection automatique vers `/dashboard/api-keys?action=add&provider=...` au clic sur un modèle Pro.
+    - [x] `TASK-AI-04.04` : Détection de `action=add` dans `api-keys/page.tsx` pour ouvrir immédiatement le dialogue d'ajout.
+    - [x] `TASK-AI-04.05` : Validation déterministe stricte (`npx tsc --noEmit` & `db_schema_validator.py`).
+
+- [x] **`TASK-AI-03` — Intégration du Modèle NVIDIA Nemotron 3.5 Lightning (Free) dans le Registre IA & Pricing Engine**
+  - **Priorité :** 🟡 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `src/lib/ai-pricing.ts`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AI-03.01` : Enregistrer `nvidia/nemotron-3.5-lightning:free` dans `AI_MODEL_OPTIONS` avec métadonnées complètes (1M context, tier free, fast latency).
+    - [x] `TASK-AI-03.02` : Enregistrer le modèle dans `MODEL_PRICING_TABLE` (`ai-pricing.ts`) avec tarification 0$.
+    - [x] `TASK-AI-03.03` : Validation déterministe (`npx tsc --noEmit` & `db_schema_validator.py`).
+
+- [x] **`TASK-AI-02` — Harmonisation Typage & Encapsulation Payload OpenRouter SDK v1.5+ sur les Server Actions**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `src/app/actions/analyze.ts`, `src/app/actions/analyzeV2.ts`, `src/app/actions/fetch.ts`, `src/app/actions/fetchV2.ts`, `src/app/actions/organize.ts`, `src/app/actions/organizeV2.ts`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AI-02.01` : Encapsuler la payload dans l'objet `chatRequest` pour `openrouter.chat.send()` dans `analyzeV2.ts` et `analyze.ts`.
+    - [x] `TASK-AI-02.02` : Encapsuler la payload dans `chatRequest` pour `fetch.ts` et `fetchV2.ts`.
+    - [x] `TASK-AI-02.03` : Encapsuler la payload dans `chatRequest` pour `organize.ts` et `organizeV2.ts`.
+    - [x] `TASK-AI-02.04` : Vérification déterministe stricte (`npx tsc --noEmit` validé à 0 erreur).
 
 - [x] **`TASK-AI-01` — Observabilité FinOps, Télémétrie Tokens en Temps Réel & Diagnostic de Santé des Clés/Modèles**
   - **Priorité :** 🔴 CRITIQUE
@@ -165,6 +220,11 @@ Pour préserver la compacité et la clarté du document SSOT, les tâches antér
 
 | Date | ID | Intitulé & Description | Livrables / PR |
 | :--- | :--- | :--- | :--- |
+| **2026-10-28** | `TASK-AI-06` | Sélecteur de Modèle Universel (Toutes Pages) & Clarification Pédagogique Passerelle OpenRouter | AIModelSelector.tsx, ModernHeader, ModernLayout, SimpleLayout, AddAPIKeyDialog, AnalysisContext |
+| **2026-10-28** | `TASK-AI-05` | Suivi Visuel Live du LLM (Chrono, Étapes) & Centre de Diagnostic d'Erreur avec Remèdes 1-Clic | types/index.ts, agent-utils.ts, AnalysisContext, LiveAIStatusIndicator, ProviderErrorPanel, layout.tsx, analysis/page |
+| **2026-10-28** | `TASK-AI-04` | Registre IA Flagships Récents (Gemini 3.5, Nemotron, Claude 3.7, GPT-4o, R1, Kimi) & Redirection BYOK | ai-models.ts, ai-pricing.ts, ModernHeader, AddAPIKeyDialog, api-keys/page |
+| **2026-10-28** | `TASK-AI-03` | Intégration Modèle NVIDIA Nemotron 3.5 Lightning (Free) | ai-models.ts, ai-pricing.ts |
+| **2026-10-27** | `TASK-AI-02` | Harmonisation Typage & Encapsulation Payload OpenRouter SDK v1.5+ sur Server Actions | analyze.ts, analyzeV2.ts, fetch.ts, fetchV2.ts, organize.ts, organizeV2.ts |
 | **2026-10-26** | `TASK-AI-01` | Observabilité FinOps, Télémétrie Tokens en Temps Réel & Diagnostic Santé Clés | [Rapport Télémétrie](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_TELEMETRIE_AI_2026-10-26.md), openrouter-telemetry, ai-pricing, BYOK & Admin |
 | **2026-10-26** | `TASK-BRAND-02` | Perfectionnement Cercles de Thème (Noir/Blanc) & Lisibilité Logo Offan | theme-selector.tsx, OffanBrand.tsx, ModernSidebar.tsx |
 | **2026-10-26** | `TASK-BRAND-01` | Identité de Marque 'Offan', Élimination Emojis OS & Refonte Sélecteurs | [Rapport Brand & UI](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_EMOJI_BRAND_2026-10-26.md), OffanBrand.tsx, theme-selector, ModernHeader |

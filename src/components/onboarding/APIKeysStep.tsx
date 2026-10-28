@@ -27,9 +27,9 @@ export default function APIKeysStep({ hasOwnKeys, apiKeys, onChange, onNext }: A
   const [customKeys, setCustomKeys] = useState<Array<{ provider: string; key: string }>>([]);
 
   const integratedProviders = [
-    { name: "OpenRouter", status: "active", model: "GPT-4o Mini" },
-    { name: "Google Gemini", status: "active", model: "Gemini 2.5 Flash" },
-    { name: "DeepSeek", status: "active", model: "DeepSeek R1 (Free)" },
+    { name: "Google Gemini", status: "active", model: "Gemini 3.5 Flash Lite (Inclus)" },
+    { name: "NVIDIA", status: "active", model: "Nemotron 3.5 Lightning (Gratuit)" },
+    { name: "OpenRouter / BYOK", status: "active", model: "Claude 3.7, GPT-4o, DeepSeek R1, Kimi" },
   ];
 
   const handleAddCustomKey = () => {

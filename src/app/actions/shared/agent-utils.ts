@@ -150,27 +150,153 @@ export function toAgentActionError(
   context: string,
   fallbackCode: AgentErrorCode = 'OPENROUTER_ERROR'
 ): AgentActionError {
+  let message = 'Une erreur inattendue est survenue lors de l\'opération.';
+  let code: AgentErrorCode | string = fallbackCode;
+  let raw: string | undefined;
+
   if (error instanceof AgentError) {
-    return {
-      message: error.message,
-      code: error.code,
-      context
-    };
+    message = error.message;
+    code = error.code;
+  } else if (error instanceof Error) {
+    message = error.message;
+    raw = error.stack;
+  } else if (typeof error === 'string') {
+    message = error;
+    raw = error;
   }
 
-  if (error instanceof Error) {
+  const rawLower = (message + ' ' + (raw || '')).toLowerCase();
+
+  // 1. Détection 401 Unauthorized / Clé API invalide ou absente
+  if (
+    rawLower.includes('401') ||
+    rawLower.includes('unauthorized') ||
+    rawLower.includes('invalid api key') ||
+    rawLower.includes('user key') ||
+    code === 'API_KEY_MISSING' ||
+    code === 'API_KEY_EXPIRED'
+  ) {
     return {
-      message: error.message,
-      code: fallbackCode,
+      code: 'API_KEY_INVALID',
+      message: 'Clé API invalide, expirée ou non autorisée pour ce modèle. Veuillez renseigner votre clé dans les paramètres.',
       context,
-      raw: error.stack
+      raw,
+      httpStatus: 401,
+      remedy: {
+        type: 'configure_api_key',
+        label: 'Configurer ma clé API',
+        targetUrl: '/dashboard/api-keys?action=add'
+      }
     };
   }
 
+  // 2. Détection 402 Solde/Crédits insuffisants
+  if (
+    rawLower.includes('402') ||
+    rawLower.includes('insufficient') ||
+    rawLower.includes('payment required') ||
+    rawLower.includes('credit balance') ||
+    rawLower.includes('quota exceeded')
+  ) {
+    return {
+      code: 'INSUFFICIENT_CREDITS',
+      message: 'Crédits OpenRouter insuffisants pour utiliser ce modèle payant. Vous pouvez basculer gratuitement sur Gemini 3.5 Flash Lite ou recharger votre solde.',
+      context,
+      raw,
+      httpStatus: 402,
+      remedy: {
+        type: 'switch_to_free',
+        label: 'Basculer sur Gemini 3.5 Flash Lite (Inclus)',
+        suggestedModel: 'google/gemini-3.5-flash-lite'
+      }
+    };
+  }
+
+  // 3. Détection 429 Rate Limited / Trop de requêtes
+  if (
+    rawLower.includes('429') ||
+    rawLower.includes('rate limit') ||
+    rawLower.includes('too many requests')
+  ) {
+    return {
+      code: 'RATE_LIMITED',
+      message: 'Limite de requêtes atteinte (Rate Limit) sur ce modèle. Veuillez patienter quelques secondes avant de relancer.',
+      context,
+      raw,
+      httpStatus: 429,
+      remedy: {
+        type: 'retry',
+        label: 'Réessayer dans 15 secondes'
+      }
+    };
+  }
+
+  // 4. Détection 502/503/504 Modèle surchargé ou en panne côté provider
+  if (
+    rawLower.includes('502') ||
+    rawLower.includes('503') ||
+    rawLower.includes('504') ||
+    rawLower.includes('overloaded') ||
+    rawLower.includes('bad gateway') ||
+    rawLower.includes('service unavailable')
+  ) {
+    return {
+      code: 'MODEL_OVERLOADED',
+      message: 'Le fournisseur de ce modèle IA rencontre une surcharge ou une panne temporaire. Veuillez réessayer ou choisir un autre modèle.',
+      context,
+      raw,
+      httpStatus: 503,
+      remedy: {
+        type: 'switch_model',
+        label: 'Basculer sur NVIDIA Nemotron ou Gemini',
+        suggestedModel: 'google/gemini-3.5-flash-lite'
+      }
+    };
+  }
+
+  // 5. Détection Timeout / Déconnexion réseau
+  if (
+    rawLower.includes('etimedout') ||
+    rawLower.includes('econnreset') ||
+    rawLower.includes('timeout') ||
+    rawLower.includes('fetch failed') ||
+    rawLower.includes('abort')
+  ) {
+    return {
+      code: 'TIMEOUT',
+      message: 'Délai d\'attente dépassé : le modèle IA n\'a pas répondu dans le temps alloué. Vérifiez votre connexion ou réessayez.',
+      context,
+      raw,
+      remedy: {
+        type: 'retry',
+        label: 'Relancer l\'analyse'
+      }
+    };
+  }
+
+  // 6. Détection Erreur de formatage JSON
+  if (code === 'INVALID_JSON' || rawLower.includes('json')) {
+    return {
+      code: 'INVALID_JSON',
+      message: 'Le modèle a répondu mais la structure de données n\'a pas pu être validée au format structuré attendu.',
+      context,
+      raw,
+      remedy: {
+        type: 'retry',
+        label: 'Relancer l\'analyse'
+      }
+    };
+  }
+
+  // Fallback avec message explicite
   return {
-    message: 'Unknown error occurred',
-    code: fallbackCode,
+    code,
+    message: message || 'Une anomalie s\'est produite pendant l\'exécution de l\'agent IA.',
     context,
-    raw: typeof error === 'string' ? error : JSON.stringify(error)
+    raw,
+    remedy: {
+      type: 'retry',
+      label: 'Réessayer'
+    }
   };
 }

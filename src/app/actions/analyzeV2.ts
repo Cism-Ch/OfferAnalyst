@@ -169,12 +169,14 @@ export async function analyzeOffersActionV2(
 
     const operation = async () => {
         const response = await openrouter.chat.send({
-            model: modelName,
-            messages: [
-                { role: "system", content: systemInstruction },
-                { role: "user", content: `Analyze these ${simplifiedOffers.length} offers with custom weighting and rank top ${limit}. Use ${language.toUpperCase()} language: ${JSON.stringify(simplifiedOffers)}` }
-            ],
-            responseFormat: { type: "json_object" }
+            chatRequest: {
+                model: modelName,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `Analyze these ${simplifiedOffers.length} offers with custom weighting and rank top ${limit}. Use ${language.toUpperCase()} language: ${JSON.stringify(simplifiedOffers)}` }
+                ],
+                responseFormat: { type: "json_object" }
+            }
         });
 
         const content = response.choices[0]?.message?.content;
