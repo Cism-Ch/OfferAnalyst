@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 28 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 11 Achevé (Fiabilisation Ultime du Fetch AI & Résolution Erreur Validation) — Sprints 1 à 11 Archivés
+**Statut Global :** Sprint 13 Actif (Bilinguisme Exhaustif & Traduction Totale de l'Interface FR/EN) — Sprints 1 à 12 Archivés
 
 ---
 
@@ -13,27 +13,61 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│  🔄 SPRINT ACTIF        │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│  🔄 SPRINT 13 ACTIF     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] En attente cadrage  │  │ [ ] SPRINT 12 (Core V2) │  │     - Sprint 11 (5)     │
-│                         │  │                         │  │     - Sprint 10 (4)     │
-│                         │  │                         │  │     - Sprint 9 (5)      │
-│                         │  │                         │  │     - Sprint 8 (4)      │
-│                         │  │                         │  │     - Sprints 1-7 (All) │
+│ [-] TASK-I18N-01 (Dict) │  │ [ ] SPRINT 14 (Export)  │  │     - Sprint 12 (4)     │
+│ [-] TASK-I18N-02 (Shell)│  │                         │  │     - Sprint 11 (5)     │
+│ [-] TASK-I18N-03 (Core) │  │                         │  │     - Sprint 10 (4)     │
+│ [-] TASK-I18N-04 (Extra)│  │                         │  │     - Sprint 9 (5)      │
+│ [-] TASK-I18N-05 (Eval) │  │                         │  │     - Sprints 1-8 (All) │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Aucun (Prêt pour Sprint 12 ou Nouvelle Orientation)
+## 🚀 Sprint Actif : Sprint 13 — Bilinguisme Exhaustif & Traduction Totale de l'Interface (FR / EN)
 
-*Toutes les tâches du Sprint 11 sont validées à 100% avec le Juge Déterministe (`eval:quick` PASS 100/100, 0 erreur TypeScript, 0 warning ESLint, handler Better-Auth opérationnel HTTP 200).*
+- [-] **`TASK-I18N-01` — Enrichissement Exhaustif du Dictionnaire Global (`LanguageContext.tsx`)**
+  - **Priorité :** 🔴 CRITIQUE (Fondation)
+  - **Fichiers cibles :** [`src/contexts/LanguageContext.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/contexts/LanguageContext.tsx)
+  - **Critères d'acceptation :**
+    - [ ] `TASK-I18N-01.01` : Ajouter les entrées FR/EN pour toutes les pages : Accueil/Workflow, Search Context, Data Source, Saved Offers, Comparateur, Layout et Breadcrumbs.
+
+- [-] **`TASK-I18N-02` — Internationalisation du Shell Applicatif (`ModernSidebar.tsx` & `ModernHeader.tsx`)**
+  - **Priorité :** 🔴 CRITIQUE (Navigation Globale)
+  - **Fichiers cibles :** [`src/components/layout/ModernSidebar.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/components/layout/ModernSidebar.tsx), [`src/components/layout/ModernHeader.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/components/layout/ModernHeader.tsx)
+  - **Critères d'acceptation :**
+    - [ ] `TASK-I18N-02.01` : Dynamiser tous les items de navigation de la sidebar via le dictionnaire actif (`t.nav.*`).
+    - [ ] `TASK-I18N-02.02` : Adapter les titres, descriptions et fils d'Ariane (breadcrumbs) du header selon la langue active.
+
+- [-] **`TASK-I18N-03` — Bilinguisme des Pages du Parcours Principal (`Home`, `SearchContext`, `DataSource`)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** [`src/app/page.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/page.tsx), [`src/app/search-context/page.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/search-context/page.tsx), [`src/app/data-source/page.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/data-source/page.tsx)
+  - **Critères d'acceptation :**
+    - [ ] `TASK-I18N-03.01` : Remplacer les textes anglais en dur sur la page d'accueil (titres de bienvenue, étapes 1-2-3, cartes de fonctionnalités, boutons).
+    - [ ] `TASK-I18N-03.02` : Remplacer les textes anglais en dur sur `search-context/page.tsx` (bannières, libellés, placeholders, presets bilingues).
+    - [ ] `TASK-I18N-03.03` : Remplacer les textes anglais en dur sur `data-source/page.tsx` (options de scraping auto, saisie JSON, boutons d'action).
+
+- [-] **`TASK-I18N-04` — Bilinguisme des Modules Complémentaires (`SavedOffersPage`, `ComparePage`)**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** [`src/app/saved/page.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/saved/page.tsx), [`src/app/compare/page.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/app/compare/page.tsx)
+  - **Critères d'acceptation :**
+    - [ ] `TASK-I18N-04.01` : Dynamiser les boutons d'actions groupées, sélections, onglets et états vides dans `saved/page.tsx`.
+    - [ ] `TASK-I18N-04.02` : Dynamiser les colonnes de comparaison, métriques et libellés dans `compare/page.tsx`.
+
+- [-] **`TASK-I18N-05` — Validation Déterministe & Zéro Régression**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** [`evals/run_fullstack_eval.py`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/evals/run_fullstack_eval.py)
+  - **Critères d'acceptation :**
+    - [ ] `TASK-I18N-05.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript, 0 warning ESLint).
+    - [ ] `TASK-I18N-05.02` : Vérification du basculement instantané 1-clic FR ↔ EN sans rechargement de page.
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 12 (TASKS_HISTORY_S12_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S12_COMPLETED.md)** — 4 tâches (Modal Détaillé Plein Écran, Redesign Lumineux OfferCard, Layout 12 Cols, Bascule Grille/Liste).
 - 👉 **[Consulter l'Archive Complète du Sprint 11 (TASKS_HISTORY_S11_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S11_COMPLETED.md)** — 5 tâches (Résolution Erreur Validation Fetch, Extraction Universelle, Better-Auth 503 Fix).
 - 👉 **[Consulter l'Archive Complète du Sprint 10 (TASKS_HISTORY_S10_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S10_COMPLETED.md)** — 4 tâches (Bilinguisme FR/EN, Alert).
 - 👉 **[Consulter l'Archive Complète du Sprint 9 (TASKS_HISTORY_S9_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S9_COMPLETED.md)** — 5 tâches (Transparence IA, Multi-thèmes, Zéro-warning).

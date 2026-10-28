@@ -3,7 +3,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { BarChart3 } from "lucide-react";
 import { ScoredOffer } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * ScoreChart Component Props
@@ -16,33 +18,27 @@ interface ScoreChartProps {
 /**
  * ScoreChart Component
  * 
- * Visualizes the score distribution of analyzed offers using a bar chart.
- * Each bar represents an offer with its final AI-generated score.
- * 
- * This component uses Recharts library for data visualization and provides
- * an interactive tooltip on hover.
- * 
- * Features:
- * - Responsive chart that adapts to container size
- * - Custom styling matching the application theme
- * - Interactive tooltips
- * - Accessible axis labels
- * 
- * @param {ScoreChartProps} props - Component props
- * @returns {JSX.Element|null} The score distribution chart, or null if no offers
+ * Visualizes the score distribution of analyzed offers using a responsive bar chart.
  */
 export function ScoreChart({ offers }: ScoreChartProps) {
+    const { language } = useLanguage();
+
     // Don't render if no offers
     if (!offers || offers.length === 0) {
         return null;
     }
 
+    const chartTitle = language === 'fr' ? 'Distribution des Scores' : 'Score Distribution';
+
     return (
-        <Card className="border-none shadow-sm">
-            <CardHeader>
-                <CardTitle>Score Distribution</CardTitle>
+        <Card className="border border-border/80 bg-card shadow-xs rounded-xl overflow-hidden">
+            <CardHeader className="p-4 sm:p-5 pb-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    {chartTitle}
+                </CardTitle>
             </CardHeader>
-            <CardContent className="h-[220px] p-2 sm:p-6">
+            <CardContent className="h-[220px] p-2 sm:p-5 pt-0">
                 <ResponsiveContainer width="100%" height={180}>
                     <BarChart 
                         data={offers} 

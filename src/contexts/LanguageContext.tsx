@@ -51,7 +51,7 @@ export const translations = {
       btnAnalyzing: "Analyse & Classement IA...",
       btnRun: "Lancer l'Analyse IA",
     },
-    // Offer Card
+    // Offer Card & Detail Modal
     offer: {
       relevance: "Pertinence",
       quality: "Qualité",
@@ -61,6 +61,19 @@ export const translations = {
       saved: "Sauvegardé",
       alreadySaved: "Offre déjà sauvegardée",
       saveThisOffer: "Sauvegarder cette offre",
+      viewDetails: "Voir les détails",
+      close: "Fermer",
+      scoreBreakdown: "Décomposition du Score IA",
+      aiJustification: "Justification de l'analyse IA",
+      allWebInsights: "Signaux & Insights Web Explorés",
+      fullDescription: "Description Complète de l'Offre",
+      externalSource: "Consulter l'offre source",
+      noSourceUrl: "Lien direct non fourni",
+      rankBadge: "Rang",
+      location: "Localisation",
+      category: "Catégorie",
+      price: "Prix estimé / affiché",
+      keyHighlights: "Indicateurs clés",
     },
     // Results Section
     results: {
@@ -70,6 +83,9 @@ export const translations = {
       sourcesCount: "source(s) consultée(s)",
       noResults: "Aucun résultat d'analyse disponible. Lancez une analyse ci-dessus.",
       emptyDescription: "Configurez vos critères et lancez la recherche pour voir le classement personnalisé.",
+      viewGrid: "Grille",
+      viewList: "Liste",
+      displayMode: "Affichage",
     },
     // Errors
     errors: {
@@ -124,7 +140,7 @@ export const translations = {
       btnAnalyzing: "AI Ranking & Scoring...",
       btnRun: "Run AI Analysis",
     },
-    // Offer Card
+    // Offer Card & Detail Modal
     offer: {
       relevance: "Relevance",
       quality: "Quality",
@@ -134,6 +150,19 @@ export const translations = {
       saved: "Saved",
       alreadySaved: "Offer already saved",
       saveThisOffer: "Save this offer",
+      viewDetails: "View Details",
+      close: "Close",
+      scoreBreakdown: "AI Score Breakdown",
+      aiJustification: "AI Analysis Justification",
+      allWebInsights: "Explored Web Insights & Signals",
+      fullDescription: "Full Offer Description",
+      externalSource: "Open Original Listing",
+      noSourceUrl: "Direct link not provided",
+      rankBadge: "Rank",
+      location: "Location",
+      category: "Category",
+      price: "Estimated / Listed Price",
+      keyHighlights: "Key Highlights",
     },
     // Results Section
     results: {
@@ -143,6 +172,9 @@ export const translations = {
       sourcesCount: "source(s) consulted",
       noResults: "No analysis results available yet. Run an analysis above.",
       emptyDescription: "Set your criteria and run analysis to view personalized AI rankings.",
+      viewGrid: "Grid",
+      viewList: "List",
+      displayMode: "Display",
     },
     // Errors
     errors: {
