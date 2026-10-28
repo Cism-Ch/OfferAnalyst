@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     // Mark user email as verified
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerified: new Date() },
+      data: { emailVerified: true },
     });
 
     // Invalidate the single-use token
