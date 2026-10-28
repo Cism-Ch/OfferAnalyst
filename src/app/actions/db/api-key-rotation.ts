@@ -10,12 +10,25 @@ import { prisma } from '@/lib/prisma';
 import { encryptAPIKey } from '@/lib/api-key-encryption';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
+
+async function getAuthenticatedUserId(): Promise<string | null> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return session?.user?.id || null;
+    } catch {
+        return null;
+    }
+}
 
 export interface KeyRotationResult {
     success: boolean;
     message: string;
     newKeyId?: string;
     oldKeyId?: string;
+    error?: string;
 }
 
 /**
@@ -28,18 +41,15 @@ export async function rotateAPIKey(
     autoDeleteOld: boolean = false
 ): Promise<KeyRotationResult> {
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        });
+        const userId = await getAuthenticatedUserId();
 
-        if (!session?.user?.id) {
+        if (!userId) {
             return {
                 success: false,
-                message: 'Unauthorized: Authentication required'
+                message: 'Unauthorized: Authentication required',
+                error: 'Unauthorized: Authentication required'
             };
         }
-
-        const userId = session.user.id;
 
         // Get the old key details
         const oldKey = await prisma.aPIKey.findFirst({
@@ -52,7 +62,8 @@ export async function rotateAPIKey(
         if (!oldKey) {
             return {
                 success: false,
-                message: 'Old API key not found'
+                message: 'Old API key not found',
+                error: 'Old API key not found'
             };
         }
 
@@ -93,22 +104,7 @@ export async function rotateAPIKey(
             });
         }
 
-        // Send notification
-        try {
-            const user = await prisma.user.findUnique({
-                where: { id: userId },
-                select: { email: true }
-            });
-
-            if (user?.email) {
-                // TODO: Send rotation confirmation email
-                if (process.env.NODE_ENV === 'development') {
-                    console.log(`📧 Key rotation notification would be sent to ${user.email}`);
-                }
-            }
-        } catch (emailError) {
-            console.error('Error sending rotation notification:', emailError);
-        }
+        revalidatePath('/dashboard/api-keys');
 
         return {
             success: true,
@@ -120,7 +116,8 @@ export async function rotateAPIKey(
         console.error('Error rotating API key:', error);
         return {
             success: false,
-            message: 'Failed to rotate API key'
+            message: 'Failed to rotate API key',
+            error: 'Failed to rotate API key'
         };
     }
 }
@@ -129,10 +126,19 @@ export async function rotateAPIKey(
  * Set a key as primary for its provider
  */
 export async function setPrimaryKey(
-    userId: string,
+    providedUserId: string,
     keyId: string
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; error?: string }> {
     try {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+            return {
+                success: false,
+                message: 'Unauthorized: Authentication required',
+                error: 'Unauthorized: Authentication required'
+            };
+        }
+
         // Get the key to set as primary
         const key = await prisma.aPIKey.findFirst({
             where: {
@@ -145,7 +151,8 @@ export async function setPrimaryKey(
         if (!key) {
             return {
                 success: false,
-                message: 'API key not found'
+                message: 'API key not found',
+                error: 'API key not found'
             };
         }
 
@@ -169,6 +176,8 @@ export async function setPrimaryKey(
             }
         });
 
+        revalidatePath('/dashboard/api-keys');
+
         return {
             success: true,
             message: 'Primary key updated successfully'
@@ -177,7 +186,8 @@ export async function setPrimaryKey(
         console.error('Error setting primary key:', error);
         return {
             success: false,
-            message: 'Failed to set primary key'
+            message: 'Failed to set primary key',
+            error: 'Failed to set primary key'
         };
     }
 }
@@ -186,11 +196,20 @@ export async function setPrimaryKey(
  * Update key priority
  */
 export async function updateKeyPriority(
-    userId: string,
+    providedUserId: string,
     keyId: string,
     priority: number
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; error?: string }> {
     try {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+            return {
+                success: false,
+                message: 'Unauthorized: Authentication required',
+                error: 'Unauthorized: Authentication required'
+            };
+        }
+
         await prisma.aPIKey.updateMany({
             where: {
                 id: keyId,
@@ -201,6 +220,8 @@ export async function updateKeyPriority(
             }
         });
 
+        revalidatePath('/dashboard/api-keys');
+
         return {
             success: true,
             message: 'Key priority updated successfully'
@@ -209,7 +230,8 @@ export async function updateKeyPriority(
         console.error('Error updating key priority:', error);
         return {
             success: false,
-            message: 'Failed to update key priority'
+            message: 'Failed to update key priority',
+            error: 'Failed to update key priority'
         };
     }
 }
@@ -217,13 +239,19 @@ export async function updateKeyPriority(
 /**
  * Check for keys that need rotation (older than 90 days)
  */
-export async function getKeysNeedingRotation(userId: string): Promise<{
+export async function getKeysNeedingRotation(providedUserId: string): Promise<{
     id: string;
     name: string;
     provider: string;
     daysSinceCreation: number;
 }[]> {
+    void providedUserId;
     try {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+            return [];
+        }
+
         const ninetyDaysAgo = new Date();
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
@@ -258,7 +286,7 @@ export async function getKeysNeedingRotation(userId: string): Promise<{
  * Get key rotation history
  */
 export async function getKeyRotationHistory(
-    userId: string,
+    providedUserId: string,
     provider?: string
 ): Promise<{
     id: string;
@@ -269,6 +297,11 @@ export async function getKeyRotationHistory(
     isPrimary: boolean;
 }[]> {
     try {
+        const userId = await getAuthenticatedUserId();
+        if (!userId) {
+            return [];
+        }
+
         const whereClause: {
             userId: string;
             provider?: string;
@@ -281,7 +314,6 @@ export async function getKeyRotationHistory(
             whereClause.provider = provider;
         }
 
-        // Get all keys including rotated ones (containing "Rotated" or "Deprecated" in name)
         const keys = await prisma.aPIKey.findMany({
             where: whereClause,
             orderBy: {

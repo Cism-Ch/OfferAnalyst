@@ -10,6 +10,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { calculateTokenCostUSD } from '@/lib/ai-pricing';
 
 export interface APIKeyAnalytics {
     totalRequests: number;
@@ -45,7 +46,16 @@ async function getAuthenticatedUserId(): Promise<string | null> {
     }
 }
 
-import { calculateTokenCostUSD } from '@/lib/ai-pricing';
+async function ensureAdminSession(): Promise<boolean> {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        return !!(session?.user && (session.user as { role?: string }).role === 'ADMIN');
+    } catch {
+        return false;
+    }
+}
 
 /**
  * Log API key usage with FinOps token telemetry and cost accounting
@@ -125,7 +135,6 @@ export async function logAPIKeyUsage(
         }
     } catch (error) {
         console.error('Error logging API key usage:', error);
-        // Don't throw - logging failures shouldn't break main operations
     }
 }
 
@@ -326,7 +335,6 @@ export async function checkForSuspiciousActivity(
         const last24Hours = new Date();
         last24Hours.setHours(last24Hours.getHours() - 24);
 
-        // Get recent usage
         const recentUsage = await prisma.aPIKeyUsageLog.count({
             where: {
                 userId,
@@ -335,13 +343,11 @@ export async function checkForSuspiciousActivity(
             }
         });
 
-        // Get the rate limit for this key
         const apiKey = await prisma.aPIKey.findUnique({
             where: { id: apiKeyId },
             select: { rateLimit: true, name: true }
         });
 
-        // Check if rate limit is exceeded
         if (apiKey?.rateLimit && recentUsage > apiKey.rateLimit * 24) {
             await createSecurityAlert(
                 userId,
@@ -352,7 +358,6 @@ export async function checkForSuspiciousActivity(
             );
         }
 
-        // Check for unusual activity patterns
         const failedRequests = await prisma.aPIKeyUsageLog.count({
             where: {
                 userId,
@@ -388,7 +393,6 @@ async function createSecurityAlert(
     metadata?: object
 ): Promise<void> {
     try {
-        // Check if similar alert already exists and is unresolved
         const existingAlert = await prisma.securityAlert.findFirst({
             where: {
                 userId,
@@ -396,7 +400,7 @@ async function createSecurityAlert(
                 alertType,
                 isResolved: false,
                 createdAt: {
-                    gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+                    gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
                 }
             }
         });
@@ -413,7 +417,6 @@ async function createSecurityAlert(
                 }
             });
 
-            // Send email notification for high and critical severity alerts
             if (severity === 'high' || severity === 'critical') {
                 try {
                     const user = await prisma.user.findUnique({
@@ -438,7 +441,6 @@ async function createSecurityAlert(
                     }
                 } catch (emailError) {
                     console.error('Error sending email notification:', emailError);
-                    // Don't fail alert creation if email fails
                 }
             }
         }
@@ -487,10 +489,28 @@ export interface AdminTelemetryStats {
 }
 
 /**
- * Get aggregated FinOps and model telemetry for the Admin Observatory
+ * Get aggregated FinOps and model telemetry for the Admin Observatory (Admin only)
  */
 export async function getAdminTelemetryStats(): Promise<AdminTelemetryStats> {
     try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) {
+            return {
+                totalRequests: 0,
+                successfulRequests: 0,
+                failedRequests: 0,
+                successRate: 100,
+                totalTokens: 0,
+                totalPromptTokens: 0,
+                totalCompletionTokens: 0,
+                totalCostUsd: 0,
+                avgLatencyMs: 0,
+                keysHealthSummary: { total: 0, operational: 0, degraded: 0, quotaExceeded: 0, invalid: 0, unchecked: 0 },
+                modelsBreakdown: [],
+                recentLogs: []
+            };
+        }
+
         const [logs, allKeys] = await Promise.all([
             prisma.aPIKeyUsageLog.findMany({
                 orderBy: { timestamp: 'desc' },
@@ -571,7 +591,6 @@ export async function getAdminTelemetryStats(): Promise<AdminTelemetryStats> {
             avgLatencyMs: stats.latencyCount > 0 ? Math.round(stats.latencySum / stats.latencyCount) : 0
         })).sort((a, b) => b.requests - a.requests);
 
-        // Keys health tally
         const healthCounts = {
             total: allKeys.length,
             operational: 0,

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 import { log } from "@/lib/logger";
-import { Resend } from "resend";
+import { enqueueJob } from "@/lib/qstash";
 
 const RequestResetSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -73,14 +74,58 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      // Hash password using Better-Auth's native password hasher (fallback to bcrypt)
+      const authCtx = await auth.$context.catch(() => null);
+      const hashedPassword = authCtx?.password?.hash
+        ? await authCtx.password.hash(newPassword)
+        : await bcrypt.hash(newPassword, 12);
 
-      // Update user password
-      await prisma.user.update({
+      // Update user password and synchronize Better-Auth Credential Account
+      const updatedUser = await prisma.user.update({
         where: { email: record.identifier },
         data: { password: hashedPassword },
       });
+
+      const accountRepo = prisma.account as unknown as {
+        findFirst: (args: {
+          where: { userId: string; providerId: string };
+        }) => Promise<{ id: string } | null>;
+        update: (args: {
+          where: { id: string };
+          data: { password: string };
+        }) => Promise<unknown>;
+        create: (args: {
+          data: {
+            userId: string;
+            accountId: string;
+            providerId: string;
+            password: string;
+          };
+        }) => Promise<unknown>;
+      };
+
+      const existingCredentialAccount = await accountRepo.findFirst({
+        where: {
+          userId: updatedUser.id,
+          providerId: "credential",
+        },
+      });
+
+      if (existingCredentialAccount) {
+        await accountRepo.update({
+          where: { id: existingCredentialAccount.id },
+          data: { password: hashedPassword },
+        });
+      } else {
+        await accountRepo.create({
+          data: {
+            userId: updatedUser.id,
+            accountId: updatedUser.id,
+            providerId: "credential",
+            password: hashedPassword,
+          },
+        });
+      }
 
       // Invalidate token
       await prisma.verificationToken.delete({
@@ -146,31 +191,27 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const resetUrl = `${appUrl}/auth/reset?token=${token}&email=${encodeURIComponent(email)}`;
 
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
-      try {
-        const resend = new Resend(resendKey);
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM || "OfferAnalyst <notifications@offeranalyst.com>",
-          to: email,
-          subject: "Reset your OfferAnalyst password",
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-              <h2 style="color: #4f46e5;">Password Reset Request</h2>
-              <p>You requested to reset your password for OfferAnalyst. Click the button below to choose a new password:</p>
-              <div style="margin: 30px 0;">
-                <a href="${resetUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                  Reset Password
-                </a>
-              </div>
-              <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
-            </div>
-          `,
-        });
-      } catch (emailErr) {
-        log.error("Failed to send password reset email via Resend", emailErr);
-      }
-    } else {
+    await enqueueJob({
+      id: `reset-pass-${token.slice(0, 16)}`,
+      type: "send_email",
+      createdAt: new Date().toISOString(),
+      to: email,
+      subject: "Reset your OfferAnalyst password / Réinitialisation de mot de passe",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #4f46e5;">Password Reset Request</h2>
+          <p>You requested to reset your password for OfferAnalyst. Click the button below to choose a new password:</p>
+          <div style="margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+              Reset Password
+            </a>
+          </div>
+          <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (process.env.NODE_ENV !== "production" && !process.env.RESEND_API_KEY) {
       log.info(`[Development Password Reset Link] URL for ${email}: ${resetUrl}`);
     }
 

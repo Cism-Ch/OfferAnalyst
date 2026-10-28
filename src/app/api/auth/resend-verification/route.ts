@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { z } from "zod";
 import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 import { log } from "@/lib/logger";
-import { Resend } from "resend";
+import { enqueueJob } from "@/lib/qstash";
 
 const ResendSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -88,32 +88,28 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const verificationUrl = `${appUrl}/auth/verify?token=${token}&email=${encodeURIComponent(email)}`;
 
-    // Dispatch email via Resend if API key is provided
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
-      try {
-        const resend = new Resend(resendKey);
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM || "OfferAnalyst <notifications@offeranalyst.com>",
-          to: email,
-          subject: "Verify your OfferAnalyst email address",
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-              <h2 style="color: #4f46e5;">Verify your Email Address</h2>
-              <p>Welcome to OfferAnalyst! Click the button below to confirm your email address and activate your account:</p>
-              <div style="margin: 30px 0;">
-                <a href="${verificationUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                  Verify Email
-                </a>
-              </div>
-              <p style="color: #6b7280; font-size: 14px;">This link will expire in 24 hours. If you did not create an account, you can safely ignore this email.</p>
-            </div>
-          `,
-        });
-      } catch (emailErr) {
-        log.error("Failed to send verification email via Resend", emailErr);
-      }
-    } else {
+    // Dispatch email asynchronously via QStash
+    await enqueueJob({
+      id: `verify-email-${token.slice(0, 16)}`,
+      type: "send_email",
+      createdAt: new Date().toISOString(),
+      to: email,
+      subject: "Verify your OfferAnalyst email address / Vérifiez votre adresse email",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #4f46e5;">Verify your Email Address</h2>
+          <p>Welcome to OfferAnalyst! Click the button below to confirm your email address and activate your account:</p>
+          <div style="margin: 30px 0;">
+            <a href="${verificationUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+              Verify Email
+            </a>
+          </div>
+          <p style="color: #6b7280; font-size: 14px;">This link will expire in 24 hours. If you did not create an account, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (process.env.NODE_ENV !== "production" && !process.env.RESEND_API_KEY) {
       log.info(`[Development Email Link] Verification URL for ${email}: ${verificationUrl}`);
     }
 

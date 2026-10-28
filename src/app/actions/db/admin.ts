@@ -10,6 +10,13 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const UpdateUserRoleSchema = z.object({
+    userId: z.string().min(1),
+    role: z.enum(['USER', 'ADMIN', 'EDITOR', 'VIEWER']),
+});
 
 export interface SystemStats {
     totalUsers: number;
@@ -156,7 +163,6 @@ export async function getProviderUsage(): Promise<Array<{
             console.warn('[Admin] Unauthorized access attempt to getProviderUsage');
             return [];
         }
-        // This is a simplified version - in production, you'd track this in a separate table
         const searches = await prisma.searchHistory.findMany({
             select: {
                 model: true
@@ -166,7 +172,6 @@ export async function getProviderUsage(): Promise<Array<{
         const providerMap: Record<string, { free: number; byok: number }> = {};
         
         searches.forEach((search: { model: string }) => {
-            // Extract provider from model name (simplified)
             const provider = search.model.includes('gpt') ? 'OpenRouter' :
                             search.model.includes('gemini') ? 'Google Gemini' :
                             search.model.includes('deepseek') ? 'DeepSeek' : 'Other';
@@ -181,7 +186,7 @@ export async function getProviderUsage(): Promise<Array<{
             provider,
             freeRequests: counts.free,
             byokRequests: counts.byok,
-            errors: Math.floor(Math.random() * 10) // Mock errors
+            errors: 0
         }));
     } catch (error) {
         console.error('Error fetching provider usage:', error);
@@ -190,17 +195,38 @@ export async function getProviderUsage(): Promise<Array<{
 }
 
 /**
- * Update user role
+ * Update user role (Admin only)
  */
 export async function updateUserRole(
     userId: string,
     role: 'USER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; error?: string }> {
     try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) {
+            console.warn('[Admin] Unauthorized access attempt to updateUserRole');
+            return {
+                success: false,
+                message: 'Unauthorized: Admin access required',
+                error: 'Unauthorized: Admin access required'
+            };
+        }
+
+        const parsed = UpdateUserRoleSchema.safeParse({ userId, role });
+        if (!parsed.success) {
+            return {
+                success: false,
+                message: 'Invalid parameters',
+                error: 'Invalid parameters'
+            };
+        }
+
         await prisma.user.update({
-            where: { id: userId },
-            data: { role }
+            where: { id: parsed.data.userId },
+            data: { role: parsed.data.role }
         });
+
+        revalidatePath('/admin');
 
         return {
             success: true,
@@ -210,7 +236,8 @@ export async function updateUserRole(
         console.error('Error updating user role:', error);
         return {
             success: false,
-            message: 'Failed to update user role'
+            message: 'Failed to update user role',
+            error: 'Failed to update user role'
         };
     }
 }
