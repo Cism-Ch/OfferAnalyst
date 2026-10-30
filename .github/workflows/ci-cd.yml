@@ -1,79 +1,84 @@
-name: CI/CD Pipeline
+name: OfferAnalyst CI/CD Pipeline
 
 on:
-  pull_request:
-    branches: [main, develop]
   push:
     branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint Code
+  quality-gate:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
-    
+    env:
+      DATABASE_URL: 'mongodb://localhost:27017/test'
+      BETTER_AUTH_SECRET: 'test-secret-min-32-chars-long-for-ci-pipeline'
+      BETTER_AUTH_URL: 'http://localhost:3000'
+      NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Run ESLint
-        run: npm run lint
-
-  type-check:
-    name: Type Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
 
       - name: Run TypeScript type check
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
+
+      - name: Run ESLint
+        run: pnpm run lint
 
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    needs: [lint, type-check]
-    
+    needs: [quality-gate]
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      OPENROUTER_API_KEY: 'sk-or-v1-mock-key-for-ci-build-only'
+      DATABASE_URL: 'mongodb://localhost:27017/test'
+      BETTER_AUTH_SECRET: 'test-secret-at-least-32-chars-long-for-ci-builds'
+      BETTER_AUTH_URL: 'http://localhost:3000'
+      NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
 
       - name: Build application
-        run: npm run build
-        env:
-          # Environment variables for build - use secrets if available, fallback to mock values
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY != '' && secrets.OPENROUTER_API_KEY || 'sk-or-v1-mock-key-for-ci-build-only' }}
-          DATABASE_URL: 'mongodb://localhost:27017/test'
-          BETTER_AUTH_SECRET: 'test-secret-at-least-32-chars-long-for-ci-builds'
-          BETTER_AUTH_URL: 'http://localhost:3000'
-          NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+        run: pnpm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -82,43 +87,19 @@ jobs:
           path: .next/
           retention-days: 7
 
-  deploy-preview:
-    name: Deploy Preview (Vercel)
+  release-publish:
+    name: GitHub Release Automation
     runs-on: ubuntu-latest
-    needs: [build]
-    if: github.event_name == 'pull_request'
-    
+    needs: [quality-gate, build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Vercel Preview
-        uses: amondnet/vercel-action@v25
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-        # Only deploy if Vercel secrets are configured
-        continue-on-error: true
-
-  deploy-production:
-    name: Deploy Production (Vercel)
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel Production
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-        # Only deploy if Vercel secrets are configured
-        continue-on-error: true
+          generate_release_notes: true

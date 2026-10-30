@@ -19,7 +19,8 @@
 │ [x] TASK-AUTH-02 (M2)   │  │     Observabilité IA)   │  │     - Sprint 13 (5)     │
 │ [x] TASK-AUTH-03 (M3)   │  │                         │  │     - Sprint 12 (4)     │
 │ [x] TASK-AUTH-04 (M4)   │  │                         │  │     - Sprint 11 (5)     │
-│ [ ] TASK-EXP-01 (PDF/CSV│  │                         │  │     - Sprints 1-10 (All)│
+│ [x] TASK-OPS-01 (pnpm)  │  │                         │  │     - Sprints 1-10 (All)│
+│ [ ] TASK-EXP-01 (PDF/CSV│  │                         │  │                         │
 │ [ ] TASK-EXP-02 (Share) │  │                         │  │                         │
 │ [ ] TASK-EXP-03 (UI/A11y│  │                         │  │                         │
 │ [ ] TASK-EXP-04 (Eval)  │  │                         │  │                         │
@@ -74,6 +75,19 @@
     - [x] `TASK-AUTH-04.04` : Endpoint CRON de rétention `/api/cron/cleanup-history` (GET/POST) avec authentification `CRON_SECRET` / QStash, supprimant les recherches non épinglées > 90 jours tout en préservant indéfiniment les recherches épinglées.
     - [x] `TASK-AUTH-04.05` : Intégration transparente dans l'interface `/history` (bannière de statut dual-storage, badges d'expiration TTL 7j, restauration sécurisée) et dans `AnalysisContext.tsx`.
     - [x] `TASK-AUTH-04.06` : Validation déterministe (`npx tsc --noEmit`, `npm run lint`, `npm run eval:quick` 100/100 PASS, tests adversariaux M4 100% PASS).
+
+- [x] **`TASK-OPS-01` — Nettoyage de l'Empreinte Mémoire du Repo & Standardisation `pnpm`**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `package.json`, `pnpm-workspace.yaml`, `.gitignore`, `.github/workflows/ci-cd.yml`, `.agents/skills/`, `pictures/`, `docs/archive/`
+  - **Critères d'acceptation :**
+    - [x] `TASK-OPS-01.01` : Suppression de `package-lock.json` du suivi Git, blocage dans `.gitignore` (`package-lock.json`, `yarn.lock`) et déclaration de `"packageManager": "pnpm@12.15.0"` dans `package.json`.
+    - [x] `TASK-OPS-01.02` : Purge des artefacts lourds (`.next` 1.69 Go, `tsconfig.tsbuildinfo`, `.eslintcache`) et nettoyage complet de `node_modules` (suppression des 28 dossiers `.ignored_*` npm, `.package-lock.json`, `.cache` et `pnpm prune` des versions obsolètes `next@16.0.10`, `prisma@7/8`, `typescript@7` : passage de 3,93 Go à 791 Mo).
+    - [x] `TASK-OPS-01.03` : Compactage de la base d'objets Git (`git gc --prune=now`) pour éliminer les 3 983 objets libres et résidus temporaires (passage de 13,36 Mo à 8,61 Mo).
+    - [x] `TASK-OPS-01.04` : Fusion et migration du pipeline GitHub Actions unique dans `.github/workflows/ci-cd.yml` (`pnpm/action-setup@v4`, `pnpm install --frozen-lockfile`, suppression de `.github/workflows/ci.yml` redondant et retrait des jobs Vercel / `secrets.*` obsolètes).
+    - [x] `TASK-OPS-01.05` : Élagage de `.agents/skills/` (conservation des 22 skills propres à la stack OfferAnalyst et de `db_schema_validator.py`, suppression des 146 skills hors-sujet : passage de 19,4 Mo à 762 Ko).
+    - [x] `TASK-OPS-01.06` : Suppression de la dépendance inutilisée `@google/genai` et de ses 36 sous-paquets (`package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`).
+    - [x] `TASK-OPS-01.07` : Suppression du dossier `pictures/` non référencé (529 Ko) et de 46 archives intermédiaires obsolètes dans `docs/archive/` (passage de 627 Ko à 220 Ko).
+    - [x] `TASK-OPS-01.08` : Purge du cache global `npm` (`npm cache clean --force`), `pnpm store prune` (-2,06 Go au total), re-compactage Git et validation `pnpm run eval:quick` (100/100 PASS).
 
 - [ ] **`TASK-EXP-01` — Moteur de Génération & Téléchargement de Rapports PDF & CSV d'Analyse**
   - **Priorité :** 🔴 HAUTE
