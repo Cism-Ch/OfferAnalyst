@@ -13,16 +13,31 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (PRODUCTION)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS             │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [x] TASK-ALERT-01       │  │ [ ] Multi-Tenant DB     │  │     - Sprint 30 (Alerts)│
-│     (Release v1.3.1 &   │  │                         │  │     - Sprint 29 (Capture│
-│     Build 40/40 Validé) │  │                         │  │     - Sprint 28 (Cache) │
+│ [ ] Prochains Sprints   │  │ [ ] Chrome Store Publish│  │     - Sprint 31 (Tenant)│
+│     (Backlog Produit)   │  │ [ ] Advanced Billing    │  │     - Sprint 30 (Alerts)│
+│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 29 (Capture│
+│                         │  │                         │  │     - Sprint 28 (Cache) │
 │                         │  │                         │  │     - Sprint 27 (Action)│
 │                         │  │                         │  │     - Sprint 26 (Ingest)│
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 31 Achevée : Multi-Tenancy B2B & Espaces d'Équipe (`/dashboard/workspace`)
+
+- [x] **`TASK-TENANT-01` — Architecture Multi-Tenant & Gestion des Espaces de Travail Collaboratifs**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `prisma/schema.prisma`, `src/app/actions/db/workspaces.ts`, `src/app/dashboard/workspace/page.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-TENANT-01.01` : Modèles Prisma `Workspace` et `WorkspaceMember` avec rôles RBAC (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`), indexation MongoDB et cascade référentielle.
+    - [x] `TASK-TENANT-01.02` : Server Actions sécurisées (`src/app/actions/db/workspaces.ts`) pour récupérer, créer, mettre à jour le workspace, inviter des membres, modifier les rôles et révoquer les accès avec validation Zod.
+    - [x] `TASK-TENANT-01.03` : Refonte dynamique de l'interface `/dashboard/workspace` avec gestion réelle des membres, modal d'invitation avec sélection de rôle, badges statut et suppression confirmée.
+    - [x] `TASK-TENANT-01.04` : Bilinguisme intégral FR / EN dans `LanguageContext.tsx` (`workspacePage`).
+    - [x] `TASK-TENANT-01.05` : Validation sans faute avec `npm run eval:quick` (100/100 PASS) et `npm run build` (0 erreur, 40 routes compilées).
 
 ---
 

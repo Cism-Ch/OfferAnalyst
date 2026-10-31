@@ -29,7 +29,6 @@ import {
     ArrowRight,
     Info,
     ArrowLeft,
-    Check,
     Zap,
     KeyRound,
     Sparkles,
@@ -458,6 +457,12 @@ export default function DataSourcePage() {
                     </Button>
                 </div>
             </div>
+
+            {/* 1-Click Capture Assistant Modal (Bookmarklet & Extension) */}
+            <CaptureAssistantModal
+                open={captureModalOpen}
+                onOpenChange={setCaptureModalOpen}
+            />
 
             {/* Guest API Key Dialog */}
             <GuestApiKeyDialog

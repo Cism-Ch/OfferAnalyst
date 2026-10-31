@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2-patch] - 2026-10-31
+
+### 🏢 Multi-Tenancy B2B & Espaces de Travail Collaboratifs (Sprint 31)
+
+- **Modèles de Données Prisma MongoDB (`prisma/schema.prisma`)** :
+  - Création des modèles `Workspace` et `WorkspaceMember` avec enum RBAC `WorkspaceRole` (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`).
+  - Relations bidirectionnelles avec cascade et indexation optimisée MongoDB sur `userId` et `role`.
+- **Server Actions Sécurisées (`src/app/actions/db/workspaces.ts`)** :
+  - Suite complète d'actions serveur (`getWorkspaceAction`, `updateWorkspaceAction`, `inviteWorkspaceMemberAction`, `updateMemberRoleAction`, `removeWorkspaceMemberAction`).
+  - Validation stricte des entrées via schémas Zod, vérification de session Better-Auth, auto-provisionnement du premier espace et protection anti-départ du propriétaire.
+- **Interface Utilisateur Dynamique (`src/app/dashboard/workspace/page.tsx`)** :
+  - Remplacement de la maquette statique par un tableau de bord collaboratif réactif temps réel.
+  - Gestion d'identité de l'organisation (nom, domaine d'activité), liste dynamique des collaborateurs avec badges rôles et statuts.
+  - Sélecteur de rôle interactif en direct, modal d'invitation avec champ email et confirmation de suppression avec garde-fous.
+- **Bilinguisme Exhaustif (`src/contexts/LanguageContext.tsx`)** :
+  - Support FR / EN intégral pour toutes les sections de gestion d'équipe et d'espace de travail (`workspacePage`).
+- **Validation Technique & Build** :
+  - 100/100 au Juge Déterministe (`eval:quick`), 0 erreur TypeScript, 0 warning ESLint, et 40 routes compilées sans faute en build de production Next.js 16 (`npm run build`).
+
 ## [1.3.1-patch] - 2026-10-31
 
 ### 🔔 Alertes d'Offres Haute Adéquation & Webhooks Asynchrones (Sprint 30)

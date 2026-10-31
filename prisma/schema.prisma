@@ -36,6 +36,8 @@ model User {
   securityAlerts SecurityAlert[]
   analysisResults AnalysisResult[]
   sharedAnalyses SharedAnalysis[]
+  ownedWorkspaces Workspace[] @relation("WorkspaceOwner")
+  workspaceMemberships WorkspaceMember[]
 
   @@index([createdAt])
   @@map("users")
@@ -417,3 +419,47 @@ model SharedAnalysis {
   @@map("shared_analyses")
 }
 
+// Workspaces & Multi-tenancy
+model Workspace {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?  @db.String
+  ownerId     String   @db.ObjectId
+  plan        String   @default("free") // "free", "pro", "enterprise"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     WorkspaceMember[]
+
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  workspaceId String        @db.ObjectId
+  userId      String?       @db.ObjectId
+  email       String
+  name        String?
+  role        WorkspaceRole @default(MEMBER)
+  status      String        @default("active") // "active", "invited"
+  joinedAt    DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, email])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([email])
+  @@map("workspace_members")
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
