@@ -1,6 +1,6 @@
 {
     "name": "offer-analyst",
-    "version": "1.2.0-saas-vitrine",
+    "version": "1.2.1-multi-ingest",
     "private": true,
     "packageManager": "pnpm@12.15.0",
     "scripts": {

@@ -94,9 +94,13 @@ export function RawTextTab({
                 clientKey
             );
 
-            if (res.success && res.data && res.data.length > 0) {
-                setExtractedOffers(res.data);
-                onOffersExtracted(res.data);
+            if (res.success) {
+                if (res.data && res.data.length > 0) {
+                    setExtractedOffers(res.data);
+                    onOffersExtracted(res.data);
+                } else {
+                    setErrorMessage(isFr ? "Aucune offre n'a pu être extraite." : "No offers extracted.");
+                }
             } else {
                 setErrorMessage(res.error?.message || (isFr ? "Échec de l'extraction. Vérifiez le texte collé." : "Extraction failed."));
             }

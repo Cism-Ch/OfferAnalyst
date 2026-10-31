@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1-multi-ingest] - 2026-10-31
+
+### 📥 Chantier 2 : Ingestion Multi-Sources sans Friction & Masquage de la Complexité JSON (Sprint 26)
+
+- **Hub d'Ingestion Multi-Sources (`src/app/data-source/page.tsx`)** :
+  - **Onglet Texte Libre par Défaut (`RawTextTab.tsx`)** : Permet le copier-coller en vrac de descriptions brutes issues de LinkedIn, Indeed ou d'emails sans aucune compétence technique.
+  - **Extraction & Normalisation IA Déterministe (`structureRawOffersAction.ts`)** : Pipeline d'extraction propulsé par NVIDIA Nemotron 3.5 Lightning, normalisant le texte en objets `Offer[]` avec détection des salaires, localisations et exigences.
+  - **Onglet Import par Liens/URLs (`UrlImportTab.tsx`)** : Interface d'import d'annonces par URL avec validation stricte, garde-fous anti-SSRF et extraction assistée.
+  - **Onglet Fichiers (`FileUploadTab.tsx`)** : Prise en charge des fichiers CSV avec détection automatique des en-têtes et fichiers textes.
+  - **Onglet Développeurs Découplé (`JsonInputTab.tsx`)** : Déplacement de la saisie JSON dans un onglet dédié pour préserver l'accès API pour les profils techniques sans intimider 98% des utilisateurs.
+  - **Bilinguisme FR/EN Exhaustif** : Tous les onglets et libellés traduits dans `LanguageContext.tsx`.
+
 ## [1.2.0-saas-vitrine] - 2026-10-31
 
 ### 🌟 Chantier 1 : Page de Présentation SaaS, Démo Interactive 1 Clic & Navigation Anti-Bounce par Cookies (Sprint 25)
@@ -27,7 +39,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Traduction intégrale FR/EN dans `LanguageContext.tsx`.
   - Liens bidirectionnels fluides ajoutés dans la barre latérale (`ModernSidebar`) et l'en-tête (`ModernHeader`).
 
+### 📥 Chantier 2 : Ingestion Multi-Sources sans Friction (`/data-source`) (Sprint 26)
 
+- **Suppression Définitive de la Barrière JSON** :
+  - **Onglet Texte Libre (Par Défaut)** : Permet de coller du texte en vrac (copier-coller de LinkedIn, Indeed, emails) et le structure en un clic via l'agent serveur `structureRawOffersAction` propulsé par NVIDIA Nemotron.
+  - **Onglet Liens / URLs** : Saisie et validation Zod de 1 à 10 URLs d'offres web avec contrôles de sécurité.
+  - **Onglet Import Fichiers** : Détection et parsing automatique des fichiers CSV (mappage intelligent des colonnes titre, entreprise, salaire, localisation et description), JSON et TXT.
+  - **Onglet Mode Développeur / JSON API** : Préservation du mode JSON historique pour les intégrations d'API et les utilisateurs techniques.
+- **Expérience Utilisateur & Intégration Unifiée** :
+  - Compteur d'offres prêtes en temps réel (`X offres prêtes`).
+  - Prévisualisation directe sous forme de fiches éditables et suppression unitaire en 1 clic.
+  - Bilinguisme intégral FR/EN dans `src/contexts/LanguageContext.tsx`.
 
 ## [1.1.1-patch] - 2026-10-31
 

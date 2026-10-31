@@ -15,7 +15,7 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │ 🚀 EN COURS (SPRINT 26) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [-] TASK-INGEST-01      │  │ [ ] Multi-Tenant DB     │  │     - Sprint 25 (Vitrine│
+│ [x] TASK-INGEST-01      │  │ [ ] Multi-Tenant DB     │  │     - Sprint 25 (Vitrine│
 │     (Ingestion Multi-   │  │ [ ] Webhook Alerts      │  │     - Sprint 24 (UI/UX) │
 │     Sources sans JSON)  │  │ [ ] Chrome Extension    │  │     - Sprint 23 (Remed) │
 │ [ ] TASK-REL-01 (V1.2.0 │  │                         │  │     - Sprints 1-22 (All)│
@@ -27,16 +27,16 @@
 
 ## 📥 Sprint 26 : Chantier 2 — Ingestion Multi-Sources sans Friction (`/data-source`)
 
-- [-] **`TASK-INGEST-01` — Système d'Ingestion Multi-Sources (Texte Libre, URLs, Fichiers & JSON Développeur)**
+- [x] **`TASK-INGEST-01` — Système d'Ingestion Multi-Sources (Texte Libre, URLs, Fichiers & JSON Développeur)**
   - **Priorité :** 🔴 HAUTE
   - **Fichiers cibles :** `src/app/actions/offers/structure-raw-offers.ts`, `src/components/data-source/RawTextTab.tsx`, `src/components/data-source/UrlImportTab.tsx`, `src/components/data-source/FileUploadTab.tsx`, `src/components/data-source/JsonInputTab.tsx`, `src/app/data-source/page.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
   - **Critères d'acceptation :**
-    - [ ] `TASK-INGEST-01.01` : Server Action déterministe `structureRawOffersAction` utilisant le modèle LLM rapide pour extraire et structurer du texte libre (copier-coller vrac d'offres) vers le schéma `Offer[]` normalisé.
-    - [ ] `TASK-INGEST-01.02` : Onglet par défaut Texte Libre (`RawTextTab.tsx`) avec zone de collage simple, détection multi-offres, feedback de structuration IA et prévisualisation directe sous forme de fiches éditables.
-    - [ ] `TASK-INGEST-01.03` : Onglet Import par Liens/URLs (`UrlImportTab.tsx`) avec validation Zod, garde-fous anti-SSRF et extraction de métadonnées.
-    - [ ] `TASK-INGEST-01.04` : Onglet Import de Fichiers (`FileUploadTab.tsx`) avec parsing automatique des fichiers CSV (mappage de colonnes intelligent) et fichiers texte.
-    - [ ] `TASK-INGEST-01.05` : Onglet Avancé / Développeurs (`JsonInputTab.tsx`) pour conserver le mode JSON d'origine pour les flux API sans intimider les utilisateurs ordinaires.
-    - [ ] `TASK-INGEST-01.06` : Intégration unifiée et responsive dans `src/app/data-source/page.tsx`, bilinguisme FR/EN exhaustif et validation 100/100 (`eval:quick`).
+    - [x] `TASK-INGEST-01.01` : Server Action déterministe `structureRawOffersAction` utilisant le modèle LLM rapide pour extraire et structurer du texte libre (copier-coller vrac d'offres) vers le schéma `Offer[]` normalisé.
+    - [x] `TASK-INGEST-01.02` : Onglet par défaut Texte Libre (`RawTextTab.tsx`) avec zone de collage simple, détection multi-offres, feedback de structuration IA et prévisualisation directe sous forme de fiches éditables.
+    - [x] `TASK-INGEST-01.03` : Onglet Import par Liens/URLs (`UrlImportTab.tsx`) avec validation Zod, garde-fous anti-SSRF et extraction de métadonnées.
+    - [x] `TASK-INGEST-01.04` : Onglet Import de Fichiers (`FileUploadTab.tsx`) avec parsing automatique des fichiers CSV (mappage de colonnes intelligent) et fichiers texte.
+    - [x] `TASK-INGEST-01.05` : Onglet Avancé / Développeurs (`JsonInputTab.tsx`) pour conserver le mode JSON d'origine pour les flux API sans intimider les utilisateurs ordinaires.
+    - [x] `TASK-INGEST-01.06` : Intégration unifiée et responsive dans `src/app/data-source/page.tsx`, bilinguisme FR/EN exhaustif et validation 100/100 (`eval:quick`).
 
 ---
 

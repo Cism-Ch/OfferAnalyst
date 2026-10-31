@@ -60,3 +60,4 @@ export function clearAppModeCookie(): void {
     if (typeof document === 'undefined') return;
     document.cookie = `${COOKIE_APP_MODE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
 }
+

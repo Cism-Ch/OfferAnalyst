@@ -23,12 +23,13 @@ const ExtractedOfferSchema = z.object({
     price: z.union([
         z.string(),
         z.number(),
-        z.record(z.string(), z.any())
+        z.record(z.string(), z.unknown())
     ]).transform(val => {
         if (typeof val === 'number') return val;
         if (typeof val === 'string') return val;
         if (typeof val === 'object' && val !== null) {
-            if ('amount' in val) return `${val.amount} ${val.currency || '€'}`.trim();
+            const obj = val as Record<string, unknown>;
+            if ('amount' in obj) return `${obj.amount} ${obj.currency || '€'}`.trim();
             return JSON.stringify(val);
         }
         return "N/A";
@@ -65,42 +66,32 @@ export async function structureRawOffersAction(
     }
 
     const startTime = Date.now();
-    let userId: string | undefined;
 
     // Try to get API key with BYOK support
-    const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('../shared/api-key-provider');
-    const { auth } = await import('@/lib/auth');
-    const { headers } = await import('next/headers');
+    const { getAPIKey, recordAITelemetry } = await import('../shared/api-key-provider');
 
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        userId = session?.user?.id;
-    } catch {
-        // Guest user fallback
-    }
-
-    const apiKeyResult = await getAPIKey(modelName, clientApiKey, userId);
-    if (!apiKeyResult.key) {
+    const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
+    if (!apiKeyResult?.key) {
         return {
             success: false,
             error: {
-                code: 'NO_API_KEY',
-                message: apiKeyResult.error || 'Aucune clé API configurée pour extraire les offres.',
+                code: 'API_KEY_MISSING',
+                message: 'Aucune clé API configurée pour extraire les offres.',
                 remedy: {
-                    type: 'configure_key',
+                    type: 'configure_api_key',
                     label: 'Ajouter une clé API (BYOK)'
                 }
             }
         };
     }
 
-    const isByok = apiKeyResult.source === 'byok';
+    const isByok = apiKeyResult.source === 'byok' || apiKeyResult.source === 'guest_cookie' || Boolean(clientApiKey);
     const quotaCheck = await checkDailyQuota(isByok);
     if (!quotaCheck.allowed) {
         return {
             success: false,
             error: {
-                code: 'RATE_LIMIT_EXCEEDED',
+                code: 'RATE_LIMITED',
                 message: 'Quota quotidien atteint. Réinitialisation à minuit UTC ou utilisez votre propre clé API.'
             }
         };
@@ -153,21 +144,28 @@ JSON OUTPUT SCHEMA:
     try {
         const responseText = await retryWithBackoff(async () => {
             const completion = await openrouter.chat.send({
-                model: modelName,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: `Extract and structure the following text:\n\n${rawText}` }
-                ],
-                temperature: 0.1,
-                max_tokens: 4000
+                chatRequest: {
+                    model: modelName,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: `Extract and structure the following text:\n\n${rawText}` }
+                    ],
+                    temperature: 0.1,
+                    maxTokens: 4000,
+                    responseFormat: { type: 'json_object' }
+                }
             });
 
-            const content = completion.choices[0]?.message?.content;
+            const choiceContent = completion?.choices?.[0]?.message?.content;
+            const content = typeof choiceContent === 'string'
+                ? choiceContent
+                : (Array.isArray(choiceContent) ? JSON.stringify(choiceContent) : null);
+
             if (!content) {
-                throw new AgentError('NO_CONTENT', 'Réponse vide du modèle lors de l extraction.', 'fetch');
+                throw new AgentError("Réponse vide du modèle lors de l extraction.", 'NO_RESPONSE');
             }
             return content;
-        }, 3, 1000);
+        }, 3, 'structure_raw_offers');
 
         const parsedJson = parseJSONFromText(responseText);
         const rawOffersList = extractOffersArray(parsedJson);
@@ -178,7 +176,6 @@ JSON OUTPUT SCHEMA:
                 error: {
                     code: 'EXTRACTION_EMPTY',
                     message: "L'IA n'a pu identifier aucune offre distincte dans le texte collé. Veuillez vérifier le contenu.",
-                    phase: 'fetch'
                 }
             };
         }
@@ -187,12 +184,15 @@ JSON OUTPUT SCHEMA:
         const validatedOffers: Offer[] = [];
         for (let i = 0; i < rawOffersList.length; i++) {
             const rawItem = rawOffersList[i];
-            const parsed = ExtractedOfferSchema.safeParse({
-                ...rawItem,
-                id: String(rawItem.id || i + 1)
-            });
-            if (parsed.success) {
-                validatedOffers.push(parsed.data as Offer);
+            if (typeof rawItem === 'object' && rawItem !== null) {
+                const itemObj = rawItem as Record<string, unknown>;
+                const parsed = ExtractedOfferSchema.safeParse({
+                    ...itemObj,
+                    id: String(itemObj.id || i + 1)
+                });
+                if (parsed.success) {
+                    validatedOffers.push(parsed.data as Offer);
+                }
             }
         }
 
@@ -202,32 +202,35 @@ JSON OUTPUT SCHEMA:
                 error: {
                     code: 'VALIDATION_FAILED',
                     message: "Le format extrait n'a pas pu être validé. Veuillez réessayer.",
-                    phase: 'fetch'
                 }
             };
         }
 
         // Track telemetry
         const latencyMs = Date.now() - startTime;
-        if (isByok && apiKeyResult.keyId) {
-            trackBYOKUsage(apiKeyResult.keyId, latencyMs, true).catch(() => {});
-        }
-        recordAITelemetry(modelName, 'fetch', true, latencyMs).catch(() => {});
+        await recordAITelemetry({
+            apiKeyResult,
+            model: modelName,
+            action: 'structure_raw_offers',
+            responseTimeMs: latencyMs,
+            success: true
+        }).catch(() => {});
 
         return {
             success: true,
-            data: validatedOffers
+            data: validatedOffers,
+            meta: {
+                model: modelName,
+                latencyMs
+            }
         };
-    } catch (err) {
-        const latencyMs = Date.now() - startTime;
-        recordAITelemetry(modelName, 'fetch', false, latencyMs).catch(() => {});
-
+    } catch (error) {
+        console.error('Structure raw offers failed:', error);
         return {
             success: false,
             error: {
-                code: 'EXTRACTION_ERROR',
-                message: err instanceof Error ? err.message : "Erreur inattendue lors de la structuration de vos offres.",
-                phase: 'fetch'
+                code: 'AI_PROCESSING_ERROR',
+                message: error instanceof Error ? error.message : "Erreur inattendue lors de l'extraction des offres."
             }
         };
     }
