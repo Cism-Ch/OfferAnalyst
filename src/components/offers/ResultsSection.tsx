@@ -170,7 +170,7 @@ export function ResultsSection({
                         size="sm"
                         onClick={handleExportPdf}
                         disabled={isExportingPdf}
-                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent"
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent touch-manipulation"
                         title={t.export.exportPdf}
                     >
                         <FileText className="h-3.5 w-3.5 text-rose-500" />
@@ -183,7 +183,7 @@ export function ResultsSection({
                         size="sm"
                         onClick={handleExportCsv}
                         disabled={isExportingCsv}
-                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent"
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent touch-manipulation"
                         title={t.export.exportCsv}
                     >
                         <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-500" />
@@ -195,7 +195,7 @@ export function ResultsSection({
                         variant="outline"
                         size="sm"
                         onClick={() => setIsShareModalOpen(true)}
-                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10 touch-manipulation"
                         title={t.export.share}
                     >
                         <Share2 className="h-3.5 w-3.5" />
@@ -208,7 +208,7 @@ export function ResultsSection({
                             variant={viewMode === 'grid' ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode('grid')}
-                            className="h-7 px-2 text-xs gap-1 rounded-md"
+                            className="h-7 px-2 text-xs gap-1 rounded-md touch-manipulation"
                             title={t.results.viewGrid}
                         >
                             <LayoutGrid className="h-3.5 w-3.5" />
@@ -218,7 +218,7 @@ export function ResultsSection({
                             variant={viewMode === 'list' ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode('list')}
-                            className="h-7 px-2 text-xs gap-1 rounded-md"
+                            className="h-7 px-2 text-xs gap-1 rounded-md touch-manipulation"
                             title={t.results.viewList}
                         >
                             <List className="h-3.5 w-3.5" />

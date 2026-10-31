@@ -242,20 +242,20 @@ export default function DataSourcePage() {
 
                         {/* Action Buttons - Responsive Mobile-First */}
                         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
-                            <Button variant="outline" className="w-full sm:w-auto" asChild>
+                            <Button variant="outline" className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation" asChild>
                                 <Link href="/search-context" className="gap-2">
                                     <ArrowLeft className="h-4 w-4" />
                                     {ds.btnBack}
                                 </Link>
                             </Button>
                             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-                                <Button variant="outline" className="w-full sm:w-auto" asChild>
+                                <Button variant="outline" className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation" asChild>
                                     <Link href="/">{ds.btnCancel}</Link>
                                 </Button>
                                 <Button 
                                     onClick={onAnalyze} 
                                     disabled={dashboardState.loading || (!dashboardState.autoFetch && !dashboardState.offersInput) || isQuotaExhausted}
-                                    className="gap-2 w-full sm:w-auto"
+                                    className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                                     title={isQuotaExhausted ? (isFr ? "Quota quotidien atteint. Ajoutez une clé API pour continuer." : "Daily quota reached. Add an API key to continue.") : undefined}
                                 >
                                     {dashboardState.loading ? (

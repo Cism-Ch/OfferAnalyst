@@ -106,16 +106,16 @@ export function OfferCard({ offer, index, onSave, isSaved, onOpenDetail }: Offer
                                 }}
                                 disabled={isSaved}
                                 aria-label={isSaved ? t.offer.alreadySaved : t.offer.saveThisOffer}
-                                className="h-8 px-2.5 text-xs rounded-lg"
+                                className="h-8 px-2.5 text-xs rounded-lg touch-manipulation"
                             >
                                 {isSaved ? (
                                     <>
-                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mr-1" />
+                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 @min-[400px]:mr-1" />
                                         <span className="hidden @min-[400px]:inline">{t.offer.saved}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Wallet className="h-3.5 w-3.5 mr-1" />
+                                        <Wallet className="h-3.5 w-3.5 @min-[400px]:mr-1" />
                                         <span className="hidden @min-[400px]:inline">{t.offer.save}</span>
                                     </>
                                 )}
@@ -195,7 +195,7 @@ export function OfferCard({ offer, index, onSave, isSaved, onOpenDetail }: Offer
                             e.stopPropagation();
                             if (onOpenDetail) onOpenDetail(offer);
                         }}
-                        className="text-xs h-7 gap-1.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md font-semibold"
+                        className="text-xs h-7 gap-1.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md font-semibold touch-manipulation"
                     >
                         <Maximize2 className="h-3.5 w-3.5" />
                         {t.offer.viewDetails}

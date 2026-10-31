@@ -162,10 +162,10 @@ export default function SearchContextPage() {
                                 {sc.readyNext}
                             </p>
                             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-                                <Button variant="outline" className="w-full sm:w-auto" asChild>
+                                <Button variant="outline" className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation" asChild>
                                     <Link href="/">{sc.btnCancel}</Link>
                                 </Button>
-                                <Button className="w-full sm:w-auto" asChild>
+                                <Button className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation" asChild>
                                     <Link href="/data-source" className="gap-2">
                                         {sc.btnNext}
                                         <ArrowRight className="h-4 w-4" />

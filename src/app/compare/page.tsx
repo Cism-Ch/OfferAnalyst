@@ -64,7 +64,17 @@ function ComparePageContent() {
     }
 
     if (selectedOffers.length < 2) {
-        return null;
+        return (
+            <SimpleLayout
+                title={cp.title}
+                description={cp.description}
+                maxWidth="7xl"
+            >
+                <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                    <p className="text-muted-foreground">{cp.loadingTitle}</p>
+                </div>
+            </SimpleLayout>
+        );
     }
 
     return (
@@ -75,7 +85,9 @@ function ComparePageContent() {
         >
             <div className="space-y-6">
                 {/* Mobile Magnetic Snap Carousel / Desktop Grid */}
-                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scroll-smooth">
+                <div className={`flex md:grid gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scroll-smooth ${
+                    selectedOffers.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
+                }`}>
                     {selectedOffers.map((offer, index) => (
                         <Card 
                             key={offer.id} 
@@ -186,7 +198,7 @@ function ComparePageContent() {
                 </div>
 
                 {/* Summary Section */}
-                <Card className="mt-6 bg-primary/5 border border-primary/20 text-foreground">
+                <Card className="bg-primary/5 border border-primary/20 text-foreground">
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-primary" />

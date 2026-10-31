@@ -110,7 +110,7 @@ export function OfferDetailModal({
                 <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-1 sm:hidden shrink-0" aria-hidden="true" />
 
                 {/* Header with Rank, Title & Key Badges */}
-                <DialogHeader className="space-y-4">
+                <DialogHeader className="space-y-4 pr-6 sm:pr-8">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <Badge variant="outline" className="text-xs px-2.5 py-1 font-semibold border-primary/40 bg-primary/10 text-primary">

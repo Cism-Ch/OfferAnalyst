@@ -88,7 +88,7 @@ export default function SavedOffersPage() {
                             onClick={handleCompare}
                             disabled={selectedIds.size < 2}
                             variant="outline"
-                            className="gap-2 w-full sm:w-auto"
+                            className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                         >
                             <GitCompare className="h-4 w-4" />
                             {sp.btnCompare} ({selectedIds.size}/3)
@@ -96,7 +96,7 @@ export default function SavedOffersPage() {
                         <Button
                             onClick={handleOrganize}
                             disabled={savedOffers.length === 0 || organizing}
-                            className="gap-2 w-full sm:w-auto"
+                            className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                         >
                             {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
                             {organizing ? sp.btnOrganizing : sp.btnSmartOrganize}
