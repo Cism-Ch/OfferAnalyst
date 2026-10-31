@@ -284,6 +284,25 @@ export const translations = {
       helpJsonPoint2: "Évaluation d'offres spécifiques ciblées",
       helpJsonPoint3: "Sources de données internes ou sur-mesure",
     },
+    // Automated Offer Alerts & Webhooks
+    offerAlerts: {
+      btnConfig: "Alertes & Webhooks",
+      modalTitle: "Configuration des Alertes d'Offres",
+      modalSubtitle: "Recevez instantanément une notification dès qu'une offre dépasse votre seuil de compatibilité.",
+      thresholdLabel: "Seuil minimal d'adéquation :",
+      thresholdHint: "Seules les offres atteignant ou dépassant ce score déclencheront une alerte.",
+      webhookLabel: "URL de Webhook (Slack, Discord, Zapier, Make) :",
+      webhookPlaceholder: "https://hooks.slack.com/services/... ou https://discord.com/api/webhooks/...",
+      emailLabel: "Adresse Email de notification :",
+      emailPlaceholder: "votre-email@domaine.com",
+      btnTest: "Tester le Webhook",
+      btnTesting: "Envoi du test...",
+      testSuccess: "Test réussi ! Le webhook a reçu l'événement.",
+      saveBtn: "Enregistrer & Activer",
+      savedToast: "Configuration des alertes enregistrée !",
+      dispatchSuccess: "Alerte envoyée avec succès pour l'offre",
+      closeBtn: "Fermer",
+    },
     // 1-Click Capture Assistant (Bookmarklet & Chrome Extension)
     captureAssistant: {
       triggerBtn: "Assistant de Capture 1-Clic",
@@ -796,6 +815,25 @@ export const translations = {
       helpJsonPoint1: "Pre-collected data",
       helpJsonPoint2: "Specific offer comparison",
       helpJsonPoint3: "Custom data sources",
+    },
+    // Automated Offer Alerts & Webhooks
+    offerAlerts: {
+      btnConfig: "Alerts & Webhooks",
+      modalTitle: "Offer Match Alerts Configuration",
+      modalSubtitle: "Instantly receive a notification as soon as an offer exceeds your match threshold.",
+      thresholdLabel: "Minimum match threshold:",
+      thresholdHint: "Only offers meeting or exceeding this score will trigger an alert.",
+      webhookLabel: "Webhook URL (Slack, Discord, Zapier, Make):",
+      webhookPlaceholder: "https://hooks.slack.com/services/... or https://discord.com/api/webhooks/...",
+      emailLabel: "Notification Email address:",
+      emailPlaceholder: "your-email@domain.com",
+      btnTest: "Test Webhook",
+      btnTesting: "Sending test...",
+      testSuccess: "Test succeeded! Webhook received event.",
+      saveBtn: "Save & Enable",
+      savedToast: "Alert configuration saved!",
+      dispatchSuccess: "Alert sent successfully for offer",
+      closeBtn: "Close",
     },
     // 1-Click Capture Assistant (Bookmarklet & Chrome Extension)
     captureAssistant: {

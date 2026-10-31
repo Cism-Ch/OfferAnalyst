@@ -26,7 +26,8 @@ import {
     Sparkles, 
     FileText, 
     FileSpreadsheet, 
-    Share2 
+    Share2,
+    Bell
 } from 'lucide-react';
 import { AnalysisResponse, ScoredOffer } from '@/types';
 import { OfferCard } from './OfferCard';
@@ -34,6 +35,7 @@ import { OfferDetailModal } from './OfferDetailModal';
 import { ShareAnalysisModal } from './ShareAnalysisModal';
 import { NegotiationPitchModal } from './NegotiationPitchModal';
 import { TailoredApplicationModal } from './TailoredApplicationModal';
+import { OfferAlertConfigModal } from '@/components/alerts/OfferAlertConfigModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { exportAnalysisAsCsv, exportAnalysisAsPdf } from '@/lib/export';
 import { useToast } from '@/components/ui/toast';
@@ -72,6 +74,7 @@ export function ResultsSection({
     const [isNegotiateModalOpen, setIsNegotiateModalOpen] = useState(false);
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isExportingCsv, setIsExportingCsv] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -195,6 +198,21 @@ export function ResultsSection({
                 model={model}
             />
 
+            {/* Modal for automated offer alerts & webhooks */}
+            <OfferAlertConfigModal
+                open={isAlertModalOpen}
+                onOpenChange={setIsAlertModalOpen}
+                topOffer={results.topOffers[0] ? {
+                    id: results.topOffers[0].id,
+                    title: results.topOffers[0].title,
+                    company: results.topOffers[0].organization || 'Entreprise',
+                    score: Math.round(results.topOffers[0].compatibilityScore * 100),
+                    location: results.topOffers[0].location,
+                    price: results.topOffers[0].price !== undefined ? String(results.topOffers[0].price) : undefined,
+                    url: results.topOffers[0].url
+                } : null}
+            />
+
             {/* Section Header with Actions & View Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 px-4 rounded-xl bg-card border border-border/80 shadow-2xs">
                 <div className="flex items-center gap-2.5">
@@ -242,6 +260,18 @@ export function ResultsSection({
                     >
                         <Share2 className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">{t.export.share}</span>
+                    </Button>
+
+                    {/* Alerts & Webhooks Button */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsAlertModalOpen(true)}
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5 hover:bg-amber-500/15 touch-manipulation font-medium"
+                        title={t.offerAlerts?.btnConfig || "Alertes & Webhooks"}
+                    >
+                        <Bell className="h-3.5 w-3.5 fill-current" />
+                        <span className="hidden sm:inline">{t.offerAlerts?.btnConfig || "Alertes & Webhooks"}</span>
                     </Button>
 
                     {/* View Mode Switcher (Grid vs List) */}

@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 28 Achevés & Validés — Release V1.3.0 Production Build Validé (0 erreur)
+**Statut Global :** Sprints 1 à 30 Achevés & Validés — Release V1.3.1 Production Build Validé (0 erreur, 40 routes)
 
 ---
 
@@ -15,13 +15,29 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │ 🚀 EN COURS (PRODUCTION)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [x] TASK-EXT-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 29 (Capture│
-│     (Release v1.3.0 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 28 (Cache) │
-│     Build 40/40 Validé) │  │                         │  │     - Sprint 27 (Action)│
+│ [x] TASK-ALERT-01       │  │ [ ] Multi-Tenant DB     │  │     - Sprint 30 (Alerts)│
+│     (Release v1.3.1 &   │  │                         │  │     - Sprint 29 (Capture│
+│     Build 40/40 Validé) │  │                         │  │     - Sprint 28 (Cache) │
+│                         │  │                         │  │     - Sprint 27 (Action)│
 │                         │  │                         │  │     - Sprint 26 (Ingest)│
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 30 Achevée : Alertes d'Offres Haute Adéquation (> 80%) & Webhooks Asynchrones
+
+- [x] **`TASK-ALERT-01` — Système d'Alertes et Webhooks Asynchrones pour Offres à Haute Adéquation**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/alerts/offer-match-notifier.ts`, `src/app/actions/alerts/dispatch-offer-alert.ts`, `src/components/alerts/OfferAlertConfigModal.tsx`, `src/app/analysis/page.tsx`, `src/components/offers/ResultsSection.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-ALERT-01.01` : Service serveur de notification (`offer-match-notifier.ts`) supportant les webhooks externes (Slack, Discord, Zapier, Webhook générique) avec signature HMAC SHA-256 (`X-OfferAnalyst-Signature`), horodatage et déchargement asynchrone via Upstash QStash.
+    - [x] `TASK-ALERT-01.02` : Server Action sécurisée `dispatchOfferAlertAction` avec validation Zod des URLs, des adresses emails et du seuil minimal de score (ex. 80% ou 85%).
+    - [x] `TASK-ALERT-01.03` : Modal de configuration d'alertes (`OfferAlertConfigModal.tsx`) avec sélection du seuil, saisie de l'URL Webhook, bouton de test en 1 clic avec feedback immédiat, et mémorisation locale/session.
+    - [x] `TASK-ALERT-01.04` : Bouton d'accès et déclencheur dans la barre d'outils d'analyse (`ResultsSection.tsx` & `AnalysisPage.tsx`) permettant d'alerter ou d'exporter automatiquement les offres qualifiées.
+    - [x] `TASK-ALERT-01.05` : Bilinguisme intégral FR / EN dans `LanguageContext.tsx` (`offerAlerts`).
+    - [x] `TASK-ALERT-01.06` : Validation sans faute avec `npm run eval:quick` (100/100 PASS) et `npm run build` (0 erreur, 40 routes compilées).
 
 ---
 

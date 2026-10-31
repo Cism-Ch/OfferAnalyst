@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1-patch] - 2026-10-31
+
+### 🔔 Alertes d'Offres Haute Adéquation & Webhooks Asynchrones (Sprint 30)
+
+- **Moteur de Notification Multi-Plateformes (`src/lib/alerts/offer-match-notifier.ts`)** :
+  - Formatage natif et enrichi pour Slack (blocks), Discord (embeds colorés selon le score) et Webhooks HTTP génériques.
+  - Signature de sécurité HMAC SHA-256 (`X-OfferAnalyst-Signature`), horodatage et déchargement asynchrone via Upstash QStash avec retries automatiques (Rule 5).
+- **Server Action Déterministe (`src/app/actions/alerts/dispatch-offer-alert.ts`)** :
+  - Validation Zod des paramètres, contrôle du seuil d'adéquation minimal (75%, 80%, 85%, 90%) et exécution sécurisée avec retour `{ success, data, error }`.
+- **Interface & Modal de Configuration (`OfferAlertConfigModal.tsx`)** :
+  - Modal interactif avec sélection de seuil, détection automatique de plateforme (badge Slack / Discord), bouton de test 1-clic avec feedback temps réel, et persistance locale.
+  - Bouton d'accès direct `🔔 Alertes & Webhooks` dans la barre d'outils de résultats ([`ResultsSection.tsx`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/src/components/offers/ResultsSection.tsx)).
+  - Bilinguisme intégral FR / EN (`offerAlerts` dans `LanguageContext.tsx`).
+
 ## [1.3.0-minor] - 2026-10-31
 
 ### 🧩 Contournement Anti-Bot & Capture 1-Clic Multi-Plateformes (Sprint 29)
