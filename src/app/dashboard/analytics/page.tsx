@@ -91,23 +91,22 @@ export default function AnalyticsPage() {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
     return (
-        <ModernLayout>
-            <div className="container mx-auto py-8 px-4 max-w-7xl">
-                {/* Header */}
-                <motion.div {...fadeInUpProps} className="mb-8">
-                    <div className="flex items-center justify-between">
+        <ModernLayout maxWidth="7xl">
+            {/* Header */}
+                <motion.div {...fadeInUpProps} className="mb-6 sm:mb-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-                            <p className="text-muted-foreground">
+                            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Analytics Dashboard</h1>
+                            <p className="text-sm sm:text-base text-muted-foreground">
                                 Insights into your analysis activity and performance
                             </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Button variant="outline" size="sm" className="h-9 min-h-[36px] sm:min-h-0">
                                 <Calendar className="w-4 h-4 mr-2" />
                                 Last {dateRange} days
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="h-9 min-h-[36px] sm:min-h-0">
                                 <Download className="w-4 h-4 mr-2" />
                                 Export
                             </Button>
@@ -115,19 +114,19 @@ export default function AnalyticsPage() {
                     </div>
                 </motion.div>
 
-                {/* KPI Cards */}
-                <motion.div {...fadeInUpProps} className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* KPI Cards: Responsive 2 cols on mobile, 4 on desktop */}
+                <motion.div {...fadeInUpProps} className="mb-6 sm:mb-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <BarChart3 className="w-4 h-4" />
+                            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                    <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                     Total Searches
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">{kpiData.totalSearches}</div>
-                                <p className="text-xs text-green-500 mt-1 flex items-center gap-1">
+                            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                                <div className="text-xl sm:text-3xl font-bold">{kpiData.totalSearches}</div>
+                                <p className="text-[11px] sm:text-xs text-green-500 mt-1 flex items-center gap-1">
                                     <TrendingUp className="w-3 h-3" />
                                     +12% from last period
                                 </p>
@@ -135,15 +134,15 @@ export default function AnalyticsPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Target className="w-4 h-4" />
+                            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                    <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                     Results Found
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">{kpiData.resultsFound.toLocaleString()}</div>
-                                <p className="text-xs text-green-500 mt-1 flex items-center gap-1">
+                            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                                <div className="text-xl sm:text-3xl font-bold">{kpiData.resultsFound.toLocaleString()}</div>
+                                <p className="text-[11px] sm:text-xs text-green-500 mt-1 flex items-center gap-1">
                                     <TrendingUp className="w-3 h-3" />
                                     +8% from last period
                                 </p>
@@ -151,30 +150,30 @@ export default function AnalyticsPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <TrendingUp className="w-4 h-4" />
+                            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                     Avg Score
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">{kpiData.avgScore}/10</div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                                <div className="text-xl sm:text-3xl font-bold">{kpiData.avgScore}/10</div>
+                                <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                                     High quality matches
                                 </p>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Save className="w-4 h-4" />
+                            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                                    <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                     Saved Offers
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">{kpiData.savedOffers}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                                <div className="text-xl sm:text-3xl font-bold">{kpiData.savedOffers}</div>
+                                <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                                     Across all searches
                                 </p>
                             </CardContent>
@@ -188,35 +187,48 @@ export default function AnalyticsPage() {
                     <motion.div {...staggerItemProps}>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Searches Over Time</CardTitle>
-                                <CardDescription>
+                                <CardTitle className="text-base sm:text-lg">Searches Over Time</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">
                                     Daily search activity for the last {dateRange} days
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={searchesOverTime}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                                        <XAxis dataKey="date" stroke="var(--muted-foreground)" />
-                                        <YAxis stroke="var(--muted-foreground)" />
-                                        <Tooltip 
-                                            contentStyle={{
-                                                backgroundColor: 'var(--card)',
-                                                color: 'var(--card-foreground)',
-                                                border: '1px solid var(--border)',
-                                                borderRadius: '8px'
-                                            }}
-                                        />
-                                        <Legend />
-                                        <Line 
-                                            type="monotone" 
-                                            dataKey="searches" 
-                                            stroke="var(--primary)" 
-                                            strokeWidth={2}
-                                            dot={{ fill: 'var(--primary)' }}
-                                        />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                                <div className="h-[240px] sm:h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={searchesOverTime} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                            <XAxis 
+                                                dataKey="date" 
+                                                stroke="var(--muted-foreground)" 
+                                                minTickGap={20} 
+                                                interval="preserveStartEnd" 
+                                                fontSize={11} 
+                                            />
+                                            <YAxis 
+                                                stroke="var(--muted-foreground)" 
+                                                fontSize={11} 
+                                                width={35} 
+                                            />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'var(--card)',
+                                                    color: 'var(--card-foreground)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px'
+                                                }}
+                                            />
+                                            <Legend wrapperStyle={{ fontSize: '12px' }} />
+                                            <Line 
+                                                type="monotone" 
+                                                dataKey="searches" 
+                                                stroke="var(--primary)" 
+                                                strokeWidth={2}
+                                                dot={{ fill: 'var(--primary)' }}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -226,38 +238,42 @@ export default function AnalyticsPage() {
                         <motion.div {...staggerItemProps}>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Top Categories</CardTitle>
-                                    <CardDescription>
+                                    <CardTitle className="text-base sm:text-lg">Top Categories</CardTitle>
+                                    <CardDescription className="text-xs sm:text-sm">
                                         Distribution by search category
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <PieChart>
-                                            <Pie
-                                                data={categoriesData}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                label={(entry) => entry.name}
-                                                outerRadius={100}
-                                                fill="#8884d8"
-                                                dataKey="value"
-                                            >
-                                                {categoriesData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip 
-                                                contentStyle={{
-                                                    backgroundColor: 'var(--card)',
-                                                    color: 'var(--card-foreground)',
-                                                    border: '1px solid var(--border)',
-                                                    borderRadius: '8px'
-                                                }}
-                                            />
-                                        </PieChart>
-                                    </ResponsiveContainer>
+                                    <div className="h-[240px] sm:h-[300px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={categoriesData}
+                                                    cx="50%"
+                                                    cy="45%"
+                                                    innerRadius={45}
+                                                    outerRadius={70}
+                                                    paddingAngle={2}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                >
+                                                    {categoriesData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip 
+                                                    contentStyle={{
+                                                        backgroundColor: 'var(--card)',
+                                                        color: 'var(--card-foreground)',
+                                                        border: '1px solid var(--border)',
+                                                        borderRadius: '8px',
+                                                        fontSize: '12px'
+                                                    }}
+                                                />
+                                                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -266,28 +282,41 @@ export default function AnalyticsPage() {
                         <motion.div {...staggerItemProps}>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Score Distribution</CardTitle>
-                                    <CardDescription>
+                                    <CardTitle className="text-base sm:text-lg">Score Distribution</CardTitle>
+                                    <CardDescription className="text-xs sm:text-sm">
                                         Quality of analyzed offers
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={scoreDistribution}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                                            <XAxis dataKey="score" stroke="var(--muted-foreground)" />
-                                            <YAxis stroke="var(--muted-foreground)" />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: 'var(--card)',
-                                                    color: 'var(--card-foreground)',
-                                                    border: '1px solid var(--border)',
-                                                    borderRadius: '8px'
-                                                }}
-                                            />
-                                            <Bar dataKey="count" fill="var(--primary)" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    <div className="h-[240px] sm:h-[300px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={scoreDistribution} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                                <XAxis 
+                                                    dataKey="score" 
+                                                    stroke="var(--muted-foreground)" 
+                                                    minTickGap={20} 
+                                                    interval="preserveStartEnd" 
+                                                    fontSize={11} 
+                                                />
+                                                <YAxis 
+                                                    stroke="var(--muted-foreground)" 
+                                                    fontSize={11} 
+                                                    width={35} 
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        backgroundColor: 'var(--card)',
+                                                        color: 'var(--card-foreground)',
+                                                        border: '1px solid var(--border)',
+                                                        borderRadius: '8px',
+                                                        fontSize: '12px'
+                                                    }}
+                                                />
+                                                <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -297,33 +326,47 @@ export default function AnalyticsPage() {
                     <motion.div {...staggerItemProps}>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Model Usage</CardTitle>
-                                <CardDescription>
+                                <CardTitle className="text-base sm:text-lg">Model Usage</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">
                                     AI models used in your analyses
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={modelUsage} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                                        <XAxis type="number" stroke="var(--muted-foreground)" />
-                                        <YAxis dataKey="model" type="category" stroke="var(--muted-foreground)" width={120} />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: 'var(--card)',
-                                                color: 'var(--card-foreground)',
-                                                border: '1px solid var(--border)',
-                                                borderRadius: '8px'
-                                            }}
-                                        />
-                                        <Bar dataKey="requests" fill="var(--primary)" />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                <div className="h-[240px] sm:h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={modelUsage} layout="vertical" margin={{ top: 10, right: 15, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                                            <XAxis 
+                                                type="number" 
+                                                stroke="var(--muted-foreground)" 
+                                                minTickGap={20} 
+                                                fontSize={11} 
+                                            />
+                                            <YAxis 
+                                                dataKey="model" 
+                                                type="category" 
+                                                stroke="var(--muted-foreground)" 
+                                                width={90} 
+                                                fontSize={11} 
+                                                tickFormatter={(val: string) => val.length > 12 ? `${val.slice(0, 10)}…` : val} 
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: 'var(--card)',
+                                                    color: 'var(--card-foreground)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px'
+                                                }}
+                                            />
+                                            <Bar dataKey="requests" fill="var(--primary)" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>
                 </motion.div>
-            </div>
         </ModernLayout>
     );
 }

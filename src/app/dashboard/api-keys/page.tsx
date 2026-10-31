@@ -365,12 +365,11 @@ function APIKeysContent() {
     };
 
     return (
-        <ModernLayout>
+        <ModernLayout maxWidth="6xl">
             {/* Security Migration Banner */}
             <SecurityMigrationBanner />
             
-            <div className="container mx-auto py-8 px-4 max-w-6xl">
-                {/* Toast notification */}
+            {/* Toast notification */}
                 {toast && (
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
@@ -540,13 +539,13 @@ function APIKeysContent() {
                                             custom={index}
                                             className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
                                         >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                                <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-3 mb-2">
-                                                        <Key className="w-5 h-5 text-primary" />
-                                                        <div>
+                                                        <Key className="w-5 h-5 text-primary shrink-0" />
+                                                        <div className="min-w-0">
                                                             <div className="flex flex-wrap items-center gap-2">
-                                                                <h3 className="font-semibold">{apiKey.name}</h3>
+                                                                <h3 className="font-semibold truncate">{apiKey.name}</h3>
                                                                 {apiKey.isTemporary ? (
                                                                     <Badge variant="outline" className="text-yellow-500 border-yellow-500">
                                                                         Temporary
@@ -562,18 +561,18 @@ function APIKeysContent() {
                                                     </div>
                                                     
                                                     <div className="ml-0 sm:ml-8 mt-2 space-y-2">
-                                                        <div className="flex flex-wrap items-center gap-2 font-mono text-xs sm:text-sm">
-                                                            <span className="break-all max-w-[220px] sm:max-w-md bg-muted/50 px-2 py-1 rounded">
+                                                        <div className="flex items-center gap-2 font-mono text-xs sm:text-sm w-full">
+                                                            <span className="break-all flex-1 min-w-0 bg-muted/50 px-2.5 py-1.5 rounded select-all">
                                                                 {visibleKeys.has(apiKey.id) 
                                                                     ? apiKey.key 
                                                                     : maskKey(apiKey.key)
                                                                 }
                                                             </span>
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex items-center gap-1 shrink-0">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    className="h-8 w-8 p-0"
+                                                                    className="h-9 w-9 sm:h-8 sm:w-8 p-0"
                                                                     onClick={() => toggleKeyVisibility(apiKey.id)}
                                                                     aria-label="Toggle visibility"
                                                                 >
@@ -586,7 +585,7 @@ function APIKeysContent() {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    className="h-8 w-8 p-0"
+                                                                    className="h-9 w-9 sm:h-8 sm:w-8 p-0"
                                                                     onClick={() => copyToClipboard(apiKey.key)}
                                                                     aria-label="Copy key"
                                                                 >
@@ -657,28 +656,29 @@ function APIKeysContent() {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5 ml-2">
+                                                <div className="flex items-center justify-between sm:justify-start gap-2 pt-2 border-t border-border/40 sm:border-t-0 sm:pt-0 sm:ml-2 shrink-0 w-full sm:w-auto">
                                                     {!apiKey.isTemporary && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleTestKey(apiKey.id)}
                                                             disabled={testingKeyId === apiKey.id}
-                                                            className="h-8 gap-1.5 text-xs"
+                                                            className="min-h-[44px] sm:min-h-0 sm:h-8 flex-1 sm:flex-initial gap-1.5 text-xs"
                                                             title="Tester le statut et le solde OpenRouter en direct"
                                                         >
                                                             <RefreshCw className={`w-3.5 h-3.5 ${testingKeyId === apiKey.id ? 'animate-spin text-primary' : ''}`} />
-                                                            <span className="hidden sm:inline">Diagnostic</span>
+                                                            <span>Diagnostic</span>
                                                         </Button>
                                                     )}
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => setKeyPendingDeletion({ id: apiKey.id, name: apiKey.name, isTemporary: apiKey.isTemporary })}
-                                                        className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                                                        className="text-destructive hover:text-destructive min-h-[44px] sm:min-h-0 sm:h-8 px-3 sm:px-2 sm:w-8 sm:p-0 gap-1 text-xs flex-1 sm:flex-initial"
                                                         aria-label="Supprimer la clé"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
+                                                        <span className="inline sm:hidden">Supprimer</span>
                                                     </Button>
                                                 </div>
                                             </div>
@@ -760,7 +760,6 @@ function APIKeysContent() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            </div>
         </ModernLayout>
     );
 }
@@ -768,8 +767,8 @@ function APIKeysContent() {
 export default function APIKeysPage() {
     return (
         <Suspense fallback={
-            <ModernLayout>
-                <div className="container mx-auto py-16 px-4 max-w-6xl text-center">
+            <ModernLayout maxWidth="6xl">
+                <div className="text-center py-16">
                     <p className="text-muted-foreground animate-pulse">Chargement de la gestion des clés API...</p>
                 </div>
             </ModernLayout>

@@ -91,11 +91,11 @@ export default function ProjectsPage() {
                 <div className="flex justify-end">
                     <Dialog open={isWizardOpen} onOpenChange={setIsWizardOpen}>
                         <DialogTrigger asChild>
-                            <Button className="gap-2">
+                            <Button className="gap-2 w-full sm:w-auto">
                                 <Plus className="h-4 w-4" /> New Project
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="w-[calc(100%-2rem)] max-w-2xl max-h-[90dvh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
                                     <Bot className="h-5 w-5 text-primary" />
@@ -143,7 +143,7 @@ export default function ProjectsPage() {
                                     <div className="space-y-4">
                                         <Label>Combine Research from History</Label>
                                         <p className="text-xs text-muted-foreground mb-2">Select past analysis to include in this project context.</p>
-                                        <ScrollArea className="h-[200px] border rounded-md p-3">
+                                        <ScrollArea className="min-h-[140px] max-h-[35vh] border rounded-md p-3">
                                             {historyLoading ? (
                                                 <p className="text-sm text-center py-8 text-muted-foreground">Loading history...</p>
                                             ) : history.length === 0 ? (
@@ -206,7 +206,7 @@ export default function ProjectsPage() {
                                 )}
                             </div>
 
-                            <DialogFooter>
+                            <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
                                 {step > 1 && (
                                     <Button variant="outline" onClick={() => setStep(step - 1)}>Back</Button>
                                 )}
@@ -260,7 +260,7 @@ export default function ProjectsPage() {
                                         Created {formatDistanceToNow(project.createdAt, { addSuffix: true })}
                                     </div>
                                 </CardContent>
-                                <CardFooter className="flex justify-between border-t pt-4">
+                                <CardFooter className="flex flex-wrap items-center justify-between gap-2 border-t pt-4">
                                     <Button variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => deleteProject(project.id)}>
                                         Delete
                                     </Button>

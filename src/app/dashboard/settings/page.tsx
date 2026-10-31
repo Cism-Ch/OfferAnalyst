@@ -22,6 +22,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -52,7 +59,8 @@ import {
     Globe,
     LogOut,
     LogIn,
-    UserPlus
+    UserPlus,
+    SlidersHorizontal
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
@@ -65,6 +73,19 @@ export default function SettingsPage() {
     const isFr = language === 'fr';
     const isAuthenticated = Boolean(session?.user?.id);
     const toast = useToast();
+
+    // Tab navigation state
+    type SettingsTab = 'all' | 'profile' | 'preferences' | 'notifications' | 'security' | 'data';
+    const [activeTab, setActiveTab] = useState<SettingsTab>('all');
+
+    const settingsTabs: { id: SettingsTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+        { id: 'all', label: isFr ? 'Tous les paramètres' : 'All Settings', icon: SlidersHorizontal },
+        { id: 'profile', label: isFr ? 'Profil' : 'Profile', icon: User },
+        { id: 'preferences', label: isFr ? 'Langue & Région' : 'Language & Region', icon: Globe },
+        { id: 'notifications', label: isFr ? 'Notifications' : 'Notifications', icon: Bell },
+        { id: 'security', label: isFr ? 'Sécurité' : 'Security', icon: Lock },
+        { id: 'data', label: isFr ? 'Confidentialité & Données' : 'Privacy & Data', icon: Shield },
+    ];
 
     // Profile form state (controlled with fallback to session user)
     const [customFullName, setCustomFullName] = useState<string | null>(null);
@@ -293,10 +314,9 @@ export default function SettingsPage() {
     };
 
     return (
-        <ModernLayout>
-            <div className="container mx-auto py-8 px-4 max-w-4xl">
-                {/* Header */}
-                <motion.div {...fadeInUpProps} className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <ModernLayout maxWidth="5xl">
+            {/* Header */}
+                <motion.div {...fadeInUpProps} className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold mb-1">
                             {isFr ? 'Paramètres du Compte' : 'Account Settings'}
@@ -320,9 +340,58 @@ export default function SettingsPage() {
                     )}
                 </motion.div>
 
+                {/* Responsive Navigation Tabs: Select on < sm, Fluid Pill Bar on sm+ */}
+                <motion.div {...fadeInUpProps} className="mb-6">
+                    <div className="block sm:hidden">
+                        <Label htmlFor="settings-tab-select" className="sr-only">
+                            {isFr ? 'Naviguer dans les sections' : 'Navigate sections'}
+                        </Label>
+                        <Select value={activeTab} onValueChange={(val) => setActiveTab(val as SettingsTab)}>
+                            <SelectTrigger id="settings-tab-select" className="w-full h-11">
+                                <SelectValue placeholder={isFr ? 'Choisir une section' : 'Choose a section'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {settingsTabs.map((tab) => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <SelectItem key={tab.id} value={tab.id} className="min-h-[44px]">
+                                            <div className="flex items-center gap-2.5">
+                                                <Icon className="w-4 h-4 text-muted-foreground" />
+                                                <span>{tab.label}</span>
+                                            </div>
+                                        </SelectItem>
+                                    );
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="hidden sm:block border-b border-border/60 pb-3">
+                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                            {settingsTabs.map((tab) => {
+                                const Icon = tab.icon;
+                                const isActive = activeTab === tab.id;
+                                return (
+                                    <Button
+                                        key={tab.id}
+                                        type="button"
+                                        variant={isActive ? 'default' : 'ghost'}
+                                        size="sm"
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className="h-9 gap-2 shrink-0 rounded-full px-3.5"
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        <span>{tab.label}</span>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </motion.div>
+
                 <motion.div {...staggerContainerProps} className="space-y-6">
                     {/* Guest Mode Banner OR Authenticated Profile Card */}
-                    {!isAuthenticated ? (
+                    {!isAuthenticated && (activeTab === 'all' || activeTab === 'profile') && (
                         <motion.div {...staggerItemProps}>
                             <Card className="border-primary/30 bg-primary/5">
                                 <CardHeader>
@@ -364,83 +433,87 @@ export default function SettingsPage() {
                                 </CardContent>
                             </Card>
                         </motion.div>
-                    ) : (
-                        <>
-                            {/* Profile Information */}
-                            <motion.div {...staggerItemProps}>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>{isFr ? 'Informations du Profil' : 'Profile Information'}</CardTitle>
-                                        <CardDescription>
-                                            {isFr ? 'Mettez à jour vos informations personnelles' : 'Update your personal information'}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
+                    )}
+
+                    {isAuthenticated && (activeTab === 'all' || activeTab === 'profile') && (
+                        /* Profile Information */
+                        <motion.div {...staggerItemProps}>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{isFr ? 'Informations du Profil' : 'Profile Information'}</CardTitle>
+                                    <CardDescription>
+                                        {isFr ? 'Mettez à jour vos informations personnelles' : 'Update your personal information'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <Label>Avatar</Label>
+                                        <div className="flex flex-wrap gap-2.5 mt-2">
+                                            {avatarPresets.map((preset) => {
+                                                const Icon = preset.icon;
+                                                const isSelected = selectedAvatar === preset.id;
+                                                return (
+                                                    <button
+                                                        key={preset.id}
+                                                        type="button"
+                                                        onClick={() => setSelectedAvatar(preset.id)}
+                                                        title={preset.label}
+                                                        aria-label={`Select avatar ${preset.label}`}
+                                                        className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                            isSelected
+                                                                ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
+                                                                : 'border-border/60 bg-muted/40 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                                                        }`}
+                                                    >
+                                                        <Icon className="w-5 h-5" />
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={handleSaveProfile} className="space-y-4">
                                         <div>
-                                            <Label>Avatar</Label>
-                                            <div className="flex flex-wrap gap-2.5 mt-2">
-                                                {avatarPresets.map((preset) => {
-                                                    const Icon = preset.icon;
-                                                    const isSelected = selectedAvatar === preset.id;
-                                                    return (
-                                                        <button
-                                                            key={preset.id}
-                                                            type="button"
-                                                            onClick={() => setSelectedAvatar(preset.id)}
-                                                            title={preset.label}
-                                                            aria-label={`Select avatar ${preset.label}`}
-                                                            className={`w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                                isSelected
-                                                                    ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
-                                                                    : 'border-border/60 bg-muted/40 text-muted-foreground hover:border-primary/50 hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <Icon className="w-5 h-5" />
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                            <Label htmlFor="full-name">{t.auth.nameLabel}</Label>
+                                            <Input
+                                                id="full-name"
+                                                type="text"
+                                                placeholder={t.auth.namePlaceholder}
+                                                value={fullName}
+                                                onChange={(e) => setCustomFullName(e.target.value)}
+                                                className="mt-2 h-11"
+                                            />
                                         </div>
 
-                                        <form onSubmit={handleSaveProfile} className="space-y-4">
-                                            <div>
-                                                <Label htmlFor="full-name">{t.auth.nameLabel}</Label>
-                                                <Input
-                                                    id="full-name"
-                                                    type="text"
-                                                    placeholder={t.auth.namePlaceholder}
-                                                    value={fullName}
-                                                    onChange={(e) => setCustomFullName(e.target.value)}
-                                                    className="mt-2 h-11"
-                                                />
-                                            </div>
+                                        <div>
+                                            <Label htmlFor="email">{t.auth.emailLabel}</Label>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                value={email}
+                                                disabled
+                                                className="mt-2 h-11 bg-muted/50"
+                                            />
+                                        </div>
 
-                                            <div>
-                                                <Label htmlFor="email">{t.auth.emailLabel}</Label>
-                                                <Input
-                                                    id="email"
-                                                    type="email"
-                                                    value={email}
-                                                    disabled
-                                                    className="mt-2 h-11 bg-muted/50"
-                                                />
-                                            </div>
+                                        <Button type="submit" disabled={isSavingProfile} className="min-h-11">
+                                            {isSavingProfile ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    {isFr ? 'Enregistrement...' : 'Saving...'}
+                                                </>
+                                            ) : (
+                                                isFr ? 'Enregistrer le profil' : 'Save Profile'
+                                            )}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
 
-                                            <Button type="submit" disabled={isSavingProfile} className="min-h-11">
-                                                {isSavingProfile ? (
-                                                    <>
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                        {isFr ? 'Enregistrement...' : 'Saving...'}
-                                                    </>
-                                                ) : (
-                                                    isFr ? 'Enregistrer le profil' : 'Save Profile'
-                                                )}
-                                            </Button>
-                                        </form>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-
+                    {isAuthenticated && (activeTab === 'all' || activeTab === 'security') && (
+                        <>
                             {/* Password Management */}
                             <motion.div {...staggerItemProps}>
                                 <Card>
@@ -561,149 +634,155 @@ export default function SettingsPage() {
                     )}
 
                     {/* Language & Regional Preferences */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-primary" />
-                                    {isFr ? 'Langue & Région' : 'Language & Region'}
-                                </CardTitle>
-                                <CardDescription>
-                                    {isFr
-                                        ? "Choisissez votre langue d'affichage et de synthèse IA (Français ou Anglais)"
-                                        : 'Choose your display and AI synthesis language (French or English)'}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/30">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-sm font-semibold">
-                                            {isFr ? 'Langue active' : 'Active Language'}
-                                        </Label>
-                                        <p className="text-xs text-muted-foreground">
-                                            {isFr
-                                                ? "Adapte les formulaires, métriques et explications générées par l'IA"
-                                                : 'Adapts forms, metrics, and AI-generated explanations'}
-                                        </p>
+                    {(activeTab === 'all' || activeTab === 'preferences') && (
+                        <motion.div {...staggerItemProps}>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Globe className="w-5 h-5 text-primary" />
+                                        {isFr ? 'Langue & Région' : 'Language & Region'}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {isFr
+                                            ? "Choisissez votre langue d'affichage et de synthèse IA (Français ou Anglais)"
+                                            : 'Choose your display and AI synthesis language (French or English)'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/30">
+                                        <div className="space-y-0.5">
+                                            <Label className="text-sm font-semibold">
+                                                {isFr ? 'Langue active' : 'Active Language'}
+                                            </Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                {isFr
+                                                    ? "Adapte les formulaires, métriques et explications générées par l'IA"
+                                                    : 'Adapts forms, metrics, and AI-generated explanations'}
+                                            </p>
+                                        </div>
+                                        <LanguageToggle />
                                     </div>
-                                    <LanguageToggle />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
 
                     {/* Notification Preferences */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Bell className="w-5 h-5" />
-                                    Notifications
-                                </CardTitle>
-                                <CardDescription>
-                                    {isFr ? 'Gérez vos préférences de notification' : 'Manage how you receive notifications'}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label>{isFr ? 'Notifications Email' : 'Email Notifications'}</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            {isFr ? 'Recevoir les alertes de sécurité par email' : 'Receive security alerts via email'}
-                                        </p>
+                    {(activeTab === 'all' || activeTab === 'notifications') && (
+                        <motion.div {...staggerItemProps}>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Bell className="w-5 h-5" />
+                                        Notifications
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {isFr ? 'Gérez vos préférences de notification' : 'Manage how you receive notifications'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <Label>{isFr ? 'Notifications Email' : 'Email Notifications'}</Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isFr ? 'Recevoir les alertes de sécurité par email' : 'Receive security alerts via email'}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={emailNotifications}
+                                            onCheckedChange={(checked) => {
+                                                setEmailNotifications(checked);
+                                                toast.info(
+                                                    isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                    isFr
+                                                        ? `Notifications email ${checked ? 'activées' : 'désactivées'}.`
+                                                        : `Email notifications ${checked ? 'enabled' : 'disabled'}.`
+                                                );
+                                            }}
+                                        />
                                     </div>
-                                    <Switch
-                                        checked={emailNotifications}
-                                        onCheckedChange={(checked) => {
-                                            setEmailNotifications(checked);
-                                            toast.info(
-                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
-                                                isFr
-                                                    ? `Notifications email ${checked ? 'activées' : 'désactivées'}.`
-                                                    : `Email notifications ${checked ? 'enabled' : 'disabled'}.`
-                                            );
-                                        }}
-                                    />
-                                </div>
 
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label>{isFr ? 'Notifications Push' : 'Push Notifications'}</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            {isFr ? 'Notifications navigateur en temps réel' : 'Receive browser push notifications'}
-                                        </p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <Label>{isFr ? 'Notifications Push' : 'Push Notifications'}</Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isFr ? 'Notifications navigateur en temps réel' : 'Receive browser push notifications'}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={pushNotifications}
+                                            onCheckedChange={(checked) => {
+                                                setPushNotifications(checked);
+                                                toast.info(
+                                                    isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                    isFr
+                                                        ? `Notifications push ${checked ? 'activées' : 'désactivées'}.`
+                                                        : `Push notifications ${checked ? 'enabled' : 'disabled'}.`
+                                                );
+                                            }}
+                                        />
                                     </div>
-                                    <Switch
-                                        checked={pushNotifications}
-                                        onCheckedChange={(checked) => {
-                                            setPushNotifications(checked);
-                                            toast.info(
-                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
-                                                isFr
-                                                    ? `Notifications push ${checked ? 'activées' : 'désactivées'}.`
-                                                    : `Push notifications ${checked ? 'enabled' : 'disabled'}.`
-                                            );
-                                        }}
-                                    />
-                                </div>
 
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label>{isFr ? 'Résumé Hebdomadaire' : 'Weekly Digest'}</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            {isFr ? 'Synthèse hebdomadaire de vos analyses' : 'Get a weekly summary of your activity'}
-                                        </p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <Label>{isFr ? 'Résumé Hebdomadaire' : 'Weekly Digest'}</Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isFr ? 'Synthèse hebdomadaire de vos analyses' : 'Get a weekly summary of your activity'}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={weeklyDigest}
+                                            onCheckedChange={(checked) => {
+                                                setWeeklyDigest(checked);
+                                                toast.info(
+                                                    isFr ? 'Préférences modifiées' : 'Preferences updated',
+                                                    isFr
+                                                        ? `Résumé hebdomadaire ${checked ? 'activé' : 'désactivé'}.`
+                                                        : `Weekly digest ${checked ? 'enabled' : 'disabled'}.`
+                                                );
+                                            }}
+                                        />
                                     </div>
-                                    <Switch
-                                        checked={weeklyDigest}
-                                        onCheckedChange={(checked) => {
-                                            setWeeklyDigest(checked);
-                                            toast.info(
-                                                isFr ? 'Préférences modifiées' : 'Preferences updated',
-                                                isFr
-                                                    ? `Résumé hebdomadaire ${checked ? 'activé' : 'désactivé'}.`
-                                                    : `Weekly digest ${checked ? 'enabled' : 'disabled'}.`
-                                            );
-                                        }}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
 
                     {/* Privacy & Security */}
-                    <motion.div {...staggerItemProps}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Shield className="w-5 h-5" />
-                                    {isFr ? 'Confidentialité & Export' : 'Privacy & Security'}
-                                </CardTitle>
-                                <CardDescription>
-                                    {isFr ? 'Contrôlez et exportez vos données personnelles' : 'Control and export your personal data'}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="p-4 bg-muted/50 rounded-lg">
-                                    <h4 className="font-semibold mb-2">
-                                        {isFr ? 'Protection des Données' : 'Data Privacy'}
-                                    </h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        {isFr
-                                            ? 'Vos recherches et analyses restent privées. Les clés API Cloud sont chiffrées en AES-256-GCM au repos.'
-                                            : 'Your searches and analyses are private. Cloud API keys are encrypted with AES-256-GCM at rest.'}
-                                    </p>
-                                </div>
-                                <Button variant="outline" onClick={handleDownloadData} className="min-h-11">
-                                    <Download className="w-4 h-4 mr-2" />
-                                    {isFr ? 'Télécharger mes données (JSON)' : 'Download My Data (JSON)'}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                    {(activeTab === 'all' || activeTab === 'data') && (
+                        <motion.div {...staggerItemProps}>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Shield className="w-5 h-5" />
+                                        {isFr ? 'Confidentialité & Export' : 'Privacy & Security'}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {isFr ? 'Contrôlez et exportez vos données personnelles' : 'Control and export your personal data'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="p-4 bg-muted/50 rounded-lg">
+                                        <h4 className="font-semibold mb-2">
+                                            {isFr ? 'Protection des Données' : 'Data Privacy'}
+                                        </h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            {isFr
+                                                ? 'Vos recherches et analyses restent privées. Les clés API Cloud sont chiffrées en AES-256-GCM au repos.'
+                                                : 'Your searches and analyses are private. Cloud API keys are encrypted with AES-256-GCM at rest.'}
+                                        </p>
+                                    </div>
+                                    <Button variant="outline" onClick={handleDownloadData} className="min-h-11">
+                                        <Download className="w-4 h-4 mr-2" />
+                                        {isFr ? 'Télécharger mes données (JSON)' : 'Download My Data (JSON)'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
 
                     {/* Danger Zone (Authenticated Only) */}
-                    {isAuthenticated && (
+                    {isAuthenticated && (activeTab === 'all' || activeTab === 'security') && (
                         <motion.div {...staggerItemProps}>
                             <Card className="border-destructive/50">
                                 <CardHeader>
@@ -726,7 +805,7 @@ export default function SettingsPage() {
                                                 : 'Once you delete your account, all your cloud projects, history, API keys, and saved offers will be permanently removed.'}
                                         </p>
                                         <Button 
-                                            variant="destructive"
+                                            variant="destructive" 
                                             onClick={() => setShowDeleteDialog(true)}
                                             className="min-h-11"
                                         >
@@ -791,7 +870,6 @@ export default function SettingsPage() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            </div>
         </ModernLayout>
     );
 }

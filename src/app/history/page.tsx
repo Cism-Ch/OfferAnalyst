@@ -87,12 +87,12 @@ export default function HistoryPage() {
             <div className="space-y-6">
                 {/* Dual Storage Status Banner */}
                 {isCloudSync ? (
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
-                            <Cloud className="h-4 w-4 text-primary" />
+                            <Cloud className="h-4 w-4 text-primary shrink-0" />
                             <span><strong>Cloud Sync Active:</strong> Your searches are securely retained in MongoDB Atlas (retention: 90 days for unpinned, permanent for pinned).</span>
                         </div>
-                        <Badge variant="outline" className="border-primary/40 text-primary bg-background">
+                        <Badge variant="outline" className="border-primary/40 text-primary bg-background shrink-0 self-start sm:self-auto">
                             Cloud DB
                         </Badge>
                     </div>
@@ -102,8 +102,8 @@ export default function HistoryPage() {
                             <HardDrive className="h-4 w-4 text-amber-600 shrink-0" />
                             <span><strong>Guest Mode (7-day TTL):</strong> Searches are stored locally in your browser for 7 days. Sign in to sync and keep your searches permanently in the cloud.</span>
                         </div>
-                        <Link href="/auth/login?from=/history" className="shrink-0">
-                            <Button size="sm" variant="outline" className="h-7 text-xs border-amber-500/30 text-amber-700 hover:bg-amber-500/10">
+                        <Link href="/auth/login?from=/history" className="shrink-0 w-full sm:w-auto">
+                            <Button size="sm" variant="outline" className="h-8 sm:h-7 w-full sm:w-auto text-xs border-amber-500/30 text-amber-700 hover:bg-amber-500/10">
                                 <Sparkles className="h-3 w-3 mr-1" />
                                 Sign in to Sync
                             </Button>
@@ -120,14 +120,14 @@ export default function HistoryPage() {
                                 placeholder="Search by domain, criteria, or results..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9"
+                                className="pl-9 h-11 md:h-9"
                             />
                         </div>
                         <Button
                             variant="outline"
                             onClick={() => setShowClearDialog(true)}
                             disabled={unpinnedCount === 0}
-                            className="gap-2 shrink-0"
+                            className="gap-2 shrink-0 h-11 md:h-9 w-full sm:w-auto"
                         >
                             <Eraser className="h-4 w-4" />
                             Clear Unpinned
@@ -218,7 +218,7 @@ export default function HistoryPage() {
                                     </div>
 
                                     {item.results?.topOffers && item.results.topOffers.length > 0 ? (
-                                        <ScrollArea className="h-32 rounded-md border border-border bg-muted/40 p-3 text-sm">
+                                        <ScrollArea className="min-h-[110px] max-h-36 rounded-md border border-border bg-muted/40 p-3 text-sm">
                                             <ul className="space-y-2">
                                                 {item.results.topOffers.slice(0, 3).map((offer, idx) => (
                                                     <li key={idx} className="flex justify-between items-start gap-2 text-xs">
@@ -229,7 +229,7 @@ export default function HistoryPage() {
                                             </ul>
                                         </ScrollArea>
                                     ) : (
-                                        <div className="h-32 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground flex flex-col justify-center items-center text-center">
+                                        <div className="min-h-[110px] max-h-36 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground flex flex-col justify-center items-center text-center">
                                             <Info className="h-4 w-4 mb-1 opacity-50" />
                                             <span>Search archived in cloud</span>
                                             <span className="mt-1 opacity-70">Click restore to rerun or reload offers</span>

@@ -7,7 +7,7 @@
  * and non-blocking inline layout so it never obscures the sticky ModernHeader.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import { X, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,30 +15,32 @@ import Link from 'next/link';
 
 const BANNER_DISMISSED_KEY = 'api_security_migration_dismissed';
 const BANNER_VERSION = 'v1_2026_01';
+const emptySubscribe = () => () => {};
 
 export function SecurityMigrationBanner() {
     const { language } = useLanguage();
     const isFr = language === 'fr';
-    const [state, setState] = useState<{ isVisible: boolean; isLoaded: boolean }>(() => {
-        if (typeof window === 'undefined') {
-            return { isVisible: false, isLoaded: true };
-        }
-        
-        const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
-        return {
-            isVisible: dismissed !== BANNER_VERSION,
-            isLoaded: true
-        };
-    });
+    const [isDismissedLocally, setIsDismissedLocally] = useState(false);
+
+    const isClient = useSyncExternalStore(
+        emptySubscribe,
+        () => true,
+        () => false
+    );
 
     const handleDismiss = () => {
         if (typeof window !== 'undefined') {
             localStorage.setItem(BANNER_DISMISSED_KEY, BANNER_VERSION);
         }
-        setState(prev => ({ ...prev, isVisible: false }));
+        setIsDismissedLocally(true);
     };
 
-    if (!state.isLoaded || !state.isVisible) {
+    if (!isClient) {
+        return null;
+    }
+
+    const isStoredDismissed = typeof window !== 'undefined' && localStorage.getItem(BANNER_DISMISSED_KEY) === BANNER_VERSION;
+    if (isDismissedLocally || isStoredDismissed) {
         return null;
     }
 

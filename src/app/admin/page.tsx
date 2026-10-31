@@ -20,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { ResponsiveTable, type ResponsiveTableColumn } from '@/components/ui/responsive-table';
 import { 
     Shield, 
     Users,
@@ -56,6 +57,116 @@ export default function AdminPage() {
         { id: '1', name: 'Administrateur Principal', email: 'admin@offeranalyst.com', role: 'Superadmin', status: 'Active' },
         { id: '2', name: 'Analyste Recrutement', email: 'analyst@offeranalyst.com', role: 'Editor', status: 'Active' },
         { id: '3', name: 'Utilisateur Démo', email: 'demo@offeranalyst.com', role: 'Viewer', status: 'Active' }
+    ];
+
+    type TelemetryLogItem = NonNullable<AdminTelemetryStats['recentLogs']>[number];
+
+    const telemetryColumns: ResponsiveTableColumn<TelemetryLogItem>[] = [
+        {
+            key: 'timestamp',
+            header: 'Date',
+            mobileLabel: 'Heure',
+            hideOnMobile: true,
+            render: (log) => (
+                <span className="text-muted-foreground whitespace-nowrap font-mono">
+                    {new Date(log.timestamp).toLocaleTimeString()}
+                </span>
+            )
+        },
+        {
+            key: 'action',
+            header: 'Action',
+            hideOnMobile: true,
+            render: (log) => (
+                <span className="font-sans font-medium">
+                    {log.action}
+                </span>
+            )
+        },
+        {
+            key: 'model',
+            header: 'Modèle',
+            mobileClassName: 'col-span-2',
+            render: (log) => (
+                <span className="font-mono text-muted-foreground truncate max-w-[150px] inline-block" title={log.model}>
+                    {log.model}
+                </span>
+            )
+        },
+        {
+            key: 'tokensUsed',
+            header: 'Tokens',
+            render: (log) => (
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                    {log.tokensUsed > 0 ? log.tokensUsed.toLocaleString() : '-'}
+                </span>
+            )
+        },
+        {
+            key: 'costUsd',
+            header: 'Coût',
+            render: (log) => (
+                <span className="text-sky-600 dark:text-sky-400 font-mono">
+                    ${log.costUsd > 0 ? log.costUsd.toFixed(5) : '0.00'}
+                </span>
+            )
+        },
+        {
+            key: 'responseTime',
+            header: 'Latence',
+            render: (log) => (
+                <span className="text-muted-foreground font-mono">
+                    {log.responseTime ? `${log.responseTime}ms` : '-'}
+                </span>
+            )
+        },
+        {
+            key: 'success',
+            header: 'Statut',
+            render: (log) => (
+                log.success ? (
+                    <span className="inline-flex items-center text-emerald-500 text-[11px] font-sans">
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        200 OK
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center text-rose-500 text-[11px] font-sans" title={log.errorMessage || 'Erreur'}>
+                        <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                        Erreur
+                    </span>
+                )
+            )
+        }
+    ];
+
+    const userColumns: ResponsiveTableColumn<(typeof recentUsers)[0]>[] = [
+        {
+            key: 'name',
+            header: 'Utilisateur',
+            mobileClassName: 'col-span-2',
+            render: (user) => (
+                <div className="min-w-0">
+                    <h4 className="font-medium truncate">{user.name}</h4>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+            )
+        },
+        {
+            key: 'role',
+            header: 'Rôle',
+            mobileClassName: 'col-span-2',
+            render: (user) => <Badge variant="outline">{user.role}</Badge>
+        },
+        {
+            key: 'status',
+            header: 'Statut',
+            hideOnMobile: true,
+            render: (user) => (
+                <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>
+                    {user.status}
+                </Badge>
+            )
+        }
     ];
 
     const loadTelemetry = useCallback(async () => {
@@ -128,9 +239,8 @@ export default function AdminPage() {
     };
 
     return (
-        <ModernLayout>
-            <div className="container mx-auto py-8 px-4 max-w-7xl">
-                {/* Header */}
+        <ModernLayout maxWidth="7xl">
+            {/* Header */}
                 <motion.div {...fadeInUpProps} className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -329,22 +439,20 @@ export default function AdminPage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-3">
-                                        {recentUsers.map((user) => (
-                                            <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-2">
-                                                <div className="min-w-0 flex-1">
-                                                    <h4 className="font-medium truncate">{user.name}</h4>
-                                                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <Badge variant="outline">{user.role}</Badge>
-                                                    <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>
-                                                        {user.status}
-                                                    </Badge>
-                                                </div>
+                                    <ResponsiveTable
+                                        data={recentUsers}
+                                        columns={userColumns}
+                                        keyExtractor={(u) => u.id}
+                                        caption="Liste des utilisateurs récents"
+                                        mobileCardTitle={(u) => (
+                                            <div className="flex items-center justify-between w-full">
+                                                <span className="font-semibold text-sm">{u.name}</span>
+                                                <Badge variant={u.status === 'Active' ? 'default' : 'destructive'} className="text-[10px]">
+                                                    {u.status}
+                                                </Badge>
                                             </div>
-                                        ))}
-                                    </div>
+                                        )}
+                                    />
                                     <Button variant="outline" className="w-full mt-4 min-h-[44px]">
                                         View All Users
                                     </Button>
@@ -462,69 +570,29 @@ export default function AdminPage() {
                             <CardContent>
                                 {isLoadingTelemetry ? (
                                     <div className="text-center py-6 text-muted-foreground text-sm">Chargement des logs récents...</div>
-                                ) : !telemetry?.recentLogs || telemetry.recentLogs.length === 0 ? (
-                                    <div className="p-4 bg-muted/40 rounded-lg text-center text-sm text-muted-foreground">
-                                        Aucun journal d&apos;activité récent.
-                                    </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-xs text-left">
-                                            <thead className="text-muted-foreground border-b uppercase font-mono">
-                                                <tr>
-                                                    <th className="py-2.5 px-3">Date</th>
-                                                    <th className="py-2.5 px-3">Action</th>
-                                                    <th className="py-2.5 px-3">Modèle</th>
-                                                    <th className="py-2.5 px-3">Tokens</th>
-                                                    <th className="py-2.5 px-3">Coût</th>
-                                                    <th className="py-2.5 px-3">Latence</th>
-                                                    <th className="py-2.5 px-3">Statut</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y font-mono">
-                                                {telemetry.recentLogs.map((log) => (
-                                                    <tr key={log.id} className="hover:bg-muted/30">
-                                                        <td className="py-2 px-3 text-muted-foreground whitespace-nowrap">
-                                                            {new Date(log.timestamp).toLocaleTimeString()}
-                                                        </td>
-                                                        <td className="py-2 px-3 font-sans font-medium">
-                                                            {log.action}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-muted-foreground truncate max-w-[150px]">
-                                                            {log.model}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400 font-semibold">
-                                                            {log.tokensUsed > 0 ? log.tokensUsed.toLocaleString() : '-'}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-sky-600 dark:text-sky-400">
-                                                            ${log.costUsd > 0 ? log.costUsd.toFixed(5) : '0.00'}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-muted-foreground">
-                                                            {log.responseTime ? `${log.responseTime}ms` : '-'}
-                                                        </td>
-                                                        <td className="py-2 px-3">
-                                                            {log.success ? (
-                                                                <span className="inline-flex items-center text-emerald-500 text-[11px] font-sans">
-                                                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                                                                    200 OK
-                                                                </span>
-                                                            ) : (
-                                                                <span className="inline-flex items-center text-rose-500 text-[11px] font-sans" title={log.errorMessage || 'Erreur'}>
-                                                                    <AlertCircle className="w-3.5 h-3.5 mr-1" />
-                                                                    Erreur
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <ResponsiveTable
+                                        data={telemetry?.recentLogs || []}
+                                        columns={telemetryColumns}
+                                        keyExtractor={(log) => log.id}
+                                        isLoading={isLoadingTelemetry}
+                                        loadingMessage="Chargement des logs récents..."
+                                        emptyMessage="Aucun journal d'activité récent."
+                                        caption="Historique des exécutions IA"
+                                        mobileCardTitle={(log) => (
+                                            <div className="flex items-center justify-between w-full">
+                                                <span className="font-semibold text-sm">{log.action}</span>
+                                                <span className="text-xs text-muted-foreground font-mono">
+                                                    {new Date(log.timestamp).toLocaleTimeString()}
+                                                </span>
+                                            </div>
+                                        )}
+                                    />
                                 )}
                             </CardContent>
                         </Card>
                     </motion.div>
                 </motion.div>
-            </div>
         </ModernLayout>
     );
 }

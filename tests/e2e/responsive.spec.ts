@@ -30,6 +30,7 @@ const TARGET_ROUTES = [
   '/search-context',
   '/data-source',
   '/saved',
+  '/history',
   '/auth/login',
   '/auth/signup',
   '/help',
@@ -171,6 +172,40 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
         // Close modal
         await page.keyboard.press('Escape');
         await expect(modal).not.toBeVisible();
+      });
+
+      test('Dense routes (Admin, Settings, API Keys, Analytics, Projects) should not have horizontal overflow', async ({ page, context }) => {
+        await context.addCookies([
+          {
+            name: 'offeranalyst.session_token',
+            value: 'mock_test_session_active',
+            domain: 'localhost',
+            path: '/',
+          },
+        ]);
+
+        const denseRoutes = [
+          '/admin',
+          '/dashboard/settings',
+          '/dashboard/api-keys',
+          '/dashboard/analytics',
+          '/projects',
+        ];
+
+        for (const route of denseRoutes) {
+          await page.goto(route, { waitUntil: 'domcontentloaded' });
+          await page.waitForLoadState('load');
+
+          const overflow = await page.evaluate(() => {
+            const doc = document.documentElement;
+            const body = document.body;
+            const maxScrollWidth = Math.max(doc.scrollWidth, body ? body.scrollWidth : 0);
+            const clientWidth = doc.clientWidth;
+            return maxScrollWidth - clientWidth;
+          });
+
+          expect(overflow).toBeLessThanOrEqual(1);
+        }
       });
 
       if (viewport.width < 768) {
