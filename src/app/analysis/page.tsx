@@ -120,6 +120,9 @@ export default function AnalysisPage() {
                                 results={dashboardState.results}
                                 onSaveOffer={saveOffer}
                                 isOfferSaved={isSaved}
+                                domain={dashboardState.domain}
+                                criteria={dashboardState.explicitCriteria}
+                                model={dashboardState.model}
                             />
                         </div>
                     </div>

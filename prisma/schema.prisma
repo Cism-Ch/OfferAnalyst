@@ -35,6 +35,7 @@ model User {
   apiKeyUsageLogs APIKeyUsageLog[]
   securityAlerts SecurityAlert[]
   analysisResults AnalysisResult[]
+  sharedAnalyses SharedAnalysis[]
 
   @@index([createdAt])
   @@map("users")
@@ -390,5 +391,29 @@ model AnalysisResult {
   @@index([domain])
   @@index([createdAt])
   @@map("analysis_results")
+}
+
+// Shared analyses for read-only collaboration & public sharing
+model SharedAnalysis {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  shareToken      String    @unique
+  title           String?
+  domain          String
+  criteria        String?   @db.String
+  model           String?
+  marketSummary   String    @db.String
+  topOffers       String    @db.String // JSON stringified ScoredOffer[]
+  searchSources   String?   @db.String // JSON stringified SearchSource[]
+  totalAnalyzed   Int       @default(0)
+  views           Int       @default(0)
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  userId          String?   @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("shared_analyses")
 }
 

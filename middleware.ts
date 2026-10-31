@@ -19,6 +19,7 @@ const publicRoutes = [
   "/auth/verify",
   "/help",
   "/changelog",
+  "/share",
 ];
 
 // Routes that require authentication

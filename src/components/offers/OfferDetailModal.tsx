@@ -23,10 +23,14 @@ import {
     TrendingUp, 
     CheckCheck, 
     Award,
-    FileText
+    FileText,
+    Share2,
+    Copy,
+    Check
 } from 'lucide-react';
 import { ScoredOffer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/components/ui/toast';
 
 interface OfferDetailModalProps {
     offer: ScoredOffer | null;
@@ -50,13 +54,49 @@ export function OfferDetailModal({
     onSave,
     isSaved
 }: OfferDetailModalProps) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isEn = language === 'en';
+    const toast = useToast();
+    const [copied, setCopied] = React.useState(false);
 
     if (!offer) return null;
 
     const formattedPrice = offer.price && typeof offer.price === 'number'
         ? `${offer.price.toLocaleString()} €`
         : String(offer.price || 'N/A');
+
+    const handleCopyOfferSummary = async () => {
+        if (!offer) return;
+        const rel = offer.breakdown?.relevance !== undefined ? `${offer.breakdown.relevance}/100` : 'N/A';
+        const qual = offer.breakdown?.quality !== undefined ? `${offer.breakdown.quality}/100` : 'N/A';
+        const trnd = offer.breakdown?.trend !== undefined ? `${offer.breakdown.trend}/100` : 'N/A';
+        const priceLabel = isEn ? 'Price' : 'Prix';
+        const locLabel = isEn ? 'Location' : 'Localisation';
+        const catLabel = isEn ? 'Category' : 'Catégorie';
+        const scoreLabel = isEn ? 'AI Score' : 'Score IA';
+        const relLabel = isEn ? 'Relevance' : 'Pertinence';
+        const qualLabel = isEn ? 'Quality' : 'Qualité';
+        const trndLabel = isEn ? 'Trend' : 'Tendance';
+        const justLabel = isEn ? 'AI Justification' : 'Justification';
+        const linkLabel = isEn ? 'Link' : 'Lien';
+
+        const summary = [
+            `#${offer.rank || 1} ${offer.title}`,
+            `${priceLabel}: ${formattedPrice} | ${locLabel}: ${offer.location || 'N/A'} | ${catLabel}: ${offer.category || 'N/A'}`,
+            `${scoreLabel}: ${offer.finalScore}/100 (${relLabel}: ${rel}, ${qualLabel}: ${qual}, ${trndLabel}: ${trnd})`,
+            `${justLabel}: ${offer.justification}`,
+            offer.url ? `${linkLabel}: ${offer.url}` : ''
+        ].filter(Boolean).join('\n');
+
+        try {
+            await navigator.clipboard.writeText(summary);
+            setCopied(true);
+            toast.success(t.export.linkCopied, offer.title);
+            setTimeout(() => setCopied(false), 2500);
+        } catch {
+            toast.error(isEn ? 'Error' : 'Erreur', isEn ? 'Failed to copy offer details.' : 'Impossible de copier les détails.');
+        }
+    };
 
     const scoreColorClass = offer.finalScore >= 80
         ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
@@ -235,14 +275,24 @@ export function OfferDetailModal({
                         </span>
                     )}
 
-                    {/* Right: Save & Close */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {/* Right: Share, Save & Close */}
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyOfferSummary}
+                            className="flex-1 sm:flex-none gap-1.5 text-xs border-border/80"
+                            title={t.export.share}
+                        >
+                            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5 text-primary" />}
+                            <span>{copied ? t.export.linkCopied : t.export.share}</span>
+                        </Button>
                         <Button
                             variant={isSaved ? "secondary" : "default"}
                             size="sm"
                             onClick={() => onSave(offer)}
                             disabled={isSaved}
-                            className="flex-1 sm:flex-none gap-2"
+                            className="flex-1 sm:flex-none gap-2 text-xs"
                         >
                             {isSaved ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Wallet className="h-4 w-4" />}
                             {isSaved ? t.offer.saved : t.offer.save}
@@ -251,7 +301,7 @@ export function OfferDetailModal({
                             variant="outline" 
                             size="sm" 
                             onClick={onClose}
-                            className="flex-1 sm:flex-none"
+                            className="flex-1 sm:flex-none text-xs"
                         >
                             {t.offer.close}
                         </Button>

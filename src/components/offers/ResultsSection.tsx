@@ -1,14 +1,39 @@
 'use client';
 
+/**
+ * ResultsSection Component
+ * 
+ * Displays the results of the offer analysis with customizable view modes (Grid / List),
+ * luminous card layout, and an integrated modal for full offer details.
+ * Features bilingual action toolbar:
+ * - Download styled PDF report
+ * - Export structured CSV file
+ * - Secure public share link generation
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart3, CheckCircle2, Globe, ExternalLink, LayoutGrid, List, Sparkles } from 'lucide-react';
+import { 
+    BarChart3, 
+    CheckCircle2, 
+    Globe, 
+    ExternalLink, 
+    LayoutGrid, 
+    List, 
+    Sparkles, 
+    FileText, 
+    FileSpreadsheet, 
+    Share2 
+} from 'lucide-react';
 import { AnalysisResponse, ScoredOffer } from '@/types';
 import { OfferCard } from './OfferCard';
 import { OfferDetailModal } from './OfferDetailModal';
+import { ShareAnalysisModal } from './ShareAnalysisModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { exportAnalysisAsCsv, exportAnalysisAsPdf } from '@/lib/export';
+import { useToast } from '@/components/ui/toast';
 
 /**
  * ResultsSection Component Props
@@ -20,23 +45,30 @@ interface ResultsSectionProps {
     onSaveOffer: (offer: ScoredOffer) => void;
     /** Function to check if an offer is saved */
     isOfferSaved: (offerId: string) => boolean;
+    /** Optional domain context */
+    domain?: string;
+    /** Optional search criteria */
+    criteria?: string;
+    /** Optional model identifier */
+    model?: string;
 }
 
-/**
- * ResultsSection Component
- * 
- * Displays the results of the offer analysis with customizable view modes (Grid / List),
- * luminous card layout, and an integrated modal for full offer details.
- */
 export function ResultsSection({
     results,
     onSaveOffer,
-    isOfferSaved
+    isOfferSaved,
+    domain = 'Analysis',
+    criteria,
+    model
 }: ResultsSectionProps) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const toast = useToast();
     const [selectedOffer, setSelectedOffer] = useState<ScoredOffer | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [isExportingCsv, setIsExportingCsv] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
 
     const handleOpenDetail = (offer: ScoredOffer) => {
         setSelectedOffer(offer);
@@ -46,6 +78,36 @@ export function ResultsSection({
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedOffer(null);
+    };
+
+    const isEn = language === 'en';
+
+    const handleExportCsv = () => {
+        if (!results) return;
+        setIsExportingCsv(true);
+        try {
+            exportAnalysisAsCsv(results, domain, criteria);
+            toast.success(t.export.exportCsv, isEn ? 'CSV file exported successfully' : 'Fichier CSV exporté avec succès');
+        } catch (err) {
+            console.error('Failed to export CSV:', err);
+            toast.error(t.export.errorExport, isEn ? 'Unable to generate CSV file' : 'Impossible de générer le fichier CSV');
+        } finally {
+            setIsExportingCsv(false);
+        }
+    };
+
+    const handleExportPdf = () => {
+        if (!results) return;
+        setIsExportingPdf(true);
+        try {
+            exportAnalysisAsPdf(results, domain, criteria);
+            toast.success(t.export.exportPdf, isEn ? 'PDF report generated successfully' : 'Rapport PDF généré avec succès');
+        } catch (err) {
+            console.error('Failed to export PDF:', err);
+            toast.error(t.export.errorExport, isEn ? 'Unable to generate PDF report' : 'Impossible de générer le rapport PDF');
+        } finally {
+            setIsExportingPdf(false);
+        }
     };
 
     // Show empty state if no results
@@ -81,7 +143,17 @@ export function ResultsSection({
                 isSaved={selectedOffer ? isOfferSaved(selectedOffer.id) : false}
             />
 
-            {/* Section Header with View Toggle */}
+            {/* Modal for sharing analysis */}
+            <ShareAnalysisModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                analysis={results}
+                domain={domain}
+                criteria={criteria}
+                model={model}
+            />
+
+            {/* Section Header with Actions & View Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 px-4 rounded-xl bg-card border border-border/80 shadow-2xs">
                 <div className="flex items-center gap-2.5">
                     <h3 className="font-bold text-lg text-foreground tracking-tight">{t.results.title}</h3>
@@ -90,28 +162,69 @@ export function ResultsSection({
                     </Badge>
                 </div>
 
-                {/* View Mode Switcher (Grid vs List) */}
-                <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/60 border border-border/60">
+                {/* Right toolbar: Export & Share Actions + View Mode Switcher */}
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Export PDF Button */}
                     <Button
-                        variant={viewMode === 'grid' ? "default" : "ghost"}
+                        variant="outline"
                         size="sm"
-                        onClick={() => setViewMode('grid')}
-                        className="h-7 px-2.5 text-xs gap-1.5 rounded-md"
-                        title={t.results.viewGrid}
+                        onClick={handleExportPdf}
+                        disabled={isExportingPdf}
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent"
+                        title={t.export.exportPdf}
                     >
-                        <LayoutGrid className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{t.results.viewGrid}</span>
+                        <FileText className="h-3.5 w-3.5 text-rose-500" />
+                        <span className="hidden sm:inline">{t.export.exportPdf}</span>
                     </Button>
+
+                    {/* Export CSV Button */}
                     <Button
-                        variant={viewMode === 'list' ? "default" : "ghost"}
+                        variant="outline"
                         size="sm"
-                        onClick={() => setViewMode('list')}
-                        className="h-7 px-2.5 text-xs gap-1.5 rounded-md"
-                        title={t.results.viewList}
+                        onClick={handleExportCsv}
+                        disabled={isExportingCsv}
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-border/80 text-foreground hover:bg-accent"
+                        title={t.export.exportCsv}
                     >
-                        <List className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{t.results.viewList}</span>
+                        <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-500" />
+                        <span className="hidden sm:inline">{t.export.exportCsv}</span>
                     </Button>
+
+                    {/* Share Button */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsShareModalOpen(true)}
+                        className="h-8 px-2.5 text-xs gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+                        title={t.export.share}
+                    >
+                        <Share2 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{t.export.share}</span>
+                    </Button>
+
+                    {/* View Mode Switcher (Grid vs List) */}
+                    <div className="flex items-center gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/60 ml-1">
+                        <Button
+                            variant={viewMode === 'grid' ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                            className="h-7 px-2 text-xs gap-1 rounded-md"
+                            title={t.results.viewGrid}
+                        >
+                            <LayoutGrid className="h-3.5 w-3.5" />
+                            <span className="hidden md:inline">{t.results.viewGrid}</span>
+                        </Button>
+                        <Button
+                            variant={viewMode === 'list' ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setViewMode('list')}
+                            className="h-7 px-2 text-xs gap-1 rounded-md"
+                            title={t.results.viewList}
+                        >
+                            <List className="h-3.5 w-3.5" />
+                            <span className="hidden md:inline">{t.results.viewList}</span>
+                        </Button>
+                    </div>
                 </div>
             </div>
 
