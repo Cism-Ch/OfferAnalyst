@@ -27,12 +27,16 @@ const RESPONSIVE_VIEWPORTS = [
 
 const TARGET_ROUTES = [
   '/',
+  '/landing',
   '/search-context',
   '/data-source',
   '/saved',
   '/history',
   '/auth/login',
   '/auth/signup',
+  '/auth/reset',
+  '/auth/verify',
+  '/onboarding',
   '/help',
   '/terms',
   '/privacy',
@@ -303,6 +307,77 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
           if (headerBox) {
             // Must be strictly <= 56px (allowing at most 1px fractional rendering margin)
             expect(headerBox.height).toBeLessThanOrEqual(57);
+          }
+        });
+
+        test('Mobile auth forms have inputmode, autocomplete, and enterkeyhint ergonomics (TASK-OVL-01)', async ({ page }) => {
+          // 1. Login page ergonomics
+          await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
+          const email = page.locator('input[type="email"]').first();
+          await expect(email).toHaveAttribute('inputmode', 'email');
+          await expect(email).toHaveAttribute('autocomplete', 'email');
+          await expect(email).toHaveAttribute('enterkeyhint', 'next');
+
+          const password = page.locator('input[type="password"]').first();
+          await expect(password).toHaveAttribute('autocomplete', 'current-password');
+          await expect(password).toHaveAttribute('enterkeyhint', 'done');
+
+          // 2. Signup page ergonomics
+          await page.goto('/auth/signup', { waitUntil: 'domcontentloaded' });
+          const signupName = page.locator('input#name').first();
+          await expect(signupName).toHaveAttribute('autocomplete', 'name');
+          await expect(signupName).toHaveAttribute('enterkeyhint', 'next');
+
+          const signupEmail = page.locator('input[type="email"]').first();
+          await expect(signupEmail).toHaveAttribute('inputmode', 'email');
+          await expect(signupEmail).toHaveAttribute('autocomplete', 'email');
+          await expect(signupEmail).toHaveAttribute('enterkeyhint', 'next');
+
+          const signupPassword = page.locator('input#password').first();
+          await expect(signupPassword).toHaveAttribute('autocomplete', 'new-password');
+          await expect(signupPassword).toHaveAttribute('enterkeyhint', 'next');
+
+          const signupConfirm = page.locator('input#confirmPassword').first();
+          await expect(signupConfirm).toHaveAttribute('autocomplete', 'new-password');
+          await expect(signupConfirm).toHaveAttribute('enterkeyhint', 'done');
+
+          // 3. Reset password page ergonomics
+          await page.goto('/auth/reset', { waitUntil: 'domcontentloaded' });
+          const resetEmail = page.locator('input#email').first();
+          await expect(resetEmail).toHaveAttribute('inputmode', 'email');
+          await expect(resetEmail).toHaveAttribute('autocomplete', 'email');
+          await expect(resetEmail).toHaveAttribute('enterkeyhint', 'send');
+        });
+
+        test('AIModelSelector opens as mobile bottom-sheet with grab handle indicator (TASK-OVL-03)', async ({ page }) => {
+          await page.addInitScript(() => {
+            window.localStorage.setItem('cookie-consent', JSON.stringify({ necessary: true, functional: true, analytics: false, marketing: false }));
+          });
+          await page.goto('/', { waitUntil: 'domcontentloaded' });
+          await page.waitForLoadState('load');
+
+          const modelBtn = page.locator('button[aria-label*="modèle" i], button[aria-label*="model" i]').first();
+          await expect(modelBtn).toBeVisible({ timeout: 5000 });
+          await modelBtn.click({ force: true });
+
+          const dialog = page.locator('[data-slot="dialog-content"]');
+          await expect(dialog).toBeVisible({ timeout: 5000 });
+          await expect(dialog).toHaveAttribute('data-variant', 'bottom-sheet');
+          const handle = dialog.locator('div[aria-hidden="true"]').first();
+          await expect(handle).toBeVisible();
+
+          await page.keyboard.press('Escape');
+          await expect(dialog).not.toBeVisible();
+        });
+
+        test('CookieConsent renders adaptively and contains valid legal routes (TASK-OVL-03)', async ({ page }) => {
+          await page.goto('/help', { waitUntil: 'domcontentloaded' });
+          const cookieBanner = page.locator('text=Cookie Preferences');
+          if (await cookieBanner.isVisible()) {
+            const privacyLink = page.locator('a[href="/privacy"]');
+            await expect(privacyLink).toBeVisible();
+            const termsLink = page.locator('a[href="/terms"]');
+            await expect(termsLink).toBeVisible();
           }
         });
       }

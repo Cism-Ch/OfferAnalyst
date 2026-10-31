@@ -73,7 +73,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 * (index + 1) }}
-            className="p-6 rounded-xl border bg-card hover:bg-accent/50 transition-colors"
+            className="p-4 sm:p-6 rounded-xl border bg-card hover:bg-accent/50 transition-colors"
           >
             <feature.icon className="h-8 w-8 mb-3 text-primary" />
             <h3 className="font-semibold mb-2">{feature.title}</h3>

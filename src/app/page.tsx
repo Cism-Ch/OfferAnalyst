@@ -94,15 +94,15 @@ export default function Home() {
                                     <Sparkles className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl">{t.home.cardTitle}</CardTitle>
-                                    <CardDescription className="text-base mt-1">
+                                    <CardTitle className="text-xl sm:text-2xl">{t.home.cardTitle}</CardTitle>
+                                    <CardDescription className="text-sm sm:text-base mt-1">
                                         {t.home.cardDescription}
                                     </CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-2 sm:gap-3">
                                 {features.map((feature, idx) => (
                                     <Badge key={idx} variant="secondary" className="px-3 py-1.5 gap-2">
                                         <feature.icon className="h-3.5 w-3.5" />
@@ -120,7 +120,7 @@ export default function Home() {
                         <CheckCircle2 className="h-5 w-5 text-primary" />
                         {t.home.workflowTitle}
                     </h2>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {steps.map((step, idx) => (
                             <motion.div
                                 key={idx}

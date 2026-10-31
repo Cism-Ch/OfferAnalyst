@@ -99,7 +99,7 @@ export function AIModelSelector({
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
+            <DialogContent variant="bottom-sheet" className="sm:max-w-3xl max-h-[calc(100dvh-1rem)] sm:max-h-[85dvh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-t-2xl sm:rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
                 <DialogHeader className="pb-3 border-b border-border/60">
                     <div className="flex items-center justify-between gap-3">
                         <div>

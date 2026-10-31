@@ -122,7 +122,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
+    <div className="min-h-app flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
       {/* Top Bar */}
       <header className="w-full max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
         <Link
@@ -138,7 +138,7 @@ function ResetPasswordContent() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-3 sm:p-6">
         {passwordResetSuccess ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -146,8 +146,8 @@ function ResetPasswordContent() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-md"
           >
-            <Card className="border-border/60 shadow-xl">
-              <CardHeader className="space-y-1 text-center">
+            <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+              <CardHeader className="space-y-1 text-center p-4 sm:p-6 pb-2">
                 <div className="mx-auto w-12 h-12 bg-emerald-500/15 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                 </div>
@@ -160,7 +160,7 @@ function ResetPasswordContent() {
                     : "Your password has been securely updated. Redirecting to login..."}
                 </CardDescription>
               </CardHeader>
-              <CardFooter>
+              <CardFooter className="p-4 sm:p-6 pt-2">
                 <Link href="/auth/login" className="w-full">
                   <Button className="w-full h-11">
                     {isFr ? "Aller à la connexion" : "Go to Login"}
@@ -176,8 +176,8 @@ function ResetPasswordContent() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-md"
           >
-            <Card className="border-border/60 shadow-xl">
-              <CardHeader className="space-y-1 text-center">
+            <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+              <CardHeader className="space-y-1 text-center p-4 sm:p-6 pb-2">
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <KeyRound className="h-6 w-6 text-primary" />
                 </div>
@@ -190,7 +190,7 @@ function ResetPasswordContent() {
                     : "Choose a strong password for your account (minimum 8 characters)"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                 {error && (
                   <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg flex items-start gap-2">
                     <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -206,6 +206,8 @@ function ResetPasswordContent() {
                     <Input
                       id="new-password"
                       type="password"
+                      autoComplete="new-password"
+                      enterKeyHint="next"
                       placeholder="••••••••"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
@@ -221,6 +223,8 @@ function ResetPasswordContent() {
                     <Input
                       id="confirm-password"
                       type="password"
+                      autoComplete="new-password"
+                      enterKeyHint="done"
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -245,7 +249,7 @@ function ResetPasswordContent() {
                   </Button>
                 </form>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 sm:p-6 pt-0">
                 <Link href="/auth/login" className="w-full">
                   <Button variant="ghost" className="w-full h-11">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -262,8 +266,8 @@ function ResetPasswordContent() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-md"
           >
-            <Card className="border-border/60 shadow-xl">
-              <CardHeader className="space-y-1 text-center">
+            <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+              <CardHeader className="space-y-1 text-center p-4 sm:p-6 pb-2">
                 <div className="mx-auto w-12 h-12 bg-emerald-500/15 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                 </div>
@@ -282,7 +286,7 @@ function ResetPasswordContent() {
                   )}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                 <p className="text-sm text-muted-foreground text-center">
                   {isFr
                     ? "Cliquez sur le lien dans l'email pour choisir un nouveau mot de passe. Ce lien expire dans 1 heure."
@@ -299,7 +303,7 @@ function ResetPasswordContent() {
                   </button>
                 </p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 sm:p-6 pt-0">
                 <Link href="/auth/login" className="w-full">
                   <Button variant="outline" className="w-full h-11">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -316,8 +320,8 @@ function ResetPasswordContent() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-md"
           >
-            <Card className="border-border/60 shadow-xl">
-              <CardHeader className="space-y-1">
+            <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+              <CardHeader className="space-y-1 p-4 sm:p-6 pb-2">
                 <CardTitle className="text-2xl font-bold text-center">
                   {isFr ? "Mot de passe oublié" : "Reset password"}
                 </CardTitle>
@@ -327,7 +331,7 @@ function ResetPasswordContent() {
                     : "Enter your email address and we'll send you a reset link"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -345,6 +349,9 @@ function ResetPasswordContent() {
                     <Input
                       id="email"
                       type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      enterKeyHint="send"
                       placeholder={t.auth.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -368,7 +375,7 @@ function ResetPasswordContent() {
                   </Button>
                 </form>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 sm:p-6 pt-0">
                 <Link href="/auth/login" className="w-full">
                   <Button variant="ghost" className="w-full h-11">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -388,7 +395,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-app flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }

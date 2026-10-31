@@ -139,7 +139,7 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
+    <div className="min-h-app flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
       {/* Top Bar */}
       <header className="w-full max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
         <Link
@@ -155,15 +155,15 @@ function VerifyEmailContent() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-3 sm:p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
           className="w-full max-w-md"
         >
-          <Card className="border-border/60 shadow-xl">
-            <CardHeader className="space-y-1 text-center">
+          <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+            <CardHeader className="space-y-1 text-center p-4 sm:p-6 pb-2">
               <div
                 className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${
                   status === "loading"
@@ -193,7 +193,7 @@ function VerifyEmailContent() {
             </CardHeader>
 
             {status === "success" && (
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                 <p className="text-sm text-muted-foreground text-center">
                   {isFr
                     ? "Redirection vers le tableau de bord..."
@@ -203,7 +203,7 @@ function VerifyEmailContent() {
             )}
 
             {status === "error" && (
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                 <p className="text-sm text-muted-foreground text-center">
                   {isFr
                     ? "Le lien de vérification a peut-être expiré ou est invalide."
@@ -213,6 +213,9 @@ function VerifyEmailContent() {
                 <div className="space-y-2">
                   <Input
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    enterKeyHint="send"
                     placeholder={t.auth.emailPlaceholder}
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
@@ -241,7 +244,7 @@ function VerifyEmailContent() {
               </CardContent>
             )}
 
-            <CardFooter className="flex flex-col gap-2">
+            <CardFooter className="flex flex-col gap-2 p-4 sm:p-6 pt-0">
               {status !== "loading" && (
                 <Link href="/auth/login" className="w-full">
                   <Button variant="ghost" className="w-full h-11">
@@ -261,7 +264,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-app flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }

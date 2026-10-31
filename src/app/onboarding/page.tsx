@@ -150,14 +150,14 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
+    <div className="min-h-app bg-gradient-to-br from-background to-muted flex flex-col overflow-x-hidden">
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Progress value={progress} className="h-1 rounded-none" />
       </div>
 
       {/* Top Navigation & Controls */}
-      <header className="w-full max-w-4xl mx-auto px-3 sm:px-6 pt-5 pb-2 flex items-center justify-between gap-2">
+      <header className="w-full max-w-4xl mx-auto px-3 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors min-h-11 px-3 rounded-lg hover:bg-muted/60"
@@ -172,15 +172,15 @@ export default function OnboardingPage() {
       </header>
 
       {/* Main content */}
-      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 max-w-4xl flex-1">
+      <div className="w-full max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-6 flex-1 overflow-x-hidden">
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-8">
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
             <div
               key={index}
-              className={`h-2 rounded-full transition-all ${
+              className={`h-1.5 sm:h-2 rounded-full transition-all ${
                 index + 1 === currentStep
-                  ? "w-8 bg-primary"
+                  ? "w-6 sm:w-8 bg-primary"
                   : index + 1 < currentStep
                   ? "w-2 bg-primary"
                   : "w-2 bg-muted-foreground/30"
@@ -193,10 +193,11 @@ export default function OnboardingPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+            className="w-full"
           >
             <Card className="border-border/60 shadow-lg">
               <CardContent className="p-4 sm:p-8">

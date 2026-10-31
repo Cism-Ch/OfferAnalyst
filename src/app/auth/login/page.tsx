@@ -141,7 +141,7 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
+    <div className="min-h-app flex flex-col bg-gradient-to-br from-background via-background to-muted/40">
       {/* Top Bar */}
       <header className="w-full max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-2">
         <Link
@@ -157,22 +157,22 @@ function LoginFormContent() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-3 sm:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="w-full max-w-md space-y-4"
         >
-          <Card className="border-border/60 shadow-xl">
-            <CardHeader className="space-y-2 text-center">
+          <Card className="border-border/60 shadow-xl overflow-hidden py-0">
+            <CardHeader className="space-y-2 text-center p-4 sm:p-6 pb-2 sm:pb-4">
               <div className="mx-auto w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/20">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <CardTitle className="text-2xl font-bold">{t.auth.loginTitle}</CardTitle>
               <CardDescription>{t.auth.loginSubtitle}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
               {displayError && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -191,6 +191,8 @@ function LoginFormContent() {
                   <Input
                     id="email"
                     type="email"
+                    inputMode="email"
+                    enterKeyHint="next"
                     placeholder={t.auth.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -214,6 +216,7 @@ function LoginFormContent() {
                   <Input
                     id="password"
                     type="password"
+                    enterKeyHint="done"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -247,7 +250,7 @@ function LoginFormContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -270,7 +273,7 @@ function LoginFormContent() {
                 </Button>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-3 border-t border-border/40 pt-4">
+            <CardFooter className="flex flex-col space-y-3 border-t border-border/40 p-4 sm:p-6 pt-4 sm:pt-4">
               <p className="text-sm text-center text-muted-foreground w-full">
                 {t.auth.noAccountYet}{" "}
                 <Link
@@ -300,7 +303,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/40">
+        <div className="min-h-app flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/40">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }

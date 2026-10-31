@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie, X, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -102,19 +103,19 @@ export function CookieConsent() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 pb-safe sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md max-h-[90vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4 pb-safe sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md max-h-[75dvh] flex flex-col"
       >
-        <PremiumCard className="shadow-2xl max-h-[85vh] flex flex-col overflow-hidden" animation="none">
-          <div className="p-4 sm:p-6 overflow-y-auto momentum-scroll">
+        <PremiumCard className="shadow-2xl max-h-[70dvh] flex flex-col overflow-hidden border-border/80" animation="none">
+          <div className="p-3 sm:p-5 overflow-y-auto momentum-scroll">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <Cookie className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Cookie Preferences</h3>
+                <Cookie className="h-5 w-5 text-primary shrink-0" />
+                <h3 className="font-semibold text-sm sm:text-base">Cookie Preferences</h3>
               </div>
               <button
                 onClick={() => setIsVisible(false)}
-                className="text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1 -mt-1"
                 aria-label="Close cookie banner"
               >
                 <X className="h-5 w-5" />
@@ -124,49 +125,45 @@ export function CookieConsent() {
             {/* Content */}
             {!showSettings ? (
               <>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   We use cookies to enhance your experience, analyze site traffic, and personalize content. 
                   You can customize your preferences or accept all cookies.
                 </p>
 
-                {/* Actions */}
-                <div className="mt-4 flex flex-col gap-2">
-                  <Button onClick={acceptAll} className="w-full min-h-[44px]">
+                {/* Actions: compact grid on mobile to avoid blocking content */}
+                <div className="mt-3 sm:mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
+                  <Button onClick={acceptAll} className="w-full min-h-[44px] font-medium text-xs sm:text-sm">
                     Accept All
                   </Button>
-                  <Button onClick={acceptNecessary} variant="outline" className="w-full min-h-[44px]">
+                  <Button onClick={acceptNecessary} variant="outline" className="w-full min-h-[44px] text-xs sm:text-sm">
                     Necessary Only
                   </Button>
                   <Button
                     onClick={() => setShowSettings(true)}
                     variant="ghost"
-                    className="w-full min-h-[44px]"
+                    className="w-full min-h-[38px] min-[360px]:col-span-2 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <Settings className="mr-2 h-4 w-4" />
-                    Customize
+                    <Settings className="mr-1.5 h-3.5 w-3.5" />
+                    Customize Preferences
                   </Button>
                 </div>
 
                 {/* Privacy Policy Link */}
-                <p className="mt-4 text-center text-xs text-muted-foreground">
+                <p className="mt-2.5 sm:mt-4 text-center text-[11px] sm:text-xs text-muted-foreground">
                   Read our{' '}
-                  <a
-                    href="/docs/privacy-policy"
+                  <Link
+                    href="/privacy"
                     className="underline hover:text-foreground"
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     Privacy Policy
-                  </a>{' '}
+                  </Link>{' '}
                   and{' '}
-                  <a
-                    href="/docs/terms"
+                  <Link
+                    href="/terms"
                     className="underline hover:text-foreground"
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     Terms of Service
-                  </a>
+                  </Link>
                 </p>
               </>
             ) : (

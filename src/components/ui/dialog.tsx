@@ -50,21 +50,39 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  variant = "default",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  variant?: "default" | "bottom-sheet"
 }) {
+  const isBottomSheet = variant === "bottom-sheet"
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-variant={variant}
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] max-h-[85vh] overflow-y-auto translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl border p-4 sm:p-6 shadow-xl duration-200 outline-none sm:max-w-lg",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 outline-none z-50",
+          isBottomSheet ? [
+            // Mobile: Bottom sheet docked to bottom, rounded top, max-h 100dvh-1rem, pb-safe
+            "fixed inset-x-0 bottom-0 top-auto translate-x-0 translate-y-0 w-full max-w-full rounded-t-2xl rounded-b-none border-x-0 border-b-0 border-t max-h-[calc(100dvh-1rem)] pb-safe overflow-y-auto p-4 sm:p-6 shadow-2xl gap-4 grid",
+            "max-sm:data-[state=open]:slide-in-from-bottom max-sm:data-[state=closed]:slide-out-to-bottom",
+            // Desktop (sm+): Centered modal dialog
+            "sm:fixed sm:inset-auto sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:max-h-[85dvh] sm:rounded-xl sm:border sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95"
+          ] : [
+            "fixed top-[50%] left-[50%] grid w-full max-w-[calc(100%-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl border p-4 sm:p-6 shadow-xl sm:max-w-lg",
+            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          ],
           className
         )}
         {...props}
       >
+        {isBottomSheet && (
+          <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-1 sm:hidden shrink-0" aria-hidden="true" />
+        )}
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close

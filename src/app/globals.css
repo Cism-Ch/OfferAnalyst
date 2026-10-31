@@ -60,6 +60,14 @@
   height: 100dvh;
 }
 
+@utility text-fluid-hero {
+  font-size: var(--text-fluid-hero);
+}
+
+@utility text-fluid-title {
+  font-size: var(--text-fluid-title);
+}
+
 :root {
   --radius: 0.625rem;
   --background: #ffffff;

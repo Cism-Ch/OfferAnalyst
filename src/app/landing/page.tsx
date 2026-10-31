@@ -163,44 +163,44 @@ export default function LandingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background to-accent/20">
+        <div className="min-h-app bg-gradient-to-b from-background to-accent/20">
             {/* Hero Section */}
-            <section className="relative overflow-hidden py-20 px-4">
+            <section className="relative overflow-hidden py-(--spacing-section) sm:py-20 px-4">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 opacity-50" />
                 
                 <div className="container mx-auto relative z-10 max-w-6xl">
-                    <motion.div {...fadeInUpProps} className="text-center mb-12">
+                    <motion.div {...fadeInUpProps} className="text-center mb-8 sm:mb-12">
                         <Badge className="mb-4 px-4 py-2 text-sm" variant="outline">
                             <Sparkles className="w-4 h-4 mr-2 inline" />
                             AI-Powered Contextual Analysis
                         </Badge>
                         
-                        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                        <h1 className="text-fluid-hero font-extrabold tracking-tight mb-4 sm:mb-6 bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent leading-[1.15]">
                             Analyze. Compare. Decide.
                         </h1>
                         
-                        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+                        <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed">
                             AI-powered offer analysis that helps you make data-driven decisions in seconds, not hours.
                         </p>
                         
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                             <Link href="/auth/signup">
-                                <Button size="lg" className="text-lg px-8">
+                                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 h-12">
                                     Start Free
                                     <ArrowRight className="w-5 h-5 ml-2" />
                                 </Button>
                             </Link>
                             <Link href="/dashboard/support">
-                                <Button size="lg" variant="outline" className="text-lg px-8">
+                                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-8 h-12">
                                     Learn More
                                 </Button>
                             </Link>
                         </div>
                         
-                        <div className="mt-8 flex flex-wrap justify-center gap-6">
+                        <div className="mt-8 flex flex-wrap justify-center gap-4 sm:gap-6">
                             {trustBadges.map((badge, index) => (
-                                <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <badge.icon className="w-4 h-4" />
+                                <div key={index} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                                    <badge.icon className="w-4 h-4 text-primary" />
                                     <span>{badge.label}</span>
                                 </div>
                             ))}
@@ -210,25 +210,25 @@ export default function LandingPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-20 px-4 bg-background/50">
+            <section className="py-(--spacing-section) sm:py-20 px-4 bg-background/50">
                 <div className="container mx-auto max-w-6xl">
-                    <motion.div {...fadeInUpProps} className="text-center mb-16">
-                        <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
-                        <p className="text-xl text-muted-foreground">
+                    <motion.div {...fadeInUpProps} className="text-center mb-10 sm:mb-16">
+                        <h2 className="text-fluid-title font-bold mb-3 sm:mb-4">Powerful Features</h2>
+                        <p className="text-base sm:text-xl text-muted-foreground">
                             Everything you need to analyze offers intelligently
                         </p>
                     </motion.div>
 
-                    <motion.div {...staggerContainerProps} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <motion.div {...staggerContainerProps} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         {features.map((feature, index) => (
                             <motion.div key={index} {...staggerItemProps} custom={index}>
                                 <Card className="h-full hover:shadow-lg transition-shadow">
                                     <CardHeader>
-                                        <feature.icon className={`w-12 h-12 mb-4 ${feature.color}`} />
+                                        <feature.icon className={`w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 ${feature.color}`} />
                                         <CardTitle>{feature.title}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <CardDescription className="text-base">
+                                        <CardDescription className="text-sm sm:text-base leading-relaxed">
                                             {feature.description}
                                         </CardDescription>
                                     </CardContent>
@@ -240,16 +240,16 @@ export default function LandingPage() {
             </section>
 
             {/* Pricing Section */}
-            <section className="py-20 px-4">
+            <section className="py-(--spacing-section) sm:py-20 px-4">
                 <div className="container mx-auto max-w-5xl">
-                    <motion.div {...fadeInUpProps} className="text-center mb-16">
-                        <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-                        <p className="text-xl text-muted-foreground">
+                    <motion.div {...fadeInUpProps} className="text-center mb-10 sm:mb-16">
+                        <h2 className="text-fluid-title font-bold mb-3 sm:mb-4">Simple, Transparent Pricing</h2>
+                        <p className="text-base sm:text-xl text-muted-foreground">
                             Start free, upgrade when you need more power
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                         {pricingTiers.map((tier, index) => (
                             <motion.div
                                 key={index}
@@ -265,16 +265,16 @@ export default function LandingPage() {
                                     )}
                                     <CardHeader>
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                                        <div className="text-4xl font-bold">
+                                        <div className="text-3xl sm:text-4xl font-bold">
                                             {tier.price}
-                                            <span className="text-lg font-normal text-muted-foreground">
+                                            <span className="text-base sm:text-lg font-normal text-muted-foreground">
                                                 {tier.period}
                                             </span>
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ul className="space-y-3 mb-6">
+                                        <ul className="space-y-3 mb-6 text-sm sm:text-base">
                                             {tier.features.map((feature, i) => (
                                                 <li key={i} className="flex items-start gap-2">
                                                     <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -283,7 +283,7 @@ export default function LandingPage() {
                                             ))}
                                         </ul>
                                         <Link href={index === 0 ? '/auth/signup' : '/dashboard/api-keys'}>
-                                            <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
+                                            <Button className="w-full h-11" variant={tier.popular ? 'default' : 'outline'}>
                                                 {tier.cta}
                                             </Button>
                                         </Link>
@@ -296,16 +296,16 @@ export default function LandingPage() {
             </section>
 
             {/* Testimonials Section */}
-            <section className="py-20 px-4 bg-accent/20">
+            <section className="py-(--spacing-section) sm:py-20 px-4 bg-accent/20">
                 <div className="container mx-auto max-w-6xl">
-                    <motion.div {...fadeInUpProps} className="text-center mb-16">
-                        <h2 className="text-4xl font-bold mb-4">Loved by Professionals</h2>
-                        <p className="text-xl text-muted-foreground">
+                    <motion.div {...fadeInUpProps} className="text-center mb-10 sm:mb-16">
+                        <h2 className="text-fluid-title font-bold mb-3 sm:mb-4">Loved by Professionals</h2>
+                        <p className="text-base sm:text-xl text-muted-foreground">
                             See what our users are saying
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                         {testimonials.map((testimonial, index) => (
                             <motion.div key={index} {...staggerItemProps} custom={index}>
                                 <Card className="h-full">
@@ -315,13 +315,13 @@ export default function LandingPage() {
                                                 <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                                             ))}
                                         </div>
-                                        <p className="text-muted-foreground mb-6 italic">
+                                        <p className="text-muted-foreground mb-6 italic text-sm sm:text-base leading-relaxed">
                                             &quot;{testimonial.content}&quot;
                                         </p>
                                         <div>
-                                            <p className="font-semibold">{testimonial.name}</p>
-                                            <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                                            <p className="text-sm text-muted-foreground">{testimonial.company}</p>
+                                            <p className="font-semibold text-sm sm:text-base">{testimonial.name}</p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">{testimonial.role}</p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">{testimonial.company}</p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -332,11 +332,11 @@ export default function LandingPage() {
             </section>
 
             {/* FAQ Section */}
-            <section className="py-20 px-4">
+            <section className="py-(--spacing-section) sm:py-20 px-4">
                 <div className="container mx-auto max-w-4xl">
-                    <motion.div {...fadeInUpProps} className="text-center mb-16">
-                        <h2 className="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-                        <p className="text-xl text-muted-foreground">
+                    <motion.div {...fadeInUpProps} className="text-center mb-10 sm:mb-16">
+                        <h2 className="text-fluid-title font-bold mb-3 sm:mb-4">Frequently Asked Questions</h2>
+                        <p className="text-base sm:text-xl text-muted-foreground">
                             Everything you need to know
                         </p>
                     </motion.div>
@@ -346,10 +346,10 @@ export default function LandingPage() {
                             <motion.div key={index} {...staggerItemProps} custom={index}>
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="text-lg">{faq.question}</CardTitle>
+                                        <CardTitle className="text-base sm:text-lg">{faq.question}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-muted-foreground">{faq.answer}</p>
+                                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{faq.answer}</p>
                                     </CardContent>
                                 </Card>
                             </motion.div>
@@ -359,22 +359,22 @@ export default function LandingPage() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-20 px-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10">
+            <section className="py-(--spacing-section) sm:py-20 px-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10">
                 <div className="container mx-auto max-w-4xl text-center">
                     <motion.div {...fadeInUpProps}>
-                        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                        <h2 className="text-fluid-title sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                             Ready to Make Better Decisions?
                         </h2>
-                        <p className="text-xl text-muted-foreground mb-8">
+                        <p className="text-base sm:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                             Join thousands of professionals using AI to analyze offers smarter
                         </p>
                         <Link href="/auth/signup">
-                            <Button size="lg" className="text-lg px-12">
+                            <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-12 h-12">
                                 Get Started Free
                                 <ArrowRight className="w-5 h-5 ml-2" />
                             </Button>
                         </Link>
-                        <p className="mt-4 text-sm text-muted-foreground">
+                        <p className="mt-4 text-xs sm:text-sm text-muted-foreground">
                             No credit card required • Free forever • Upgrade anytime
                         </p>
                     </motion.div>

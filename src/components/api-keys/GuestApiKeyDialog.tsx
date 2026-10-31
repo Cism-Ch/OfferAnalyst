@@ -183,7 +183,7 @@ export function GuestApiKeyDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] border-border/80 shadow-2xl">
+            <DialogContent variant="bottom-sheet" className="sm:max-w-[500px] border-border/80 shadow-2xl">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         <div className="p-2 rounded-xl bg-primary/10 text-primary">

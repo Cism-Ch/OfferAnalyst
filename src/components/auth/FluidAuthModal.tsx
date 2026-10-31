@@ -115,7 +115,7 @@ export function FluidAuthModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-6 gap-5">
+      <DialogContent variant="bottom-sheet" className="sm:max-w-md p-4 sm:p-6 gap-4 sm:gap-5">
         <DialogHeader className="text-center sm:text-center space-y-2">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 border border-primary/20 flex items-center justify-center shadow-inner">
             <Sparkles className="h-6 w-6 text-primary" />

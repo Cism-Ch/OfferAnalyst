@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 20 Achevé & Validé (ResponsiveTable, Refonte /admin, Navigation Settings & Clés API fluides, Recharts calibrés R-UI-07, Flex-wrap History/Projects, Playwright Responsive 76/76 PASS, 100/100 PASS) — Sprints 1 à 20 Archivés | Sprint 21 Ouvert
+**Statut Global :** Sprint 21 Achevé & Validé (Auth & Clavier Virtuel, Landing & Typographie Fluide, Onboarding Sans Débordement, Dialogs Bottom-Sheet Native & Cookie Consent Adaptatif, Playwright Responsive 102/102 PASS, 100/100 PASS) — Sprints 1 à 21 Archivés | Sprint 22 Ouvert
 
 ---
 
@@ -13,55 +13,54 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🔄 SPRINT 21 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🔄 SPRINT 22 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-OVL-01 (Auth)  │  │ [ ] SPRINT 22           │  │     - Sprint 20 (4)     │
-│ [ ] TASK-OVL-02 (Landing│  │     (Fluidité, Motion,  │  │     - Sprint 19 (4)     │
-│ [ ] TASK-OVL-03 (Overly)│  │      CLS, Audit Final)  │  │     - Sprint 18 (3)     │
-│ [ ] TASK-VAL-08 (Eval)  │  │                         │  │     - Sprints 1-17 (All)│
+│ [ ] TASK-MOT-01 (Z-index│  │ [ ] V1.0 Release        │  │     - Sprint 21 (4)     │
+│ [ ] TASK-MOT-02 (Motion)│  │     Production Launch   │  │     - Sprint 20 (4)     │
+│ [ ] TASK-MOT-03 (CLS)   │  │                         │  │     - Sprint 19 (4)     │
+│ [ ] TASK-VAL-09 (Audit) │  │                         │  │     - Sprints 1-18 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 21 — Auth, Landing, Onboarding, Dialogs & Bottom-sheets
+## 🚀 Sprint Actif : Sprint 22 — Fluidité, Z-index Unifié, Micro-animations, CLS & Audit Final
 
-- [ ] **`TASK-OVL-01` — Formulaires Auth & Clavier Virtuel Adaptatif**
+- [ ] **`TASK-MOT-01` — Échelle Unifiée de Z-Index & Empilement**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/app/auth/login/page.tsx`, `src/app/auth/signup/page.tsx`, `src/app/auth/reset/page.tsx`, `src/app/auth/verify/page.tsx`
+  - **Fichiers cibles :** `src/app/globals.css`, `src/components/layout/AppShell.tsx`, `src/components/ui/dialog.tsx`, `src/components/CookieConsent.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-OVL-01.01` : Cartes auth bornées `w-full max-w-md` avec `p-4 sm:p-6` et `min-h-app`.
-    - [ ] `TASK-OVL-01.02` : Boutons OAuth en `grid-cols-1 min-[400px]:grid-cols-2` évitant le débordement à 320px.
-    - [ ] `TASK-OVL-01.03` : Attributs `autoComplete`, `inputMode` et `enterKeyHint` corrects pour ergonomie mobile et clavier virtuel.
+    - [ ] `TASK-MOT-01.01` : Échelle de tokens standardisée (`--z-header: 30`, `--z-drawer: 50`, `--z-dialog: 60`, `--z-toast: 70`) éliminant les `z-*` disparates.
+    - [ ] `TASK-MOT-01.02` : Résolution des conflits d'empilement entre CookieConsent, dialogues, filtres et drawer mobile.
 
-- [ ] **`TASK-OVL-02` — Landing Page Fluide & Typographie Adaptative**
+- [ ] **`TASK-MOT-02` — Micro-animations Fluides & Prefers-Reduced-Motion**
   - **Priorité :** 🟡 MOYENNE
-  - **Fichiers cibles :** `src/app/landing/page.tsx`, `src/app/page.tsx`, `src/app/onboarding/page.tsx`
+  - **Fichiers cibles :** `src/lib/motion.ts`, `src/app/globals.css`, composants interactifs
   - **Critères d'acceptation :**
-    - [ ] `TASK-OVL-02.01` : Typographie hero fluide (`text-fluid-hero`) et rythme vertical `--spacing-section`.
-    - [ ] `TASK-OVL-02.02` : Images de présentation avec `sizes` et `aspect-*` explicites pour éliminer tout CLS.
-    - [ ] `TASK-OVL-02.03` : Assistant onboarding avec étapes empilées sous `md` et barre de progression compacte.
+    - [ ] `TASK-MOT-02.01` : Prise en compte globale de `prefers-reduced-motion: reduce` sur toutes les animations Framer Motion.
+    - [ ] `TASK-MOT-02.02` : Remplacement des transitions lourdes sur `width` par `transform` et `opacity` matérielles.
 
-- [ ] **`TASK-OVL-03` — Dialogs, Bottom-sheets & Cookie Consent Mobile**
+- [ ] **`TASK-MOT-03` — CLS, Optimisation du Scroll & Sizing Stricte**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** `src/components/ui/skeleton.tsx`, `src/app/analysis/page.tsx`, `src/app/globals.css`
+  - **Critères d'acceptation :**
+    - [ ] `TASK-MOT-03.01` : Skeletons à géométrie conforme au contenu final pour un CLS < 0.05.
+    - [ ] `TASK-MOT-03.02` : Défilement doux adaptatif et `scroll-padding-top` synchronisé avec la hauteur du header.
+
+- [ ] **`TASK-VAL-09` — Validation Finale Déterministe & Rapport d'Audit**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/components/ui/dialog.tsx`, `src/components/api-keys/AddAPIKeyDialog.tsx`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `src/components/layout/AIModelSelector.tsx`, `src/components/layout/CookieConsent.tsx`
+  - **Fichiers cibles :** `evals/run_fullstack_eval.py`, `tests/e2e/responsive.spec.ts`, `docs/archive/reports/`
   - **Critères d'acceptation :**
-    - [ ] `TASK-OVL-03.01` : Variante bottom-sheet mobile dans `ui/dialog.tsx` (`max-h-[calc(100dvh-1rem)]`, `pb-safe`, coins arrondis supérieurs).
-    - [ ] `TASK-OVL-03.02` : Application aux dialogues de clés API et sélecteur de modèle IA évitant le masquage par le clavier virtuel.
-    - [ ] `TASK-OVL-03.03` : Bandeau `CookieConsent` adaptatif ne masquant pas les actions critiques sur smartphone.
-
-- [ ] **`TASK-VAL-08` — Validation Déterministe & Non-Régression Globale**
-  - **Priorité :** 🟡 MOYENNE
-  - **Fichiers cibles :** `evals/run_fullstack_eval.py`, `tests/e2e/responsive.spec.ts`
-  - **Critères d'acceptation :**
-    - [ ] `TASK-VAL-08.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint).
-    - [ ] `TASK-VAL-08.02` : Validation de non-régression de la suite E2E Playwright Responsive sur les 5 viewports canoniques.
+    - [ ] `TASK-VAL-09.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint).
+    - [ ] `TASK-VAL-09.02` : Suite de non-régression E2E Playwright Responsive 100/100 PASS sur les 5 viewports canoniques.
+    - [ ] `TASK-VAL-09.03` : Production du rapport final de clôture responsive dans `docs/archive/reports/`.
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 21 (TASKS_HISTORY_S21_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S21_COMPLETED.md)** — 4 Lots (Auth & Clavier Virtuel, Landing text-fluid-hero, Onboarding sans overflow, Dialogs Bottom-sheet mobile, Playwright Responsive 102/102 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 20 (TASKS_HISTORY_S20_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S20_COMPLETED.md)** — 4 Lots (ResponsiveTable, Refonte /admin, Navigation Settings & Clés API fluides, Recharts calibrés R-UI-07, Flex-wrap History/Projects, Playwright Responsive 76/76 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 19 (TASKS_HISTORY_S19_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S19_COMPLETED.md)** — 4 Lots (Container Queries OfferCard, Bottom-sheet fluide, Snap-x Compare, PageContainer unifié, Playwright Responsive 66/66 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 18 (TASKS_HISTORY_S18_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S18_COMPLETED.md)** — 3 Lots (AppShell unifié, Radix Sheet Drawer, Header compact 56px, Playwright Responsive 51/51 PASS, next build 35/35, 100/100 PASS).
