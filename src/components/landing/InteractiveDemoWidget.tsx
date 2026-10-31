@@ -16,8 +16,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
     Sparkles,
-    CheckCircle2,
-    TrendingUp,
     ShieldCheck,
     ExternalLink,
     Zap,

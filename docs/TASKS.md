@@ -15,13 +15,28 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │ 🚀 EN COURS (PRODUCTION)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [x] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 28 (Cache) │
-│     (Release v1.2.3 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 27 (Action)│
-│     Build 40/40 Validé) │  │ [ ] Chrome Extension    │  │     - Sprint 26 (Ingest)│
+│ [x] TASK-EXT-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 29 (Capture│
+│     (Release v1.3.0 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 28 (Cache) │
+│     Build 40/40 Validé) │  │                         │  │     - Sprint 27 (Action)│
+│                         │  │                         │  │     - Sprint 26 (Ingest)│
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
-│                         │  │                         │  │     - Sprints 1-24 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 29 Achevée : Contournement Anti-Bot & Capture 1-Clic (Bookmarklet & Extension Chrome)
+
+- [x] **`TASK-EXT-01` — Système de Capture 1-Clic Multi-Plateformes (Bookmarklet Universel & Extension Chrome)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/data-source/CaptureAssistantModal.tsx`, `src/components/data-source/UrlImportTab.tsx`, `src/components/data-source/RawTextTab.tsx`, `src/app/data-source/page.tsx`, `extension/*`, `public/extension/*`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-EXT-01.01` : Bookmarklet JavaScript universel glisser-déposer (compatible Chrome/Firefox/Safari/Edge/Brave) extrayant le contenu textuel/DOM propre des pages d'offres (LinkedIn, Indeed, WTTJ, etc.) et le transmettant instantanément à l'application.
+    - [x] `TASK-EXT-01.02` : Prise en charge des paramètres de capture entrante (`#capture=...` ou `?capture=...`) sur `/data-source` avec bascule automatique sur l'onglet Texte Brut et pré-remplissage immédiat.
+    - [x] `TASK-EXT-01.03` : Extension Chrome Manifest V3 complète (`extension/manifest.json`, `content.js`, `popup.html`, `popup.js`, icônes PNG) avec détection automatique de plateforme, envoi en un clic vers OfferAnalyst et zip téléchargeable en un clic (`public/extension/offeranalyst-extension.zip`).
+    - [x] `TASK-EXT-01.04` : Modal d'aide et d'accompagnement interactif (`CaptureAssistantModal.tsx`) accessible depuis `/data-source` et `UrlImportTab.tsx`, avec drag-and-drop du bookmarklet et instructions pas à pas de l'extension.
+    - [x] `TASK-EXT-01.05` : Bilinguisme FR/EN intégral dans `LanguageContext.tsx` (`captureAssistant`).
+    - [x] `TASK-EXT-01.06` : Validation sans faute avec `npm run eval:quick` (100/100 PASS) et `npm run build` (0 erreur, 40 routes compilées).
 
 ---
 

@@ -52,6 +52,7 @@ import { RawTextTab } from '@/components/data-source/RawTextTab';
 import { UrlImportTab } from '@/components/data-source/UrlImportTab';
 import { FileUploadTab } from '@/components/data-source/FileUploadTab';
 import { JsonInputTab } from '@/components/data-source/JsonInputTab';
+import { CaptureAssistantModal } from '@/components/data-source/CaptureAssistantModal';
 import { Offer } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -65,6 +66,50 @@ export default function DataSourcePage() {
     const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
     const [quota, setQuota] = useState<DailyQuotaResult | null>(null);
     const [activeTab, setActiveTab] = useState<string>('raw');
+    const [captureModalOpen, setCaptureModalOpen] = useState<boolean>(false);
+    const [capturedText, setCapturedText] = useState<string>('');
+
+    // Capture incoming bookmarklet / extension payload from URL hash or query params
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        let payload: string | null = null;
+        if (window.location.hash.startsWith('#capture=')) {
+            try {
+                const raw = window.location.hash.replace('#capture=', '');
+                payload = decodeURIComponent(raw);
+            } catch {
+                // Ignore decoding error
+            }
+        } else {
+            const params = new URLSearchParams(window.location.search);
+            const qCapture = params.get('capture') || params.get('text');
+            if (qCapture) {
+                payload = qCapture;
+            }
+        }
+
+        if (payload && payload.trim().length > 0) {
+            const captured = payload;
+            let isMounted = true;
+            const timer = setTimeout(() => {
+                if (isMounted) {
+                    setCapturedText(captured);
+                    setActiveTab('raw');
+                    dashboardState.setAutoFetch(false);
+                }
+            }, 0);
+
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+
+            return () => {
+                isMounted = false;
+                clearTimeout(timer);
+            };
+        }
+    }, [dashboardState]);
 
     const fetchQuota = useCallback(async () => {
         try {
@@ -146,10 +191,22 @@ export default function DataSourcePage() {
                                     {ds.methodDesc}
                                 </CardDescription>
                             </div>
-                            <Badge variant="outline" className="gap-1.5 self-start sm:self-auto py-1 px-2.5 rounded-full border-primary/30 text-primary font-medium text-xs">
-                                <Bot size={13} className="shrink-0" />
-                                <span>NVIDIA & Multi-Source</span>
-                            </Badge>
+                            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCaptureModalOpen(true)}
+                                    className="gap-1.5 h-7 py-1 px-2.5 rounded-full border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium text-xs hover:bg-blue-500/20 touch-manipulation"
+                                >
+                                    <Zap size={12} className="shrink-0 fill-current" />
+                                    <span>{t.captureAssistant?.triggerBtn || "Assistant 1-Clic"}</span>
+                                </Button>
+                                <Badge variant="outline" className="gap-1.5 py-1 px-2.5 rounded-full border-primary/30 text-primary font-medium text-xs">
+                                    <Bot size={13} className="shrink-0" />
+                                    <span>NVIDIA & Multi-Source</span>
+                                </Badge>
+                            </div>
                         </div>
                     </CardHeader>
 
@@ -252,6 +309,8 @@ export default function DataSourcePage() {
                                                 model={dashboardState.model}
                                                 onOffersExtracted={handleOffersExtracted}
                                                 currentOffersCount={currentOffersCount}
+                                                initialText={capturedText}
+                                                onOpenCaptureAssistant={() => setCaptureModalOpen(true)}
                                             />
                                         </TabsContent>
 
@@ -259,6 +318,7 @@ export default function DataSourcePage() {
                                             <UrlImportTab
                                                 domain={dashboardState.domain}
                                                 onOffersExtracted={handleOffersExtracted}
+                                                onOpenCaptureAssistant={() => setCaptureModalOpen(true)}
                                             />
                                         </TabsContent>
 

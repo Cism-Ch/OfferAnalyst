@@ -20,7 +20,8 @@ import {
     Globe,
     AlertCircle,
     ExternalLink,
-    ShieldCheck
+    ShieldCheck,
+    Zap
 } from 'lucide-react';
 import { Offer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,9 +29,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface UrlImportTabProps {
     domain: string;
     onOffersExtracted: (offers: Offer[]) => void;
+    onOpenCaptureAssistant?: () => void;
 }
 
-export function UrlImportTab({ domain, onOffersExtracted }: UrlImportTabProps) {
+export function UrlImportTab({ domain, onOffersExtracted, onOpenCaptureAssistant }: UrlImportTabProps) {
     const { language } = useLanguage();
     const isFr = language === 'fr';
 
@@ -202,11 +204,25 @@ export function UrlImportTab({ domain, onOffersExtracted }: UrlImportTabProps) {
             {/* Anti-Bot & Cloudflare Fallback Guidance */}
             <div className="p-3.5 rounded-xl bg-muted/40 border border-border/70 flex items-start gap-2.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <p className="leading-relaxed">
-                    {isFr 
-                        ? "Note de robustesse : Certaines plateformes fermées (LinkedIn, Indeed) bloquent l'accès direct des serveurs cloud via Cloudflare. En cas de blocage d'un lien, faites un simple Ctrl+A / Ctrl+C de l'annonce et collez le contenu dans l'onglet 'Texte Libre' pour une structuration instantanée sans blocage."
-                        : "Reliability notice: Some closed platforms (LinkedIn, Indeed) restrict direct cloud bot access via Cloudflare. If a link fails to fetch, simply Ctrl+A / Ctrl+C the job description and paste it into the 'Raw Text' tab for instant extraction."}
-                </p>
+                <div className="space-y-2 flex-1">
+                    <p className="leading-relaxed">
+                        {isFr 
+                            ? "Note de robustesse : Certaines plateformes fermées (LinkedIn, Indeed) bloquent l'accès direct des serveurs cloud via Cloudflare. En cas de blocage d'un lien, utilisez notre Bookmarklet 1-Clic ou notre extension Chrome pour capturer l'offre en 1 seconde sans aucun blocage."
+                            : "Reliability notice: Some closed platforms (LinkedIn, Indeed) restrict direct cloud bot access via Cloudflare. If a link is protected, use our 1-Click Bookmarklet or Chrome extension to capture the offer in 1 second."}
+                    </p>
+                    {onOpenCaptureAssistant && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={onOpenCaptureAssistant}
+                            className="text-xs h-7 px-2.5 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 touch-manipulation gap-1.5"
+                        >
+                            <Zap className="h-3 w-3 fill-primary" />
+                            <span>{isFr ? "Ouvrir l'Assistant de Capture (Bookmarklet & Extension)" : "Open Capture Assistant (Bookmarklet & Extension)"}</span>
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="pt-2 flex justify-end">

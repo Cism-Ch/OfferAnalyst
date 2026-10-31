@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OfferAnalyst Capture</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #1f2937;
+      --emerald: #10b981;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 360px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.3px;
+    }
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-weight: 600;
+    }
+    .status-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .page-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .page-url {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 8px;
+    }
+    .preview-box {
+      font-size: 11px;
+      color: #d1d5db;
+      background: #0d131f;
+      padding: 8px;
+      border-radius: 6px;
+      max-height: 90px;
+      overflow-y: auto;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .config-row {
+      margin-bottom: 12px;
+    }
+    .config-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .input-field {
+      width: 100%;
+      background: #0d131f;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: var(--primary);
+    }
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover {
+      opacity: 0.95;
+    }
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: #374151;
+    }
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span>OfferAnalyst</span>
+    </div>
+    <span class="badge" id="platform-badge">Détection...</span>
+  </div>
+
+  <div class="status-card">
+    <div class="page-title" id="page-title">Chargement de la page...</div>
+    <div class="page-url" id="page-url">...</div>
+    <div class="preview-box" id="preview-box">Analyse du DOM en cours...</div>
+  </div>
+
+  <div class="config-row">
+    <label class="config-label" for="app-url">Destination OfferAnalyst :</label>
+    <input type="text" id="app-url" class="input-field" value="https://offer-analyst.vercel.app">
+  </div>
+
+  <button class="btn-primary" id="btn-send">
+    <span>⚡ Envoyer vers OfferAnalyst</span>
+  </button>
+  <button class="btn-secondary" id="btn-copy">
+    <span>Copier le texte extrait</span>
+  </button>
+
+  <div class="footer">
+    Contourne 100% des blocages Cloudflare & Datacenter
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

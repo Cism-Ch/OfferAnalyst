@@ -8,8 +8,8 @@
  * into structured Offer[] using the fast AI extraction agent.
  */
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ import {
     Coins,
     AlertCircle,
     FileText,
-    ArrowRight
+    Zap
 } from 'lucide-react';
 import { Offer } from '@/types';
 import { structureRawOffersAction } from '@/app/actions/offers/structure-raw-offers';
@@ -35,6 +35,8 @@ interface RawTextTabProps {
     model: string;
     onOffersExtracted: (offers: Offer[]) => void;
     currentOffersCount: number;
+    initialText?: string;
+    onOpenCaptureAssistant?: () => void;
 }
 
 const SAMPLE_RAW_TEXT = `Staff Cloud Platform Engineer (Full Remote)
@@ -62,7 +64,8 @@ export function RawTextTab({
     domain,
     model,
     onOffersExtracted,
-    currentOffersCount
+    initialText,
+    onOpenCaptureAssistant
 }: RawTextTabProps) {
     const { language } = useLanguage();
     const isFr = language === 'fr';
@@ -72,6 +75,23 @@ export function RawTextTab({
     const [isExtracting, setIsExtracting] = useState<boolean>(false);
     const [extractedOffers, setExtractedOffers] = useState<Offer[]>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [hasCapturedData, setHasCapturedData] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!initialText || initialText.trim().length === 0) return;
+        let isMounted = true;
+        const timer = setTimeout(() => {
+            if (isMounted) {
+                setRawText(initialText);
+                setHasCapturedData(true);
+                setErrorMessage(null);
+            }
+        }, 0);
+        return () => {
+            isMounted = false;
+            clearTimeout(timer);
+        };
+    }, [initialText]);
 
     const handleExtract = async () => {
         if (!rawText.trim() || rawText.trim().length < 10) {
@@ -127,9 +147,15 @@ export function RawTextTab({
             {/* Context & Quick Sample Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div>
-                    <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2 flex-wrap">
                         <FileText className="h-4 w-4 text-primary" />
                         <span>{isFr ? "Collez vos annonces en texte brut" : "Paste raw listing text"}</span>
+                        {hasCapturedData && (
+                            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[11px] gap-1">
+                                <Zap className="h-3 w-3 fill-blue-500" />
+                                <span>{isFr ? "Capture 1-Clic Reçue" : "1-Click Capture Received"}</span>
+                            </Badge>
+                        )}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
                         {isFr
@@ -138,16 +164,30 @@ export function RawTextTab({
                     </p>
                 </div>
 
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLoadSample}
-                    className="self-start sm:self-auto text-xs h-8 px-2.5 border-dashed touch-manipulation"
-                >
-                    <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                    <span>{isFr ? "Charger un exemple" : "Load Sample"}</span>
-                </Button>
+                <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                    {onOpenCaptureAssistant && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={onOpenCaptureAssistant}
+                            className="text-xs h-8 px-2.5 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 touch-manipulation gap-1.5"
+                        >
+                            <Zap className="h-3.5 w-3.5 fill-primary" />
+                            <span>{isFr ? "Assistant 1-Clic" : "1-Click Assistant"}</span>
+                        </Button>
+                    )}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLoadSample}
+                        className="text-xs h-8 px-2.5 border-dashed touch-manipulation"
+                    >
+                        <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                        <span>{isFr ? "Charger un exemple" : "Load Sample"}</span>
+                    </Button>
+                </div>
             </div>
 
             {/* Raw Text Input Area */}

@@ -13,10 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
     Code2,
-    Check,
     AlertCircle,
     Sparkles,
-    Copy
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 

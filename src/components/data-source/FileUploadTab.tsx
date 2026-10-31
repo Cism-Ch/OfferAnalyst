@@ -10,16 +10,13 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
     Upload,
     FileSpreadsheet,
-    FileText,
     CheckCircle2,
     AlertCircle,
     Trash2,
-    FileCode
 } from 'lucide-react';
 import { Offer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';

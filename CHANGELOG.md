@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0-minor] - 2026-10-31
+
+### 🧩 Contournement Anti-Bot & Capture 1-Clic Multi-Plateformes (Sprint 29)
+
+- **Bookmarklet Universel Glisser-Déposer (`src/components/data-source/CaptureAssistantModal.tsx`)** :
+  - Bookmarklet JavaScript universel sans installation, compatible 100% navigateurs (Chrome, Firefox, Safari, Edge, Arc, Brave).
+  - Extraction intelligente du DOM (sélecteurs optimisés pour LinkedIn, Indeed, Welcome to the Jungle ou sélection utilisateur directe).
+  - Transmission zéro-blocage par fragment d'URL (`#capture=...`) évitant tout rejet HTTP 414 URI Too Long sur serveur.
+- **Extension Google Chrome Dédiée Manifest V3 (`extension/*`)** :
+  - Extension Chrome complète avec `manifest.json` (V3), scripts de contenu, popup moderne dark mode OfferAnalyst et détection automatique de plateforme.
+  - Archive téléchargeable en 1 clic (`public/extension/offeranalyst-extension.zip`) pour installation rapide en mode développeur.
+- **Ingestion & Routage Automatisé sur `/data-source`** :
+  - Détection automatique des charges capturées (`#capture=` ou `?capture=`), bascule instantanée sur l'onglet *Texte Libre* et pré-remplissage immédiat pour structuration IA.
+  - Boutons d'accès direct à l'Assistant de Capture depuis l'en-tête de la page et la notice anti-bot de l'onglet URLs.
+  - Bilinguisme intégral FR / EN (`captureAssistant` dans `LanguageContext.tsx`).
+
 ## [1.2.3-patch] - 2026-10-31
 
 ### ⚡ Chantier 3 : Architecture & Viabilité Technique — Cache Multi-Niveaux & Protection Anti-Timeout (Sprint 28)

@@ -41,10 +41,7 @@ export function SaaSPresentationView() {
     const { language } = useLanguage();
     const isFr = language === 'fr';
 
-    const handleEnterApp = () => {
-        setAppModeCookie('app');
-        router.push('/search-context');
-    };
+
 
     const handleGoToDashboard = () => {
         setAppModeCookie('app');
