@@ -1,22 +1,14 @@
 {
-  "timestamp": "2026-10-31T08:51:57.848820",
+  "timestamp": "2026-10-31T08:56:52.606143",
   "mode": "QUICK",
-  "total_score": 65,
-  "raw_score": 65,
+  "total_score": 100,
+  "raw_score": 100,
   "max_score": 100,
-  "status": "FAIL",
-  "failed_steps": [
-    {
-      "step": "lint",
-      "passed": false,
-      "score": 0,
-      "max_score": 35,
-      "error_log": "STDERR:\nC:\\Users\\hanok\\Dev\\Personal-Project\\OfferAnalyst\\test-results'\n    at async Object.readdir (node:internal/fs/promises:1786:18)\n    at async NodeHfsImpl.list (file:///C:/Users/hanok/Dev/Personal-Project/OfferAnalyst/node_modules/.pnpm/@humanfs+node@0.16.8/node_modules/@humanfs/node/src/node-hfs.js:304:19)\n    at async NodeHfs.<anonymous> (file:///C:/Users/hanok/Dev/Personal-Project/OfferAnalyst/node_modules/.pnpm/@humanfs+core@0.19.2/node_modules/@humanfs/core/src/hfs.js:560:21)\n    at async NodeHfs.<anonymous> (file:///C:/Users/hanok/Dev/Personal-Project/OfferAnalyst/node_modules/.pnpm/@humanfs+core@0.19.2/node_modules/@humanfs/core/src/hfs.js:604:6)\n    at async NodeHfs.walk (file:///C:/Users/hanok/Dev/Personal-Project/OfferAnalyst/node_modules/.pnpm/@humanfs+core@0.19.2/node_modules/@humanfs/core/src/hfs.js:614:3)\n    at async globSearch (C:\\Users\\hanok\\Dev\\Personal-Project\\OfferAnalyst\\node_modules\\.pnpm\\eslint@10.13.0_jiti@2.7.0_supports-color@7.2.0\\node_modules\\eslint\\lib\\eslint\\eslint-helpers.js:366:20)\n    at async Promise.allSettled (index 0)\n    at async globMultiSearch (C:\\Users\\hanok\\Dev\\Personal-Project\\OfferAnalyst\\node_modules\\.pnpm\\eslint@10.13.0_jiti@2.7.0_supports-color@7.2.0\\node_modules\\eslint\\lib\\eslint\\eslint-helpers.js:457:18)\n    at async Promise.all (index 0)\n    at async findFiles (C:\\Users\\hanok\\Dev\\Personal-Project\\OfferAnalyst\\node_modules\\.pnpm\\eslint@10.13.0_jiti@2.7.0_supports-color@7.2.0\\node_modules\\eslint\\lib\\eslint\\eslint-helpers.js:637:25)\n\nSTDOUT:"
-    }
-  ],
+  "status": "PASS",
+  "failed_steps": [],
   "summary": {
     "typecheck": "PASSED",
-    "lint": "FAILED",
+    "lint": "PASSED",
     "prisma_hygiene": "PASSED"
   }
 }
