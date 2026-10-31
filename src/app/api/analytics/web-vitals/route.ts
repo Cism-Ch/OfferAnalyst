@@ -1,22 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { trackWebVitals } from '@/lib/analytics';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      body = await request.json().catch(() => ({}));
+    } else {
+      const text = await request.text().catch(() => '');
+      try {
+        body = JSON.parse(text || '{}');
+      } catch {
+        body = {};
+      }
+    }
+
     const { name, value, rating, path } = body;
 
     // Validate required fields
-    if (!name || typeof value !== 'number' || !rating) {
+    if (!name || typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !rating) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing or invalid required fields' },
         { status: 400 }
       );
     }
 
     // Validate metric name
     const validMetrics = ['FCP', 'LCP', 'CLS', 'TTFB', 'FID', 'INP'];
-    if (!validMetrics.includes(name)) {
+    if (typeof name !== 'string' || !validMetrics.includes(name)) {
       return NextResponse.json(
         { success: false, error: 'Invalid metric name' },
         { status: 400 }
@@ -25,22 +39,34 @@ export async function POST(request: NextRequest) {
 
     // Validate rating
     const validRatings = ['good', 'needs-improvement', 'poor'];
-    if (!validRatings.includes(rating)) {
+    if (typeof rating !== 'string' || !validRatings.includes(rating)) {
       return NextResponse.json(
         { success: false, error: 'Invalid rating' },
         { status: 400 }
       );
     }
 
-    // Track the web vitals metric
-    await trackWebVitals({
-      name,
+    // Optional user session context
+    let userId: string | undefined = undefined;
+    try {
+      const session = await auth.api.getSession({ headers: await headers() });
+      userId = session?.user?.id;
+    } catch {
+      // Unauthenticated / guest metric
+    }
+
+    // Non-blocking asynchronous recording so response to client browser beacon is instantaneous
+    void trackWebVitals({
+      name: name as 'FCP' | 'LCP' | 'CLS' | 'TTFB' | 'FID' | 'INP',
       value,
-      rating,
-      path,
+      rating: rating as 'good' | 'needs-improvement' | 'poor',
+      path: typeof path === 'string' ? path.slice(0, 300) : undefined,
+      userId,
+    }).catch((err) => {
+      console.error('[Analytics API] Non-blocking Web Vitals recording error:', err);
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, metric: name }, { status: 200 });
   } catch (error) {
     console.error('[Analytics API] Error tracking web vitals:', error);
     return NextResponse.json(

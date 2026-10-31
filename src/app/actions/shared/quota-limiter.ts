@@ -11,8 +11,8 @@
 
 import { cookies, headers } from 'next/headers';
 
-export const GUEST_ID_COOKIE_NAME = 'offeranalyst.guest_id';
-export const DAILY_QUOTA_LIMIT = 10;
+const GUEST_ID_COOKIE_NAME = 'offeranalyst.guest_id';
+const DAILY_QUOTA_LIMIT = 10;
 
 // Persistent in-memory quota store across Next.js HMR reloads
 const globalQuota = globalThis as unknown as {
@@ -31,7 +31,7 @@ export interface DailyQuotaResult {
 /**
  * Return current UTC date string (YYYY-MM-DD) and ISO timestamp for next midnight UTC.
  */
-export function getUtcDayInfo(): { dateUtc: string; resetAt: string } {
+function getUtcDayInfo(): { dateUtc: string; resetAt: string } {
     const now = new Date();
     const dateUtc = now.toISOString().split('T')[0];
     const tomorrowUtc = new Date(Date.UTC(

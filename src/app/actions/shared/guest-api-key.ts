@@ -13,8 +13,8 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { encryptApiKeyToParts, decryptApiKeyFromParts } from '@/lib/api-key-encryption';
 
-export const GUEST_KEY_COOKIE_NAME = 'offeranalyst.guest_key';
-export const GUEST_KEY_MAX_AGE_SECONDS = 86400; // 24 hours
+const GUEST_KEY_COOKIE_NAME = 'offeranalyst.guest_key';
+const GUEST_KEY_MAX_AGE_SECONDS = 86400; // 24 hours
 
 const SupportedProviderSchema = z.enum([
     'openrouter',
@@ -57,7 +57,7 @@ export interface GuestApiKeyStatus {
  * Compute masked preview of an API key (e.g., sk-or-••••••••1234).
  * Ensures that sensitive key credentials are never sent to the client.
  */
-export function maskApiKey(key: string): string {
+function maskApiKey(key: string): string {
     if (!key || key.length < 8) return '••••••••';
     
     // Check for standard prefixes

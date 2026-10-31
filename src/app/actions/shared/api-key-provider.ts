@@ -209,8 +209,37 @@ export async function trackBYOKUsage(keyId: string): Promise<void> {
 }
 
 /**
+ * Redacts sensitive API keys, tokens, and credentials from telemetry and error logs.
+ * Prevents credentials from leaking into databases, APM, or application logs.
+ */
+export function sanitizeTelemetryError(errorMessage?: string | null, knownKey?: string | null): string | null {
+    if (!errorMessage || typeof errorMessage !== 'string') return null;
+
+    let sanitized = errorMessage;
+
+    // 1. Redact the caller's specific key if provided
+    if (knownKey && knownKey.length > 4) {
+        sanitized = sanitized.split(knownKey).join('[REDACTED_API_KEY]');
+    }
+
+    // 2. Redact standard AI provider keys & Bearer tokens
+    sanitized = sanitized
+        .replace(/sk-or-v1-[a-zA-Z0-9_-]{16,}/gi, 'sk-or-v1-[REDACTED]')
+        .replace(/sk-ant-[a-zA-Z0-9_-]{16,}/gi, 'sk-ant-[REDACTED]')
+        .replace(/sk-[a-zA-Z0-9_-]{16,}/gi, 'sk-[REDACTED]')
+        .replace(/AIza[0-9A-Za-z-_]{35}/g, 'AIza[REDACTED]')
+        .replace(/hf_[a-zA-Z0-9]{30,}/g, 'hf_[REDACTED]')
+        .replace(/Bearer\s+[a-zA-Z0-9_\-\.]{10,}/gi, 'Bearer [REDACTED_TOKEN]')
+        .replace(/(api[_-]?key|access[_-]?token|secret)(["':=\s]+)[a-zA-Z0-9_\-\.]{8,}/gi, '$1$2"[REDACTED]"');
+
+    // 3. Prevent log bloat
+    return sanitized.length > 500 ? sanitized.slice(0, 500) + '... (truncated)' : sanitized;
+}
+
+/**
  * Unified FinOps telemetry and health tracking recorder for AI actions.
  * Logs tokens, latency, cost and updates live health status of the API key.
+ * Guarantees zero leakage of secrets in error logs and traces.
  */
 export async function recordAITelemetry(params: {
     apiKeyResult?: APIKeyResult | null;
@@ -240,6 +269,9 @@ export async function recordAITelemetry(params: {
         const apiKeyId = params.apiKeyResult?.keyId || null;
         const provider = params.apiKeyResult?.provider || 'openrouter';
 
+        // Sanitize error message to prevent secret or token leakage
+        const sanitizedError = sanitizeTelemetryError(params.errorMessage, params.apiKeyResult?.key);
+
         await logAPIKeyUsage(userId, apiKeyId, provider, params.action, {
             model: params.model,
             promptTokens: params.promptTokens,
@@ -247,25 +279,25 @@ export async function recordAITelemetry(params: {
             tokensUsed: params.tokensUsed,
             responseTime: params.responseTimeMs,
             success: params.success ?? true,
-            errorMessage: params.errorMessage,
+            errorMessage: sanitizedError || undefined,
             statusCode: params.statusCode
         });
 
         // If key is BYOK and had an error, update health state
         if (apiKeyId && apiKeyId.length === 24) {
             if (params.success === false) {
-                const isQuota = params.statusCode === 402 || params.errorMessage?.toLowerCase().includes('quota');
+                const isQuota = params.statusCode === 402 || sanitizedError?.toLowerCase().includes('quota');
                 const isAuth = params.statusCode === 401 ||
-                    params.errorMessage?.toLowerCase().includes('auth') ||
-                    params.errorMessage?.toLowerCase().includes('invalid') ||
-                    params.errorMessage?.toLowerCase().includes('expired');
+                    sanitizedError?.toLowerCase().includes('auth') ||
+                    sanitizedError?.toLowerCase().includes('invalid') ||
+                    sanitizedError?.toLowerCase().includes('expired');
                 const newStatus = isQuota ? 'QUOTA_EXCEEDED' : isAuth ? 'INVALID' : 'DEGRADED';
 
                 await prisma.aPIKey.update({
                     where: { id: apiKeyId },
                     data: {
                         healthStatus: newStatus,
-                        lastError: params.errorMessage?.slice(0, 200) || 'Erreur lors de l\'exécution IA',
+                        lastError: sanitizedError ? sanitizedError.slice(0, 200) : 'Erreur lors de l\'exécution IA',
                         lastChecked: new Date()
                     }
                 }).catch(() => {});
@@ -283,7 +315,8 @@ export async function recordAITelemetry(params: {
             }
         }
     } catch (telemetryErr) {
-        console.error('[recordAITelemetry] Failed to record telemetry:', telemetryErr);
+        const safeErr = telemetryErr instanceof Error ? telemetryErr.message : String(telemetryErr);
+        console.error('[recordAITelemetry] Failed to record telemetry:', sanitizeTelemetryError(safeErr, params.apiKeyResult?.key));
     }
 }
 

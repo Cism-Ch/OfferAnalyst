@@ -22,7 +22,7 @@ import { ScoredOffer, SearchSource } from '@/types';
 // ZOD SCHEMAS & TYPES
 // ============================================================================
 
-export const CreateShareInputSchema = z.object({
+const CreateShareInputSchema = z.object({
   domain: z.string().trim().min(1, 'Domain is required').max(200),
   criteria: z.string().trim().max(2000).optional().nullable(),
   model: z.string().trim().max(100).optional().nullable(),

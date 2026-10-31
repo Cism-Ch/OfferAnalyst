@@ -42,11 +42,13 @@ export interface WebVitalsMetric {
  */
 export async function trackEvent(event: AnalyticsEventData): Promise<void> {
   try {
+    const safeUserId = (event.userId && /^[0-9a-fA-F]{24}$/.test(event.userId)) ? event.userId : null;
+
     // Store event in database for production analytics
     await prisma.analyticsEvent.create({
       data: {
         type: event.type,
-        userId: event.userId || null,
+        userId: safeUserId,
         metadata: event.metadata ? JSON.stringify(event.metadata) : null,
         userAgent: event.userAgent || null,
         path: event.path || null,
@@ -57,7 +59,7 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
       console.log('[Analytics Event]', {
         type: event.type,
-        userId: event.userId ? `user_${event.userId.substring(0, 8)}...` : 'anonymous',
+        userId: safeUserId ? `user_${safeUserId.substring(0, 8)}...` : 'anonymous',
         path: event.path,
         timestamp: new Date().toISOString(),
       });
@@ -73,6 +75,8 @@ export async function trackEvent(event: AnalyticsEventData): Promise<void> {
  */
 export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
   try {
+    const safeUserId = (metric.userId && /^[0-9a-fA-F]{24}$/.test(metric.userId)) ? metric.userId : null;
+
     // Store metric in database for production monitoring
     await prisma.performanceMetric.create({
       data: {
@@ -80,7 +84,7 @@ export async function trackWebVitals(metric: WebVitalsMetric): Promise<void> {
         value: metric.value,
         rating: metric.rating,
         path: metric.path || null,
-        userId: metric.userId || null,
+        userId: safeUserId,
       },
     });
 

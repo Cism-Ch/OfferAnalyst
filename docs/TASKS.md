@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 15 Achevé & Validé (Auth, Quotas, Historique, Export & Partage — 100/100, Tests Adversariaux 17/17) — Sprints 1 à 15 Archivés | Sprint 16 en Cours
+**Statut Global :** Sprint 16 Achevé & Validé (E2E Playwright 9/9, Observabilité IA & Web Vitals, 100/100 PASS) — Sprints 1 à 16 Archivés | Sprint 17 Prêt à Démarrer
 
 ---
 
@@ -13,45 +13,45 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🔄 SPRINT 16 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🔄 SPRINT 17 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-E2E-01 (Playw) │  │ [ ] SPRINTS 17-22 (RWD  │  │     - Sprint 15 (9)     │
-│ [ ] TASK-OBS-02 (Telemet│  │     & Fluidité UI/UX)   │  │     - Sprint 14 (4)     │
-│ [ ] TASK-VAL-03 (Eval)  │  │                         │  │     - Sprint 13 (5)     │
-│                         │  │                         │  │     - Sprint 12 (4)     │
-│                         │  │                         │  │     - Sprints 1-11 (All)│
+│ [ ] TASK-RWD-01 (Found) │  │ [ ] SPRINTS 18-22 (RWD  │  │     - Sprint 16 (4)     │
+│ [ ] TASK-RWD-02 (Touch) │  │     Layouts & Fluidité) │  │     - Sprint 15 (9)     │
+│ [ ] TASK-VAL-04 (Eval)  │  │                         │  │     - Sprint 14 (4)     │
+│                         │  │                         │  │     - Sprints 1-13 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 16 — E2E Playwright & Observabilité IA
+## 🚀 Sprint Actif : Sprint 17 — RWD : Fondations, Viewport, Cibles tactiles 44px & Tokens dvh
 
-- [ ] **`TASK-E2E-01` — Tests E2E Playwright des Parcours Utilisateurs & Partage Public**
+- [ ] **`TASK-RWD-01` — Fondations Viewport & Tokens Dynamiques `dvh` / Safe Area**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `tests/e2e/workflow.spec.ts`, `playwright.config.ts`
+  - **Fichiers cibles :** `src/app/globals.css`, `src/app/layout.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-E2E-01.01` : Couverture E2E du parcours complet recherche, scoring IA, export PDF/CSV et ouverture du modal de détail.
-    - [ ] `TASK-E2E-01.02` : Couverture E2E du flux de partage public (`/share/[id]`), affichage en lecture seule et interdiction de mutation.
+    - [ ] `TASK-RWD-01.01` : Normalisation du viewport Next.js (`viewportFit: cover`, prévention du zoom indésirable iOS sur champs < 16px).
+    - [ ] `TASK-RWD-01.02` : Définition des variables et tokens utilitaires CSS pour hauteurs dynamiques (`100dvh`, `env(safe-area-inset-*)`).
 
-- [ ] **`TASK-OBS-02` — Télémétrie d'Usage IA & Observabilité Web Vitals**
-  - **Priorité :** 🟡 MOYENNE
-  - **Fichiers cibles :** `src/app/actions/shared/api-key-provider.ts`, `src/app/api/analytics/web-vitals/route.ts`
+- [ ] **`TASK-RWD-02` — Cibles Tactiles 44px & Ergonomie Mobile Navigation**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-OBS-02.01` : Traçabilité détaillée des requêtes OpenRouter (tokens consommés, latence en ms, modèle) avec journalisation sans fuite de secrets.
-    - [ ] `TASK-OBS-02.02` : Métriques Web Vitals (INP, LCP, CLS, FCP) capturées et journalisées de façon non bloquante.
+    - [ ] `TASK-RWD-02.01` : Application systématique des cibles tactiles minimales de 44x44px sur tous les boutons, sélecteurs et liens d'en-tête.
+    - [ ] `TASK-RWD-02.02` : Adaptation du drawer mobile avec backdrop blur, scroll inertiel et fermeture fluide au toucher.
 
-- [ ] **`TASK-VAL-03` — Validation Déterministe & Non-Régression Globale**
+- [ ] **`TASK-VAL-04` — Validation Déterministe & Non-Régression Globale**
   - **Priorité :** 🟡 MOYENNE
   - **Fichiers cibles :** `evals/run_fullstack_eval.py`
   - **Critères d'acceptation :**
-    - [ ] `TASK-VAL-03.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript, 0 warning ESLint, conformité Prisma MongoDB).
+    - [ ] `TASK-VAL-04.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript, 0 warning ESLint, conformité Prisma MongoDB).
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 16 (TASKS_HISTORY_S16_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S16_COMPLETED.md)** — 4 Lots (E2E Playwright 9/9 PASS, Télémétrie IA & Web Vitals, Fix Next.js 16 Server Actions, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 15 (TASKS_HISTORY_S15_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S15_COMPLETED.md)** — 9 Lots (Better-Auth M1-M4, Quotas 24h, Double Historique, Ops pnpm, Export PDF/CSV & Partage Public).
 - 👉 **[Consulter l'Archive Complète du Sprint 14 (TASKS_HISTORY_S14_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S14_COMPLETED.md)** — 4 Lots Multi-Domaines (Sécurité Auth & Anti-IDOR, Continuité Guest User & BYOK, UX/UI Bilingue FR/EN & Sign Out, Méta-Optimisation RSI).
 - 👉 **[Consulter l'Archive Complète du Sprint 13 (TASKS_HISTORY_S13_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S13_COMPLETED.md)** — 5 tâches (Bilinguisme Exhaustif FR/EN 100%).

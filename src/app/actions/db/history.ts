@@ -22,7 +22,7 @@ import type { SearchHistory } from '@prisma/client';
 // ZOD SCHEMAS & TYPES
 // ============================================================================
 
-export const SaveSearchInputSchema = z.object({
+const SaveSearchInputSchema = z.object({
   domain: z.string().trim().min(1, 'Domain is required').max(200),
   criteria: z.string().trim().min(1, 'Criteria is required').max(2000),
   implicitContext: z.string().trim().max(2000).optional().nullable(),
@@ -31,23 +31,23 @@ export const SaveSearchInputSchema = z.object({
 });
 export type SaveSearchInput = z.infer<typeof SaveSearchInputSchema>;
 
-export const GetHistoryOptionsSchema = z.object({
+const GetHistoryOptionsSchema = z.object({
   page: z.number().int().positive().default(1).optional(),
   limit: z.number().int().positive().max(100).default(50).optional(),
   pinnedOnly: z.boolean().default(false).optional(),
 }).optional();
 export type GetHistoryOptions = z.infer<typeof GetHistoryOptionsSchema>;
 
-export const TogglePinSchema = z.object({
+const TogglePinSchema = z.object({
   id: z.string().trim().min(1, 'Search ID is required'),
   isPinned: z.boolean(),
 });
 
-export const DeleteSearchSchema = z.object({
+const DeleteSearchSchema = z.object({
   id: z.string().trim().min(1, 'Search ID is required'),
 });
 
-export const GuestSearchItemSchema = z.object({
+const GuestSearchItemSchema = z.object({
   id: z.string().optional(),
   domain: z.string().trim().min(1, 'Domain is required').max(200),
   criteria: z.string().trim().min(1, 'Criteria is required').max(2000),
@@ -60,7 +60,7 @@ export const GuestSearchItemSchema = z.object({
 });
 export type GuestSearchItem = z.infer<typeof GuestSearchItemSchema>;
 
-export const MigrateGuestSearchesSchema = z.array(GuestSearchItemSchema).max(100);
+const MigrateGuestSearchesSchema = z.array(GuestSearchItemSchema).max(100);
 
 export type ActionResponse<T = unknown> =
   | { success: true; data: T }

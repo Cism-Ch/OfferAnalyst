@@ -19,19 +19,27 @@ export function WebVitalsTracker() {
 
     // Dynamic import of web-vitals to reduce bundle size
     import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-      const reportMetric = async (metric: { name: string; value: number; rating: string }) => {
+      const reportMetric = (metric: { name: string; value: number; rating: string }) => {
         try {
-          // Send metric to analytics endpoint
-          await fetch('/api/analytics/web-vitals', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: metric.name,
-              value: metric.value,
-              rating: metric.rating,
-              path: pathname,
-            }),
+          const payload = JSON.stringify({
+            name: metric.name,
+            value: metric.value,
+            rating: metric.rating,
+            path: pathname,
           });
+
+          // Prefer navigator.sendBeacon to ensure delivery during page unload / navigation
+          if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon('/api/analytics/web-vitals', blob);
+          } else {
+            fetch('/api/analytics/web-vitals', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: payload,
+              keepalive: true,
+            }).catch(() => {});
+          }
         } catch (error) {
           // Silent fail - don't disrupt user experience
           console.debug('Failed to report web vitals:', error);

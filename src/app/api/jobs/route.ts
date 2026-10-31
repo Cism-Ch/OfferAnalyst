@@ -17,18 +17,18 @@ export async function POST(request: NextRequest) {
         const receiver = getQStashReceiver();
 
         // 1. Cryptographic Signature Verification
+        if (!signature) {
+            log.error('Rejecting QStash job: Missing upstash-signature header');
+            return NextResponse.json({ error: 'Missing signature header' }, { status: 401 });
+        }
+
         if (!receiver) {
             if (process.env.NODE_ENV === 'production') {
                 log.error('Rejecting QStash job: QStash receiver signing keys are not configured in production');
                 return NextResponse.json({ error: 'Worker unconfigured' }, { status: 503 });
             }
-            log.warn('Development mode: Processing QStash job without cryptographic receiver verification');
+            log.warn('Development mode: QStash signature header detected, but receiver signing keys are not configured');
         } else {
-            if (!signature) {
-                log.error('Rejecting QStash job: Missing upstash-signature header');
-                return NextResponse.json({ error: 'Missing signature header' }, { status: 401 });
-            }
-
             const isValid = await receiver.verify({
                 signature,
                 body: rawBody,

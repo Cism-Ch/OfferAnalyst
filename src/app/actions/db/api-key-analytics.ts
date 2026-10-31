@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { calculateTokenCostUSD } from '@/lib/ai-pricing';
+import { sanitizeTelemetryError } from '@/app/actions/shared/api-key-provider';
 
 export interface APIKeyAnalytics {
     totalRequests: number;
@@ -98,6 +99,11 @@ export async function logAPIKeyUsage(
         const safeUserId = isValidObjectId(userId) ? userId! : null;
         const safeApiKeyId = isValidObjectId(apiKeyId) ? apiKeyId! : null;
 
+        // Sanitize error message against credential leakage
+        const safeErrorMessage = data.errorMessage
+            ? sanitizeTelemetryError(data.errorMessage)
+            : null;
+
         // 1. Create granular telemetry log entry
         await prisma.aPIKeyUsageLog.create({
             data: {
@@ -112,7 +118,7 @@ export async function logAPIKeyUsage(
                 costUsd: costUsd !== undefined ? costUsd : null,
                 statusCode: data.statusCode ?? (data.success === false ? 500 : 200),
                 success: data.success ?? true,
-                errorMessage: data.errorMessage,
+                errorMessage: safeErrorMessage,
                 responseTime: data.responseTime,
                 ipAddress: data.ipAddress,
                 userAgent: data.userAgent
