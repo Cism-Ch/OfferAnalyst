@@ -13,18 +13,47 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (RSI / V1.1)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 26) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [x] TASK-RSI-01 (SemVer │  │ [ ] Multi-Tenant DB     │  │     - Sprint 24 (UI/UX) │
-│     vX.X.X-MENTION)     │  │ [ ] Webhook Alerts      │  │     - Sprint 23 (Remed) │
-│ [ ] TASK-REL-01 (V1.1.0 │  │ [ ] Chrome Extension    │  │     - Sprints 1-22 (All)│
+│ [-] TASK-INGEST-01      │  │ [ ] Multi-Tenant DB     │  │     - Sprint 25 (Vitrine│
+│     (Ingestion Multi-   │  │ [ ] Webhook Alerts      │  │     - Sprint 24 (UI/UX) │
+│     Sources sans JSON)  │  │ [ ] Chrome Extension    │  │     - Sprint 23 (Remed) │
+│ [ ] TASK-REL-01 (V1.2.0 │  │                         │  │     - Sprints 1-22 (All)│
 │     Release & Deploy)   │  │                         │  │                         │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🤖 Protocole RSI : Versioning Automatique & Évaluation SemVer
+## 📥 Sprint 26 : Chantier 2 — Ingestion Multi-Sources sans Friction (`/data-source`)
+
+- [-] **`TASK-INGEST-01` — Système d'Ingestion Multi-Sources (Texte Libre, URLs, Fichiers & JSON Développeur)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/actions/offers/structure-raw-offers.ts`, `src/components/data-source/RawTextTab.tsx`, `src/components/data-source/UrlImportTab.tsx`, `src/components/data-source/FileUploadTab.tsx`, `src/components/data-source/JsonInputTab.tsx`, `src/app/data-source/page.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [ ] `TASK-INGEST-01.01` : Server Action déterministe `structureRawOffersAction` utilisant le modèle LLM rapide pour extraire et structurer du texte libre (copier-coller vrac d'offres) vers le schéma `Offer[]` normalisé.
+    - [ ] `TASK-INGEST-01.02` : Onglet par défaut Texte Libre (`RawTextTab.tsx`) avec zone de collage simple, détection multi-offres, feedback de structuration IA et prévisualisation directe sous forme de fiches éditables.
+    - [ ] `TASK-INGEST-01.03` : Onglet Import par Liens/URLs (`UrlImportTab.tsx`) avec validation Zod, garde-fous anti-SSRF et extraction de métadonnées.
+    - [ ] `TASK-INGEST-01.04` : Onglet Import de Fichiers (`FileUploadTab.tsx`) avec parsing automatique des fichiers CSV (mappage de colonnes intelligent) et fichiers texte.
+    - [ ] `TASK-INGEST-01.05` : Onglet Avancé / Développeurs (`JsonInputTab.tsx`) pour conserver le mode JSON d'origine pour les flux API sans intimider les utilisateurs ordinaires.
+    - [ ] `TASK-INGEST-01.06` : Intégration unifiée et responsive dans `src/app/data-source/page.tsx`, bilinguisme FR/EN exhaustif et validation 100/100 (`eval:quick`).
+
+---
+
+## 🎯 Sprint 25 Achevée : Chantier 1 — Page de Présentation SaaS, Démo Interactive 1 Clic & Navigation Cookie Robuste
+
+- [x] **`TASK-PROD-01` — Présentation SaaS Premium, Démo 1 Clic & Système Anti-Bounce par Cookies**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/cookie-nav.ts`, `src/components/landing/InteractiveDemoWidget.tsx`, `src/components/landing/SaaSPresentationView.tsx`, `src/app/page.tsx`, `src/app/landing/page.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/contexts/LanguageContext.tsx`, `middleware.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-PROD-01.01` : Architecture de navigation et persistance des cookies (`offeranalyst_app_mode` = `'app'` | `'vitrine'`) garantissant qu'un rafraîchissement (F5) ou un retour sur l'app ne renvoie jamais l'utilisateur actif vers la vitrine, tout en préservant l'accès explicite à `/landing`.
+    - [x] `TASK-PROD-01.02` : Conception par un spécialiste UI/UX du composant de démo interactive en 1 clic (`InteractiveDemoWidget.tsx`) sans login ni friction, chargeant 3 cas concrets réels, simulant l'analyse multi-axes en direct avec barres, radar et citations web anti-hallucination.
+    - [x] `TASK-PROD-01.03` : Refonte premium de la Page Vitrine SaaS (`src/components/landing/SaaSPresentationView.tsx` & `/landing`), positionnement B2B/Prosumer (Arbitrage d'opportunités, tech remote, recrutement & sourcing), Bento Grid de différenciation (Citations web prouvées, NVIDIA Nemotron gratuit, BYOK illimité, Sécurité zéro-rétention) et Call-To-Action fluides.
+    - [x] `TASK-PROD-01.04` : Intégration unifiée sur la route racine `/` (détection Server/Client du cookie `offeranalyst_app_mode` avec fallback élégant) et liens bidirectionnels (App <-> Vitrine) dans le Header/Sidebar.
+    - [x] `TASK-PROD-01.05` : Bilinguisme intégral FR/EN des nouveaux éléments de présentation et de la démo 1 clic.
+    - [x] `TASK-PROD-01.06` : Validation sans faute avec `npx tsc --noEmit`, `npm run lint`, `npm run eval:quick` (100/100 PASS) et `npm run build` (0 erreur).
+
+---
 
 - [x] **`TASK-RSI-01` — Système RSI de Versioning Adaptatif (`vX.X.X-MENTION`)**
   - **Priorité :** 🔴 HAUTE

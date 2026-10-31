@@ -51,7 +51,8 @@ import {
     FileText,
     LogOut,
     LogIn,
-    Zap
+    Zap,
+    Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OffanIcon, OffanLogo } from '@/components/brand/OffanBrand';
@@ -381,6 +382,7 @@ function SidebarBody({
         { label: t.nav.apiKeys, href: '/dashboard/api-keys', icon: Key },
         { label: t.nav.workspace, href: '/dashboard/workspace', icon: Users },
         { label: t.nav.settings, href: '/dashboard/settings', icon: Settings },
+        { label: t.nav.saasShowcase, href: '/landing', icon: Sparkles },
         { label: t.nav.support, href: '/dashboard/support', icon: Coffee },
         { label: t.nav.help, href: '/help', icon: HelpCircle },
         { label: t.nav.changelog, href: '/changelog', icon: FileText },

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0-saas-vitrine] - 2026-10-31
+
+### 🌟 Chantier 1 : Page de Présentation SaaS, Démo Interactive 1 Clic & Navigation Anti-Bounce par Cookies (Sprint 25)
+
+- **Architecture de Navigation & Persistance des Cookies (`offeranalyst_app_mode`)** :
+  - **Protection Anti-Bounce** : Implémentation du cookie `offeranalyst_app_mode` (`'app'` | `'vitrine'`) avec persistance 30 jours, garantissant qu'un rafraîchissement de page (F5) ou un retour sur l'application ne renvoie jamais un utilisateur actif vers la page vitrine.
+  - **Contrôleur Dynamique Racine (`/`)** : Détection instantanée côté serveur via `next/headers` : les visiteurs découvrent la vitrine avec la démo interactive, tandis que les utilisateurs actifs atterrissent directement sur le tableau de bord de travail sans scintillement ni redirection HTTP superflue.
+  - **Middleware Unifié** : Configuration du cookie dans `middleware.ts` lors de l'accès à toute route du parcours applicatif (`/search-context`, `/data-source`, `/analysis`, etc.) et support du paramètre explicite `?view=vitrine` ou `?view=app`.
+- **Démo Interactive en 1 Clic (`InteractiveDemoWidget`)** :
+  - **Zéro Friction** : Accessible immédiatement sans inscription ni carte bancaire, permettant d'exécuter une simulation de scan multi-axes en 1 seconde.
+  - **3 Scénarios d'Arbitrage Réels** : Pré-configurations concrètes (Tech Expat & Remote, Recrutement & Sourcing B2B, Arbitrage Immobilier Professionnel).
+  - **Preuves Anti-Hallucination & Citations Web** : Décomposition des scores sur 4 axes, synthèse déterministe par l'IA et citations web vérifiées en direct (levels.fyi, Glassdoor, accords d'entreprise).
+- **Refonte de la Vitrine SaaS (`SaaSPresentationView` & `/landing`)** :
+  - **Positionnement B2B / Prosumer** : Hero orienté sur l'arbitrage d'opportunités à fort enjeu (tech expatriés/remote, recruteurs, investisseurs) et le calcul du vrai reste-à-vivre.
+  - **Bento Grid Décisif** : 4 piliers de différenciation (Citations web prouvées, modèle NVIDIA Nemotron inclus, BYOK illimité sans marge, sécurité et zéro rétention de données).
+  - **Grille Tarifaire Transparente** : Formule Découverte gratuite (10 recherches/jour) vs Pro BYOK illimité.
+- **Bilinguisme & Intégration Shell** :
+  - Traduction intégrale FR/EN dans `LanguageContext.tsx`.
+  - Liens bidirectionnels fluides ajoutés dans la barre latérale (`ModernSidebar`) et l'en-tête (`ModernHeader`).
+
+
+
 ## [1.1.1-patch] - 2026-10-31
 
 ### 🎨 UI/UX Mobile & Navbar SaaS Premium (Sprint 24)

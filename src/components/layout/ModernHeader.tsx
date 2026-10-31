@@ -15,7 +15,8 @@ import { motion } from 'framer-motion';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PremiumThemeSelector } from "@/components/theme-selector";
-import { Search, ChevronRight, Zap, KeyRound } from 'lucide-react';
+import { Search, ChevronRight, Zap, KeyRound, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { fadeInUpProps } from '@/lib/motion';
 import { usePathname } from 'next/navigation';
@@ -176,6 +177,18 @@ export function ModernHeader({
                                 >
                                     <KeyRound className="h-4 w-4" />
                                 </Button>
+
+                                <Link href="/landing" className="hidden 2xl:inline-flex">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5 rounded-full border border-border/60 hover:bg-accent"
+                                        title={t.nav.saasShowcase}
+                                    >
+                                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                        <span>{t.nav.saasShowcase}</span>
+                                    </Button>
+                                </Link>
                             </motion.div>
 
                             {/* Right-Snapped Controls: Language & Theme grouped together */}
