@@ -62,7 +62,7 @@ export function AIModelSelector({
                     variant="outline"
                     size="sm"
                     className={cn(
-                        "group relative h-9 px-2 sm:px-3 gap-2 rounded-xl transition-all duration-300",
+                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-3 gap-2 rounded-xl transition-all duration-300 touch-manipulation",
                         "border-border/60 bg-background/60 hover:bg-accent/40 backdrop-blur-md shadow-xs shrink-0",
                         "focus-visible:ring-2 focus-visible:ring-primary/40",
                         compact && "px-2"
@@ -74,9 +74,9 @@ export function AIModelSelector({
                         <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
                     </div>
 
-                    <div className="flex flex-col items-start leading-none text-left">
+                    <div className="hidden lg:flex flex-col items-start leading-none text-left">
                         {!compact && (
-                            <span className="hidden sm:inline text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Moteur IA
                             </span>
                         )}
@@ -88,7 +88,7 @@ export function AIModelSelector({
                     <Badge 
                         variant={activeModel.tier === 'free' ? 'secondary' : 'default'}
                         className={cn(
-                            "text-[10px] h-4 px-1.5 font-semibold rounded-md uppercase tracking-wide",
+                            "hidden lg:inline-flex text-[10px] h-4 px-1.5 font-semibold rounded-md uppercase tracking-wide",
                             activeModel.tier === 'free' 
                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                 : "bg-primary/10 text-primary border border-primary/20"

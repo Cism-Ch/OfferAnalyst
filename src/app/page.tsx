@@ -120,7 +120,7 @@ export default function Home() {
                         <CheckCircle2 className="h-5 w-5 text-primary" />
                         {t.home.workflowTitle}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         {steps.map((step, idx) => (
                             <motion.div
                                 key={idx}

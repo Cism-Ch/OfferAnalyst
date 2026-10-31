@@ -35,6 +35,20 @@ export function ModernLayout({
 }: ModernLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+    // Auto-collapse sidebar on tablet (768px - 1023px) to icon rail mode
+    React.useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+                setSidebarCollapsed(true);
+            } else if (window.innerWidth >= 1024) {
+                setSidebarCollapsed(false);
+            }
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const maxWidthClasses = {
         'full': 'max-w-full',
         '7xl': 'max-w-7xl',
@@ -43,7 +57,7 @@ export function ModernLayout({
     };
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="flex min-h-app bg-background">
             {/* Sidebar */}
             <ModernSidebar
                 isCollapsed={sidebarCollapsed}
@@ -63,7 +77,7 @@ export function ModernLayout({
                 {/* Page Content */}
                 <main className="flex-1 overflow-auto">
                     <div className={cn(
-                        'mx-auto w-full px-4 sm:px-6 py-4 sm:py-6',
+                        'mx-auto w-full px-[var(--spacing-page)] py-[var(--spacing-section)]',
                         maxWidthClasses[maxWidth]
                     )}>
                         {children}

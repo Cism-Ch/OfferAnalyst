@@ -44,6 +44,20 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Fluid Spacing & Typography Tokens (2026 RWD) */
+  --spacing-page: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+  --spacing-section: clamp(1.25rem, 0.8rem + 1.8vw, 2.5rem);
+  --text-fluid-title: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  --text-fluid-hero: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
+}
+
+@utility min-h-app {
+  min-height: 100dvh;
+}
+
+@utility h-app {
+  height: 100dvh;
 }
 
 :root {
@@ -79,6 +93,12 @@
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #a1a1aa;
+
+  /* Fluid Spacing & Typography */
+  --spacing-page: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+  --spacing-section: clamp(1.25rem, 0.8rem + 1.8vw, 2.5rem);
+  --text-fluid-title: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  --text-fluid-hero: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
 }
 
 .dark {
@@ -428,6 +448,15 @@
   /* Smooth momentum scrolling for mobile viewports */
   .momentum-scroll {
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* 2026 Dynamic Viewport Heights (dvh) */
+  .min-h-app {
+    min-height: 100dvh;
+  }
+
+  .h-app {
+    height: 100dvh;
   }
 }
 

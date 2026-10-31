@@ -174,7 +174,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
                 <Link
                     href={href}
                     className={cn(
-                        'flex items-center gap-3 p-2 rounded-xl hover:bg-accent/60 transition-colors group flex-1 min-w-0',
+                        'flex items-center gap-3 p-2 min-h-[44px] rounded-xl hover:bg-accent/60 transition-colors group flex-1 min-w-0 touch-manipulation',
                         isCollapsed && 'justify-center p-1.5 flex-initial'
                     )}
                     title={user ? `${name} (${email}) • ${t.nav.settings}` : t.auth.signInCta}
@@ -215,7 +215,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
                             disabled={signingOut}
                             title={t.auth.signOut}
                             aria-label={t.auth.signOut}
-                            className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                            className="size-11 md:size-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl touch-manipulation"
                         >
                             <LogOut className="h-4 w-4" />
                         </Button>
@@ -226,7 +226,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
                             size="icon"
                             title={t.auth.signInCta}
                             aria-label={t.auth.signInCta}
-                            className="h-9 w-9 shrink-0 text-primary hover:bg-primary/10 rounded-xl"
+                            className="size-11 md:size-9 shrink-0 text-primary hover:bg-primary/10 rounded-xl touch-manipulation"
                         >
                             <Link href="/auth/login">
                                 <LogIn className="h-4 w-4" />
@@ -275,7 +275,7 @@ function SidebarDailyQuotaWidget({
             <div className="px-2 py-3 border-t flex justify-center">
                 <button
                     onClick={onOpenKeyDialog}
-                    className="p-2 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
                     title={quota.isByok ? (isFr ? "BYOK Actif (Recherches illimitées)" : "BYOK Active (Unlimited searches)") : `Quota: ${quota.remaining}/${quota.total} ${isFr ? 'recherches' : 'searches'}`}
                 >
                     <Zap className={cn("h-4 w-4", quota.isByok ? "text-emerald-500 fill-emerald-500/20" : "text-amber-500 fill-amber-500/20")} />
@@ -311,7 +311,7 @@ function SidebarDailyQuotaWidget({
                 {!quota.isByok && (
                     <button
                         onClick={onOpenKeyDialog}
-                        className="text-[11px] text-primary hover:underline font-medium block pt-0.5 text-left"
+                        className="text-[11px] text-primary hover:underline font-medium block pt-1 pb-1 min-h-[32px] text-left touch-manipulation"
                     >
                         {isFr ? "+ Ajouter clé API (BYOK)" : "+ Add API Key (BYOK)"}
                     </button>
@@ -421,7 +421,7 @@ function SidebarBody({
             {onToggle && (
                 <button
                     onClick={onToggle}
-                    className="hidden md:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md hover:bg-accent transition-colors"
+                    className="hidden lg:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md hover:bg-accent transition-colors"
                     aria-label={isCollapsed ? t.nav.expandSidebar : t.nav.collapseSidebar}
                 >
                     {isCollapsed ? (
@@ -461,7 +461,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             {/* Mobile Menu Button - Accessible 44x44px Touch Target */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="md:hidden fixed top-3 left-3 z-40 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors"
+                className="md:hidden fixed top-3 left-3 z-40 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
                 aria-label={t.nav.openMenu}
             >
                 <Menu className="h-5 w-5" />
@@ -479,15 +479,15 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
                         />
                         <motion.aside
-                            initial={{ x: -256 }}
+                            initial={{ x: -288 }}
                             animate={{ x: 0 }}
-                            exit={{ x: -256 }}
+                            exit={{ x: -288 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="md:hidden fixed left-0 top-0 bottom-0 w-64 bg-background border-r z-50 flex flex-col"
+                            className="md:hidden fixed left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-background border-r z-50 flex flex-col momentum-scroll overflow-y-auto pl-safe pb-safe"
                         >
                             <button
                                 onClick={() => setMobileOpen(false)}
-                                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-accent"
+                                className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
                                 aria-label={t.nav.closeMenu}
                             >
                                 <X className="h-5 w-5" />
@@ -510,9 +510,13 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
 
             {/* Desktop Sidebar */}
             <motion.aside
+                initial={false}
                 animate={{ width: isCollapsed ? 80 : 256 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="hidden md:flex flex-col relative border-r bg-background min-h-screen sticky top-0"
+                className={cn(
+                    "hidden md:flex flex-col relative border-r bg-background h-app sticky top-0 shrink-0",
+                    isCollapsed ? "w-20" : "w-64"
+                )}
             >
                 <SidebarBody
                     isCollapsed={isCollapsed}

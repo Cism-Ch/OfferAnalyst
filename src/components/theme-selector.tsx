@@ -149,7 +149,7 @@ export function PremiumThemeSelector() {
       <Button 
         variant="outline" 
         size="sm" 
-        className="h-9 px-2.5 rounded-xl border-border/60 bg-background/50 backdrop-blur-md"
+        className="min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 rounded-xl border-border/60 bg-background/50 backdrop-blur-md touch-manipulation"
       >
         <div className="h-4 w-4 rounded-full bg-muted animate-pulse" />
       </Button>
@@ -167,7 +167,7 @@ export function PremiumThemeSelector() {
           variant="outline" 
           size="sm"
           className={cn(
-            "group relative h-9 px-2 sm:px-2.5 gap-2 rounded-xl transition-all duration-200",
+            "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-2.5 gap-2 rounded-xl transition-all duration-200 touch-manipulation",
             "border-border/60 bg-background/70 hover:bg-accent/40 backdrop-blur-md shadow-xs",
             "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1"
           )}
@@ -184,7 +184,7 @@ export function PremiumThemeSelector() {
             <ActiveIcon className={cn("h-3 w-3 stroke-[2.5]", activeTheme.iconColor)} />
           </div>
 
-          <span className="text-xs font-semibold tracking-wide hidden sm:inline text-foreground/90">
+          <span className="text-xs font-semibold tracking-wide hidden lg:inline text-foreground/90">
             {activeTheme.name}
           </span>
 
