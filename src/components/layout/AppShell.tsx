@@ -14,7 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import { ModernSidebar } from './ModernSidebar';
 import { ModernHeader } from './ModernHeader';
-import { cn } from '@/lib/utils';
+import { PageContainer } from './PageContainer';
 
 export interface AppShellProps {
     children: React.ReactNode;
@@ -26,13 +26,6 @@ export interface AppShellProps {
     showModelSelector?: boolean;
     className?: string;
 }
-
-const maxWidthClasses = {
-    'full': 'max-w-full',
-    '7xl': 'max-w-7xl',
-    '6xl': 'max-w-6xl',
-    '5xl': 'max-w-5xl',
-};
 
 export function AppShell({
     children,
@@ -82,13 +75,9 @@ export function AppShell({
 
                 {/* Page Content */}
                 <main className="flex-1 overflow-auto">
-                    <div className={cn(
-                        'mx-auto w-full px-[var(--spacing-page)] py-[var(--spacing-section)]',
-                        maxWidthClasses[maxWidth],
-                        className
-                    )}>
+                    <PageContainer size={maxWidth} className={className}>
                         {children}
-                    </div>
+                    </PageContainer>
                 </main>
             </div>
         </div>

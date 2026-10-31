@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 18 Achevé & Validé (AppShell unifié, Radix Sheet Drawer, Header compact 56px, Playwright Responsive 51/51 PASS, next build 35/35, 100/100 PASS) — Sprints 1 à 18 Archivés | Sprint 19 Ouvert
+**Statut Global :** Sprint 19 Achevé & Validé (Container Queries OfferCard, Bottom-sheet fluide, Snap-x Compare, PageContainer unifié, Playwright Responsive 66/66 PASS, 100/100 PASS) — Sprints 1 à 19 Archivés | Sprint 20 Ouvert
 
 ---
 
@@ -13,53 +13,53 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🔄 SPRINT 19 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🔄 SPRINT 20 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-MAI-01 (Cards) │  │ [ ] SPRINTS 20-22       │  │     - Sprint 18 (3)     │
-│ [ ] TASK-MAI-02 (Charts)│  │     (Pages denses,      │  │     - Sprint 17 (3)     │
-│ [ ] TASK-MAI-03 (Layout)│  │      Auth, Polish)      │  │     - Sprint 16 (4)     │
-│ [ ] TASK-VAL-06 (Eval)  │  │                         │  │     - Sprints 1-15 (All)│
+│ [ ] TASK-DEN-01 (Tables)│  │ [ ] SPRINTS 21-22       │  │     - Sprint 19 (4)     │
+│ [ ] TASK-DEN-02 (Keys)  │  │     (Auth, Overlays,    │  │     - Sprint 18 (3)     │
+│ [ ] TASK-DEN-03 (Charts)│  │      Motion, Polish)    │  │     - Sprint 17 (3)     │
+│ [ ] TASK-VAL-07 (Eval)  │  │                         │  │     - Sprints 1-16 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 19 — Parcours Principal (`/`, `/search-context`, `/data-source`, `/analysis`, `/compare`, `/saved`)
+## 🚀 Sprint Actif : Sprint 20 — Pages Denses (`/admin`, `/dashboard/settings`, `/api-keys`, `/analytics`, `/history`, `/projects`)
 
-- [ ] **`TASK-MAI-01` — Container Queries sur OfferCard & Disposition Compacte / Étendue**
+- [ ] **`TASK-DEN-01` — Nouveau composant `ResponsiveTable` & Refonte `/admin`**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/components/offers/OfferCard.tsx`, `src/components/analysis/ResultsSection.tsx`
+  - **Fichiers cibles :** `src/components/ui/responsive-table.tsx`, `src/app/admin/page.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-MAI-01.01` : Configuration de conteneurs `@container` sur la colonne des résultats pour adapter les cartes d'offres à leur largeur propre et non au viewport global.
-    - [ ] `TASK-MAI-01.02` : Variante compacte sous 400px de conteneur (empilement vertical propre des métadonnées, scores et actions) et variante étendue au-delà.
+    - [ ] `TASK-DEN-01.01` : Création du composant générique `ResponsiveTable` (tableau standard sur `md+`, liste empilée de cartes clé/valeur accessibles sous `md`).
+    - [ ] `TASK-DEN-01.02` : Refonte de la page `/admin` éliminant le scroll horizontal pénible sur mobile (<640px) tout en préservant la complétude des données utilisateurs/logs.
 
-- [ ] **`TASK-MAI-02` — Empilement Responsive & Refonte ScoreChart sur Analysis**
+- [ ] **`TASK-DEN-02` — Navigation Compacte dans Settings & Clés API Fluides**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/app/analysis/page.tsx`, `src/components/analysis/ScoreChart.tsx`, `src/components/offers/OfferDetailModal.tsx`
+  - **Fichiers cibles :** `src/app/dashboard/settings/page.tsx`, `src/app/api-keys/page.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-MAI-02.01` : Grille 12 colonnes avec sticky seulement sur `lg+`, empilement naturel sous `lg` sans blocage de scroll.
-    - [ ] `TASK-MAI-02.02` : `ScoreChart` calibré en ratio fluide `aspect-[16/10] max-h-64` avec ticks tronqués et minTickGap anti-chevauchement.
-    - [ ] `TASK-MAI-02.03` : `OfferDetailModal` optimisé en bottom-sheet plein écran sous 640px avec pied d'actions `pb-safe`.
+    - [ ] `TASK-DEN-02.01` : Onglets de `dashboard/settings` adaptés avec `ScrollArea` horizontal à fondu et `Select` de navigation compact sous `sm`.
+    - [ ] `TASK-DEN-02.02` : Clés API fluides en `break-all` (remplacement du `max-w-[220px]` tronquant) et menu d'actions compact sous `sm`.
 
-- [ ] **`TASK-MAI-03` — Snap Columns Compare & Harmonisation PageContainer**
+- [ ] **`TASK-DEN-03` — Calibrage Graphiques Analytics & Flex-wrap History/Projects**
   - **Priorité :** 🟡 MOYENNE
-  - **Fichiers cibles :** `src/app/compare/page.tsx`, `src/app/saved/page.tsx`, `src/app/search-context/page.tsx`, `src/app/data-source/page.tsx`
+  - **Fichiers cibles :** `src/app/analytics/page.tsx`, `src/app/history/page.tsx`, `src/app/projects/page.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-MAI-03.01` : Retrait du `min-h-screen` imbriqué dans `compare/page.tsx`, disposition `snap-x` sous `md` et tableau côte-à-côte au-delà.
-    - [ ] `TASK-MAI-03.02` : Barres d'actions unifiées `flex-col-reverse sm:flex-row` et intégration systématique de `PageContainer`.
+    - [ ] `TASK-DEN-03.01` : Graphiques Recharts sur `analytics` calibrés en ratios fluides (R-UI-07) et cartes KPI en `grid-cols-2 lg:grid-cols-4`.
+    - [ ] `TASK-DEN-03.02` : Remplacement des hauteurs fixes `h-[200px]` par des hauteurs relatives et filtres en `flex-wrap` sur `history` et `projects`.
 
-- [ ] **`TASK-VAL-06` — Validation Déterministe & Non-Régression Globale**
+- [ ] **`TASK-VAL-07` — Validation Déterministe & Non-Régression Globale**
   - **Priorité :** 🟡 MOYENNE
   - **Fichiers cibles :** `evals/run_fullstack_eval.py`, `tests/e2e/responsive.spec.ts`
   - **Critères d'acceptation :**
-    - [ ] `TASK-VAL-06.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint).
-    - [ ] `TASK-VAL-06.02` : Validation de non-régression de la suite E2E Playwright Responsive sur les 5 viewports canoniques.
+    - [ ] `TASK-VAL-07.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint).
+    - [ ] `TASK-VAL-07.02` : Validation de non-régression de la suite E2E Playwright Responsive sur les 5 viewports canoniques.
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 19 (TASKS_HISTORY_S19_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S19_COMPLETED.md)** — 4 Lots (Container Queries OfferCard, Bottom-sheet fluide, Snap-x Compare, PageContainer unifié, Playwright Responsive 66/66 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 18 (TASKS_HISTORY_S18_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S18_COMPLETED.md)** — 3 Lots (AppShell unifié, Radix Sheet Drawer, Header compact 56px, Playwright Responsive 51/51 PASS, next build 35/35, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 17 (TASKS_HISTORY_S17_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S17_COMPLETED.md)** — 3 Lots (Fondations Viewport & Tokens dvh, Cibles tactiles 44px & Ergonomie Mobile, Playwright Responsive 47/47 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 16 (TASKS_HISTORY_S16_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S16_COMPLETED.md)** — 4 Lots (E2E Playwright 9/9 PASS, Télémétrie IA & Web Vitals, Fix Next.js 16 Server Actions, 100/100 PASS).

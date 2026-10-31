@@ -74,7 +74,7 @@ export function AIModelSelector({
                         <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
                     </div>
 
-                    <div className="hidden lg:flex flex-col items-start leading-none text-left">
+                    <div className="hidden xl:flex flex-col items-start leading-none text-left">
                         {!compact && (
                             <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Moteur IA
@@ -88,7 +88,7 @@ export function AIModelSelector({
                     <Badge 
                         variant={activeModel.tier === 'free' ? 'secondary' : 'default'}
                         className={cn(
-                            "hidden lg:inline-flex text-[10px] h-4 px-1.5 font-semibold rounded-md uppercase tracking-wide",
+                            "hidden xl:inline-flex text-[10px] h-4 px-1.5 font-semibold rounded-md uppercase tracking-wide",
                             activeModel.tier === 'free' 
                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                 : "bg-primary/10 text-primary border border-primary/20"

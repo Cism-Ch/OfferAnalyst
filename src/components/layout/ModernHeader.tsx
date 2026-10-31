@@ -104,7 +104,7 @@ export function ModernHeader({
                         <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
                             {/* Desktop Quick Search */}
                             <motion.div
-                                className="relative hidden lg:block"
+                                className="relative hidden xl:block"
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.1 }}
@@ -130,7 +130,7 @@ export function ModernHeader({
                                         size="sm"
                                         onClick={() => setGuestKeyDialogOpen(true)}
                                         className={cn(
-                                            "min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-11 md:h-8 px-2 sm:px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation",
+                                             "min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-11 md:h-8 px-2 sm:px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation",
                                             quota.isByok
                                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
                                                 : quota.remaining === 0
@@ -140,7 +140,7 @@ export function ModernHeader({
                                         title={quota.isByok ? (language === 'fr' ? "BYOK Actif (Recherches illimitées)" : "BYOK Active (Unlimited searches)") : `Quota: ${quota.remaining}/${quota.total} ${language === 'fr' ? 'recherches' : 'searches'}`}
                                     >
                                         <Zap className={cn("h-3.5 w-3.5", quota.isByok ? "text-emerald-500 fill-emerald-500/30" : "text-amber-500 fill-amber-500/20")} />
-                                        <span className="hidden lg:inline">
+                                        <span className="hidden xl:inline">
                                             {quota.isByok
                                                 ? (language === 'fr' ? "BYOK Actif" : "BYOK Active")
                                                 : `${quota.remaining}/${quota.total} ${language === 'fr' ? 'recherches' : 'searches'}`}
@@ -152,7 +152,7 @@ export function ModernHeader({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setGuestKeyDialogOpen(true)}
-                                    className="hidden lg:inline-flex min-h-[44px] min-w-[44px] size-11 md:size-8 md:min-h-0 md:min-w-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent touch-manipulation"
+                                    className="hidden xl:inline-flex min-h-[44px] min-w-[44px] size-11 md:size-8 md:min-h-0 md:min-w-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent touch-manipulation"
                                     title={language === 'fr' ? "Configurer clé API (BYOK)" : "Configure API Key (BYOK)"}
                                     aria-label="API Key Dialog"
                                 >

@@ -38,8 +38,8 @@ export function ScoreChart({ offers }: ScoreChartProps) {
                     {chartTitle}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="h-[220px] p-2 sm:p-5 pt-0">
-                <ResponsiveContainer width="100%" height={180}>
+            <CardContent className="w-full aspect-[16/10] max-h-64 min-h-[160px] p-2 sm:p-4 pt-0">
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
                         data={offers} 
                         margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
@@ -49,7 +49,8 @@ export function ScoreChart({ offers }: ScoreChartProps) {
                             fontSize={11} 
                             tickLine={false} 
                             axisLine={false} 
-                            tickFormatter={(val: string) => (typeof val === 'string' && val.length > 10 ? `${val.slice(0, 8)}…` : val)}
+                            minTickGap={12}
+                            tickFormatter={(val: string) => (typeof val === 'string' && val.length > 8 ? `${val.slice(0, 7)}…` : val)}
                         />
                         <YAxis 
                             fontSize={11} 
@@ -70,7 +71,7 @@ export function ScoreChart({ offers }: ScoreChartProps) {
                             dataKey="finalScore" 
                             fill="var(--color-primary)" 
                             radius={[4, 4, 0, 0]} 
-                            barSize={40} 
+                            maxBarSize={36} 
                         />
                     </BarChart>
                 </ResponsiveContainer>

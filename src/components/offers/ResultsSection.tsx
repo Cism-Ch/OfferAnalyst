@@ -133,7 +133,7 @@ export function ResultsSection({
 
     // Show results
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 @container">
             {/* Modal for detailed offer view */}
             <OfferDetailModal
                 offer={selectedOffer}

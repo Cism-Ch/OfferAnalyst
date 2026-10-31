@@ -105,7 +105,10 @@ export function OfferDetailModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 bg-card text-card-foreground border-border/80 shadow-2xl">
+            <DialogContent className="fixed inset-x-0 bottom-0 top-auto sm:inset-auto sm:top-[50%] sm:left-[50%] sm:bottom-auto sm:right-auto translate-x-0 sm:translate-x-[-50%] translate-y-0 sm:translate-y-[-50%] w-full max-w-full sm:max-w-2xl lg:max-w-3xl max-h-[100dvh] sm:max-h-[90dvh] h-[92dvh] sm:h-auto rounded-b-none rounded-t-2xl sm:rounded-xl p-4 sm:p-8 bg-card text-card-foreground border-x-0 border-b-0 sm:border border-border/80 shadow-2xl overflow-y-auto">
+                {/* Mobile Bottom-Sheet Handle Indicator */}
+                <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-1 sm:hidden shrink-0" aria-hidden="true" />
+
                 {/* Header with Rank, Title & Key Badges */}
                 <DialogHeader className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -254,7 +257,7 @@ export function OfferDetailModal({
                 </div>
 
                 {/* Footer Actions */}
-                <DialogFooter className="pt-4 mt-2 border-t border-border/60 flex flex-col sm:flex-row gap-2.5 sm:justify-between items-stretch sm:items-center">
+                <DialogFooter className="pt-4 mt-2 border-t border-border/60 flex flex-col sm:flex-row gap-2.5 sm:justify-between items-stretch sm:items-center pb-safe">
                     {/* Left: External Link */}
                     {offer.url ? (
                         <Button 

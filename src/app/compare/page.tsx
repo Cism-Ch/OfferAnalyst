@@ -49,9 +49,9 @@ function ComparePageContent() {
                 description={cp.description}
                 maxWidth="7xl"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory">
                     {[1, 2, 3].map((i) => (
-                        <Card key={i} className="animate-pulse p-6 space-y-4 border-2 border-border/40">
+                        <Card key={i} className="w-[85vw] sm:w-[70vw] md:w-auto shrink-0 snap-center md:shrink animate-pulse p-6 space-y-4 border-2 border-border/40">
                             <div className="h-5 w-24 bg-muted rounded" />
                             <div className="h-6 w-3/4 bg-muted rounded" />
                             <div className="h-4 w-1/2 bg-muted rounded" />
@@ -74,9 +74,13 @@ function ComparePageContent() {
             maxWidth="7xl"
         >
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Mobile Magnetic Snap Carousel / Desktop Grid */}
+                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scroll-smooth">
                     {selectedOffers.map((offer, index) => (
-                        <Card key={offer.id} className="border-2 hover:border-primary/50 transition-colors">
+                        <Card 
+                            key={offer.id} 
+                            className="w-[85vw] sm:w-[70vw] md:w-auto shrink-0 snap-center md:shrink border-2 hover:border-primary/50 transition-colors flex flex-col justify-between"
+                        >
                             <CardHeader className="space-y-3">
                                 <div className="flex items-start justify-between">
                                     <Badge variant="outline" className="text-xs">
@@ -209,7 +213,7 @@ export default function ComparePage() {
     const { t } = useLanguage();
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-background p-6 font-sans text-foreground flex items-center justify-center">
+            <div className="min-h-app bg-background p-6 font-sans text-foreground flex items-center justify-center">
                 <div className="text-muted-foreground">{t.comparePage.loadingTitle}</div>
             </div>
         }>

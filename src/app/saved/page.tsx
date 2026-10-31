@@ -83,12 +83,12 @@ export default function SavedOffersPage() {
                             </Badge>
                         )}
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2">
                         <Button
                             onClick={handleCompare}
                             disabled={selectedIds.size < 2}
                             variant="outline"
-                            className="gap-2 w-full sm:w-auto min-h-11"
+                            className="gap-2 w-full sm:w-auto"
                         >
                             <GitCompare className="h-4 w-4" />
                             {sp.btnCompare} ({selectedIds.size}/3)
@@ -96,7 +96,7 @@ export default function SavedOffersPage() {
                         <Button
                             onClick={handleOrganize}
                             disabled={savedOffers.length === 0 || organizing}
-                            className="gap-2 w-full sm:w-auto min-h-11"
+                            className="gap-2 w-full sm:w-auto"
                         >
                             {organizing ? <Loader2 className="animate-spin h-4 w-4" /> : <BrainCircuit className="h-4 w-4" />}
                             {organizing ? sp.btnOrganizing : sp.btnSmartOrganize}

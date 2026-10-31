@@ -15,15 +15,18 @@ export interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement>
   children: React.ReactNode;
   className?: string;
   as?: "div" | "main" | "section" | "article";
-  size?: "sm" | "md" | "lg" | "xl" | "full" | "default";
+  size?: "sm" | "md" | "lg" | "xl" | "full" | "default" | "5xl" | "6xl" | "7xl";
   disablePaddingY?: boolean;
 }
 
 const sizeClasses: Record<NonNullable<PageContainerProps["size"]>, string> = {
   sm: "max-w-3xl",
   md: "max-w-5xl",
+  "5xl": "max-w-5xl",
+  "6xl": "max-w-6xl",
   default: "max-w-7xl",
   lg: "max-w-7xl",
+  "7xl": "max-w-7xl",
   xl: "max-w-screen-2xl",
   full: "max-w-full",
 };

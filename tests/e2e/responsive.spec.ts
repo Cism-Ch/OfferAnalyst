@@ -29,6 +29,7 @@ const TARGET_ROUTES = [
   '/',
   '/search-context',
   '/data-source',
+  '/saved',
   '/auth/login',
   '/auth/signup',
   '/help',
@@ -57,6 +58,20 @@ const mockAnalysisPayload = {
         webInsights: ['High remote flexibility'],
         breakdown: { relevance: 94, quality: 90, trend: 92 },
         url: 'https://example.com/job/1',
+      },
+      {
+        id: 'resp-offer-2',
+        title: 'Lead Frontend Architect',
+        description: 'Design responsive and fluid web architectures.',
+        price: '85 000 €',
+        location: 'Lyon (Hybrid)',
+        category: 'Tech',
+        finalScore: 88,
+        rank: 2,
+        justification: 'High architectural experience and design systems mastery.',
+        webInsights: ['Modern CSS container queries'],
+        breakdown: { relevance: 88, quality: 92, trend: 85 },
+        url: 'https://example.com/job/2',
       },
     ],
     marketSummary: 'Dynamic software engineering market.',
@@ -105,6 +120,57 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
         });
 
         expect(overflow).toBeLessThanOrEqual(1);
+      });
+
+      test('Compare route with hydrated saved offers should not have horizontal page overflow', async ({ page }) => {
+        await page.addInitScript((offers) => {
+          window.localStorage.setItem('offeranalyst_saved_offers', JSON.stringify(offers));
+        }, mockAnalysisPayload.results.topOffers);
+
+        await page.goto('/compare?ids=resp-offer-1,resp-offer-2', { waitUntil: 'domcontentloaded' });
+        await page.waitForLoadState('load');
+
+        const overflow = await page.evaluate(() => {
+          const doc = document.documentElement;
+          const body = document.body;
+          const maxScrollWidth = Math.max(doc.scrollWidth, body ? body.scrollWidth : 0);
+          const clientWidth = doc.clientWidth;
+          return maxScrollWidth - clientWidth;
+        });
+
+        expect(overflow).toBeLessThanOrEqual(1);
+      });
+
+      test('OfferDetailModal opening should render bottom-sheet or modal without page horizontal overflow', async ({ page }) => {
+        await page.addInitScript((data) => {
+          window.sessionStorage.setItem('restore_search', JSON.stringify(data));
+          window.localStorage.setItem('cookie-consent', JSON.stringify({ necessary: true, functional: true, analytics: false, marketing: false }));
+        }, mockAnalysisPayload);
+
+        await page.goto('/analysis', { waitUntil: 'domcontentloaded' });
+        await page.waitForLoadState('load');
+
+        // Click on the offer card to open OfferDetailModal
+        const card = page.locator('div[data-slot="card"]:has-text("Senior Fullstack Engineer")').first();
+        await expect(card).toBeVisible({ timeout: 5000 });
+        await card.scrollIntoViewIfNeeded();
+        await card.click({ force: true });
+        const modal = page.locator('[data-slot="dialog-content"]');
+        await expect(modal).toBeVisible({ timeout: 5000 });
+
+        const overflow = await page.evaluate(() => {
+          const doc = document.documentElement;
+          const body = document.body;
+          const maxScrollWidth = Math.max(doc.scrollWidth, body ? body.scrollWidth : 0);
+          const clientWidth = doc.clientWidth;
+          return maxScrollWidth - clientWidth;
+        });
+
+        expect(overflow).toBeLessThanOrEqual(1);
+
+        // Close modal
+        await page.keyboard.press('Escape');
+        await expect(modal).not.toBeVisible();
       });
 
       if (viewport.width < 768) {
