@@ -5,6 +5,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { Variants, Variant, Transition } from 'framer-motion';
+export { MotionProvider, type MotionProviderProps } from '@/components/motion-provider';
 
 function subscribeReducedMotion(callback: () => void): () => void {
   if (typeof window === 'undefined') return () => {};

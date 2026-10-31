@@ -139,7 +139,7 @@ export default function SavedOffersPage() {
                                         }`}
                                         onClick={() => toggleSelection(offer.id)}
                                     >
-                                        <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
+                                        <div className="absolute top-2 left-2 z-dropdown" onClick={(e) => e.stopPropagation()}>
                                             <Checkbox 
                                                 checked={selectedIds.has(offer.id)}
                                                 onCheckedChange={() => toggleSelection(offer.id)}
@@ -149,7 +149,7 @@ export default function SavedOffersPage() {
                                         <Button
                                             variant="destructive"
                                             size="icon"
-                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 z-10"
+                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 z-dropdown"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 removeOffer(offer.id);

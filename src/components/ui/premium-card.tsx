@@ -88,7 +88,7 @@ export const PremiumCard = React.forwardRef<HTMLDivElement, PremiumCardProps>(
 
     // Build className
     const cardClasses = cn(
-      'transition-all duration-300 ease-in-out',
+      'transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out',
       glass && 'glass',
       glassDark && 'glass-dark',
       gradientBorder && 'border-2 border-transparent bg-gradient-to-br from-primary/20 to-accent/20',

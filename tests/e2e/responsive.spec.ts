@@ -391,7 +391,9 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
           const header = document.querySelector('header');
           const headerZ = header ? getComputedStyle(header).zIndex : null;
           return {
+            varDropdown: rootStyle.getPropertyValue('--z-dropdown').trim(),
             varHeader: rootStyle.getPropertyValue('--z-header').trim(),
+            varSidebar: rootStyle.getPropertyValue('--z-sidebar').trim(),
             varDrawer: rootStyle.getPropertyValue('--z-drawer').trim(),
             varDialog: rootStyle.getPropertyValue('--z-dialog').trim(),
             varToast: rootStyle.getPropertyValue('--z-toast').trim(),
@@ -400,7 +402,9 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
           };
         });
 
+        expect(zIndexes.varDropdown).toBe('20');
         expect(zIndexes.varHeader).toBe('30');
+        expect(zIndexes.varSidebar).toBe('40');
         expect(zIndexes.varDrawer).toBe('50');
         expect(zIndexes.varDialog).toBe('60');
         expect(zIndexes.varToast).toBe('70');

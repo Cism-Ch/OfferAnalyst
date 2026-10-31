@@ -113,7 +113,7 @@ export function ModernHeader({
                                 <Input
                                     type="search"
                                     placeholder={t.nav.quickSearch}
-                                    className="w-52 pl-9 h-9 bg-muted/50 border-none transition-[width,background-color] duration-200 ease-out focus:bg-muted focus:w-64"
+                                    className="w-60 pl-9 h-9 bg-muted/50 border-none transition-[background-color,box-shadow] duration-200 ease-out focus:bg-muted focus:ring-1 focus:ring-primary/20"
                                 />
                             </motion.div>
 

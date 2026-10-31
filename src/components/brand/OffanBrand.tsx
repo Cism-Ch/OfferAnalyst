@@ -32,7 +32,7 @@ export function OffanIcon({
             viewBox="0 0 100 100"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`shrink-0 transition-all duration-300 ${
+            className={`shrink-0 transition-[filter,transform] duration-200 ${
                 glow ? 'filter drop-shadow-[0_0_6px_var(--primary)]' : ''
             } ${className}`}
             aria-label="Offan Logo Icon"
@@ -79,7 +79,7 @@ export function OffanIcon({
                 clipRule="evenodd"
                 d="M50 18L76 68H64L50 38L36 68H24L50 18ZM50 36L60 56H40L50 36Z"
                 fill={`url(#${gradId})`}
-                className="transition-transform duration-300 origin-center"
+                className="transition-transform duration-200 origin-center"
             />
 
             {/* Analytical Crossbar Base */}

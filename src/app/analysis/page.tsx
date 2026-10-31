@@ -57,7 +57,7 @@ export default function AnalysisPage() {
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                             {/* Left column loading preview (Score chart + Action buttons) */}
-                            <div className="lg:col-span-4 space-y-5">
+                            <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-20">
                                 <SkeletonScoreChart />
                                 <SkeletonActionCard />
                             </div>

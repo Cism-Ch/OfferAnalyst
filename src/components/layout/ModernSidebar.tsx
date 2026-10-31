@@ -509,7 +509,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     {/* Accessible Close Button with explicit aria-label for E2E tests */}
                     <button
                         onClick={() => setMobileOpen(false)}
-                        className="absolute top-4 right-4 z-10 size-11 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
+                        className="absolute top-4 right-4 z-drawer size-11 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
                         aria-label={t.nav.closeMenu}
                     >
                         <X className="h-5 w-5" />

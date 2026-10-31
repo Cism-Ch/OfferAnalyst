@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { MotionProvider } from "@/components/motion-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { AnalysisProvider } from "@/contexts/AnalysisContext";
@@ -39,15 +40,17 @@ export default function RootLayout({
             disableTransitionOnChange
             themes={['light', 'dark', 'gold', 'ocean', 'forest', 'neon', 'silver', 'system']}
           >
-            <ToastProvider>
-              <LanguageProvider>
-                <AnalysisProvider>
-                  <WebVitalsTracker />
-                  {children}
-                  <CookieConsent />
-                </AnalysisProvider>
-              </LanguageProvider>
-            </ToastProvider>
+            <MotionProvider>
+              <ToastProvider>
+                <LanguageProvider>
+                  <AnalysisProvider>
+                    <WebVitalsTracker />
+                    {children}
+                    <CookieConsent />
+                  </AnalysisProvider>
+                </LanguageProvider>
+              </ToastProvider>
+            </MotionProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>

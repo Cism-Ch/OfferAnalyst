@@ -129,7 +129,7 @@ export default function Home() {
                                 transition={{ delay: idx * 0.1 + 0.2 }}
                             >
                                 <Link href={step.href}>
-                                    <Card className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer h-full">
+                                    <Card className="border-2 hover:border-primary/50 transition-[border-color,box-shadow,transform] duration-200 hover:shadow-lg cursor-pointer h-full">
                                         <CardHeader>
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className={cn('p-3 rounded-xl', step.bgColor)}>

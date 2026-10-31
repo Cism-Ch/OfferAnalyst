@@ -62,7 +62,7 @@ export function AIModelSelector({
                     variant="outline"
                     size="sm"
                     className={cn(
-                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-3 gap-2 rounded-xl transition-all duration-300 touch-manipulation",
+                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-3 gap-2 rounded-xl transition-[background-color,border-color,box-shadow] duration-200 touch-manipulation",
                         "border-border/60 bg-background/60 hover:bg-accent/40 backdrop-blur-md shadow-xs shrink-0",
                         "focus-visible:ring-2 focus-visible:ring-primary/40",
                         compact && "px-2"
@@ -70,7 +70,7 @@ export function AIModelSelector({
                     aria-label={`Modèle d'IA actif : ${activeModel.label}`}
                 >
                     <div className="relative flex items-center justify-center">
-                        <Brain className="h-4 w-4 text-primary shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                        <Brain className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-hover:scale-110" />
                         <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
                     </div>
 
