@@ -163,11 +163,13 @@ export function SaaSPresentationView() {
 
                         <Button
                             size="sm"
-                            onClick={handleEnterApp}
+                            asChild
                             className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold min-h-[38px] px-3.5 gap-1.5 shadow-sm touch-manipulation"
                         >
-                            <span>{isFr ? "Démarrer l'App" : "Launch App"}</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
+                            <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
+                                <span>{isFr ? "Démarrer l'App" : "Launch App"}</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
                         </Button>
                     </div>
                 </div>
@@ -246,11 +248,13 @@ export function SaaSPresentationView() {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                onClick={handleEnterApp}
+                                asChild
                                 className="w-full sm:w-auto min-h-[48px] px-7 text-base font-semibold border-border/80 hover:bg-muted/70 gap-2 touch-manipulation"
                             >
-                                <span>{isFr ? "Démarrer l'Analyse (Gratuit)" : "Start Free Analysis"}</span>
-                                <ArrowRight className="h-4 w-4" />
+                                <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
+                                    <span>{isFr ? "Démarrer l'Analyse (Gratuit)" : "Start Free Analysis"}</span>
+                                    <ArrowRight className="h-4 w-4" />
+                                </Link>
                             </Button>
                         </motion.div>
 
@@ -429,10 +433,12 @@ export function SaaSPresentationView() {
 
                                 <Button
                                     variant="outline"
-                                    onClick={handleEnterApp}
+                                    asChild
                                     className="w-full min-h-[44px] font-semibold touch-manipulation"
                                 >
-                                    {isFr ? "Commencer gratuitement" : "Start For Free"}
+                                    <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
+                                        {isFr ? "Commencer gratuitement" : "Start For Free"}
+                                    </Link>
                                 </Button>
                             </Card>
 
@@ -484,10 +490,12 @@ export function SaaSPresentationView() {
                                 </div>
 
                                 <Button
-                                    onClick={handleEnterApp}
+                                    asChild
                                     className="w-full min-h-[44px] bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md touch-manipulation"
                                 >
-                                    {isFr ? "Lancer le mode BYOK" : "Launch BYOK Mode"}
+                                    <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
+                                        {isFr ? "Lancer le mode BYOK" : "Launch BYOK Mode"}
+                                    </Link>
                                 </Button>
                             </Card>
                         </div>
