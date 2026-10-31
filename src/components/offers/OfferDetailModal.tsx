@@ -25,7 +25,6 @@ import {
     Award,
     FileText,
     Share2,
-    Copy,
     Check
 } from 'lucide-react';
 import { ScoredOffer } from '@/types';

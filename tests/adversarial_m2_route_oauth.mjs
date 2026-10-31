@@ -285,17 +285,20 @@ const tasksContent = fs.readFileSync("docs/TASKS.md", "utf8");
 const lines = tasksContent.split("\n");
 
 runTest("docs/TASKS.md contains TASK-AUTH-02 with complete criteria", () => {
+  const content = tasksContent.includes("TASK-AUTH-02")
+    ? tasksContent
+    : fs.readFileSync("docs/archive/tasks/TASKS_HISTORY_S15_COMPLETED.md", "utf8");
   assert.ok(
-    tasksContent.includes("TASK-AUTH-02"),
-    "TASK-AUTH-02 not found in docs/TASKS.md"
+    content.includes("TASK-AUTH-02"),
+    "TASK-AUTH-02 not found in docs/TASKS.md or archive"
   );
   assert.ok(
-    tasksContent.includes("TASK-AUTH-02.01") &&
-    tasksContent.includes("TASK-AUTH-02.02") &&
-    tasksContent.includes("TASK-AUTH-02.03") &&
-    tasksContent.includes("TASK-AUTH-02.04") &&
-    tasksContent.includes("TASK-AUTH-02.05") &&
-    tasksContent.includes("TASK-AUTH-02.06"),
+    content.includes("TASK-AUTH-02.01") &&
+    content.includes("TASK-AUTH-02.02") &&
+    content.includes("TASK-AUTH-02.03") &&
+    content.includes("TASK-AUTH-02.04") &&
+    content.includes("TASK-AUTH-02.05") &&
+    content.includes("TASK-AUTH-02.06"),
     "All sub-tasks 02.01 to 02.06 must be recorded"
   );
 });

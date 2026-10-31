@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 17 Achevé & Validé (E2E Playwright Responsive 47/47 PASS, Tokens dvh, Cibles 44px, 100/100 PASS) — Sprints 1 à 17 Archivés | Sprint 18 Ouvert
+**Statut Global :** Sprint 18 Achevé & Validé (AppShell unifié, Radix Sheet Drawer, Header compact 56px, Playwright Responsive 51/51 PASS, next build 35/35, 100/100 PASS) — Sprints 1 à 18 Archivés | Sprint 19 Ouvert
 
 ---
 
@@ -13,45 +13,54 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🔄 SPRINT 18 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🔄 SPRINT 19 EN COURS   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-SHL-01 (Shell) │  │ [ ] SPRINTS 19-22 (RWD  │  │     - Sprint 17 (3)     │
-│ [ ] TASK-SHL-02 (Drawer)│  │     Data & Workflow)    │  │     - Sprint 16 (4)     │
-│ [ ] TASK-VAL-05 (Eval)  │  │                         │  │     - Sprint 15 (9)     │
-│                         │  │                         │  │     - Sprints 1-14 (All)│
+│ [ ] TASK-MAI-01 (Cards) │  │ [ ] SPRINTS 20-22       │  │     - Sprint 18 (3)     │
+│ [ ] TASK-MAI-02 (Charts)│  │     (Pages denses,      │  │     - Sprint 17 (3)     │
+│ [ ] TASK-MAI-03 (Layout)│  │      Auth, Polish)      │  │     - Sprint 16 (4)     │
+│ [ ] TASK-VAL-06 (Eval)  │  │                         │  │     - Sprints 1-15 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Sprint 18 — Shell Applicatif Unifié & Navigation Responsive
+## 🚀 Sprint Actif : Sprint 19 — Parcours Principal (`/`, `/search-context`, `/data-source`, `/analysis`, `/compare`, `/saved`)
 
-- [ ] **`TASK-SHL-01` — Shell Applicatif Unifié & AppShell Navigation Responsive**
+- [ ] **`TASK-MAI-01` — Container Queries sur OfferCard & Disposition Compacte / Étendue**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/components/layout/AppShell.tsx`, `src/components/layout/ModernLayout.tsx`, `src/components/layout/SimpleLayout.tsx`
+  - **Fichiers cibles :** `src/components/offers/OfferCard.tsx`, `src/components/analysis/ResultsSection.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-SHL-01.01` : Création du composant d'architecture unifié `AppShell.tsx` fédérant l'en-tête, la barre latérale rétractable (icon rail tablette) et la zone de contenu principal fluide.
-    - [ ] `TASK-SHL-01.02` : Factorisation de `ModernLayout` et `SimpleLayout` sur `AppShell` avec persistance de l'état de rétraction et adaptation dynamique de la largeur du viewport.
+    - [ ] `TASK-MAI-01.01` : Configuration de conteneurs `@container` sur la colonne des résultats pour adapter les cartes d'offres à leur largeur propre et non au viewport global.
+    - [ ] `TASK-MAI-01.02` : Variante compacte sous 400px de conteneur (empilement vertical propre des métadonnées, scores et actions) et variante étendue au-delà.
 
-- [ ] **`TASK-SHL-02` — Header Compact & Drawer Mobile Radix Sheet**
+- [ ] **`TASK-MAI-02` — Empilement Responsive & Refonte ScoreChart sur Analysis**
   - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/components/ui/sheet.tsx`
+  - **Fichiers cibles :** `src/app/analysis/page.tsx`, `src/components/analysis/ScoreChart.tsx`, `src/components/offers/OfferDetailModal.tsx`
   - **Critères d'acceptation :**
-    - [ ] `TASK-SHL-02.01` : Intégration du composant accessible Radix Sheet (`@radix-ui/react-dialog`) pour le drawer mobile avec focus trapping, swipe-to-dismiss et respect des safe-areas.
-    - [ ] `TASK-SHL-02.02` : Consolidation du header mobile avec menu déroulant compact pour les sélecteurs secondaires (thème, langue, modèle IA) sur résolutions ultra-étroites (< 360px).
+    - [ ] `TASK-MAI-02.01` : Grille 12 colonnes avec sticky seulement sur `lg+`, empilement naturel sous `lg` sans blocage de scroll.
+    - [ ] `TASK-MAI-02.02` : `ScoreChart` calibré en ratio fluide `aspect-[16/10] max-h-64` avec ticks tronqués et minTickGap anti-chevauchement.
+    - [ ] `TASK-MAI-02.03` : `OfferDetailModal` optimisé en bottom-sheet plein écran sous 640px avec pied d'actions `pb-safe`.
 
-- [ ] **`TASK-VAL-05` — Validation Déterministe & Non-Régression Globale**
+- [ ] **`TASK-MAI-03` — Snap Columns Compare & Harmonisation PageContainer**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** `src/app/compare/page.tsx`, `src/app/saved/page.tsx`, `src/app/search-context/page.tsx`, `src/app/data-source/page.tsx`
+  - **Critères d'acceptation :**
+    - [ ] `TASK-MAI-03.01` : Retrait du `min-h-screen` imbriqué dans `compare/page.tsx`, disposition `snap-x` sous `md` et tableau côte-à-côte au-delà.
+    - [ ] `TASK-MAI-03.02` : Barres d'actions unifiées `flex-col-reverse sm:flex-row` et intégration systématique de `PageContainer`.
+
+- [ ] **`TASK-VAL-06` — Validation Déterministe & Non-Régression Globale**
   - **Priorité :** 🟡 MOYENNE
   - **Fichiers cibles :** `evals/run_fullstack_eval.py`, `tests/e2e/responsive.spec.ts`
   - **Critères d'acceptation :**
-    - [ ] `TASK-VAL-05.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint, conformité Prisma MongoDB).
-    - [ ] `TASK-VAL-05.02` : Validation de non-régression de la suite E2E Playwright responsive sur les 5 viewports canoniques.
+    - [ ] `TASK-VAL-06.01` : Validation binaire avec `npm run eval:quick` (100/100, 0 erreur TypeScript strict, 0 warning ESLint).
+    - [ ] `TASK-VAL-06.02` : Validation de non-régression de la suite E2E Playwright Responsive sur les 5 viewports canoniques.
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 18 (TASKS_HISTORY_S18_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S18_COMPLETED.md)** — 3 Lots (AppShell unifié, Radix Sheet Drawer, Header compact 56px, Playwright Responsive 51/51 PASS, next build 35/35, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 17 (TASKS_HISTORY_S17_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S17_COMPLETED.md)** — 3 Lots (Fondations Viewport & Tokens dvh, Cibles tactiles 44px & Ergonomie Mobile, Playwright Responsive 47/47 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 16 (TASKS_HISTORY_S16_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S16_COMPLETED.md)** — 4 Lots (E2E Playwright 9/9 PASS, Télémétrie IA & Web Vitals, Fix Next.js 16 Server Actions, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 15 (TASKS_HISTORY_S15_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S15_COMPLETED.md)** — 9 Lots (Better-Auth M1-M4, Quotas 24h, Double Historique, Ops pnpm, Export PDF/CSV & Partage Public).

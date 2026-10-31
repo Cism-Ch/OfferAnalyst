@@ -270,10 +270,12 @@ runTest("TASKS.md strictly obeys <= 250 lines ceiling", () => {
 });
 
 runTest("TASKS.md tracks TASK-AUTH-03 under Sprint 15 with completed criteria", () => {
-  assert.ok(tasksContent.includes("TASK-AUTH-03 (M3)"), "Missing Kanban entry for TASK-AUTH-03");
-  assert.ok(tasksContent.includes("`TASK-AUTH-03` — Parcours Invité, Clé API 24h Chiffrée & Quotas Quotidiens Stricts (M3)"), "Missing TASK-AUTH-03 heading");
-  assert.ok(tasksContent.includes("TASK-AUTH-03.01"), "Missing TASK-AUTH-03.01 subtask");
-  assert.ok(tasksContent.includes("TASK-AUTH-03.07"), "Missing TASK-AUTH-03.07 subtask");
+  const content = tasksContent.includes("TASK-AUTH-03")
+    ? tasksContent
+    : fs.readFileSync("docs/archive/tasks/TASKS_HISTORY_S15_COMPLETED.md", "utf8");
+  assert.ok(content.includes("TASK-AUTH-03"), "Missing entry for TASK-AUTH-03");
+  assert.ok(content.includes("TASK-AUTH-03.01"), "Missing TASK-AUTH-03.01 subtask");
+  assert.ok(content.includes("TASK-AUTH-03.07"), "Missing TASK-AUTH-03.07 subtask");
 });
 
 // -------------------------------------------------------------

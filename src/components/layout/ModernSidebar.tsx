@@ -12,7 +12,7 @@
  */
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from '@/lib/auth-client';
 import { useLanguage, type TranslationDictionary } from '@/contexts/LanguageContext';
 import { Progress } from "@/components/ui/progress";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetTrigger
+} from "@/components/ui/sheet";
 import {
     Home,
     Briefcase,
@@ -143,7 +151,15 @@ function renderNavItems(
     );
 }
 
-function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: TranslationDictionary }) {
+function SidebarUserProfile({
+    isCollapsed,
+    t,
+    setMobileOpen
+}: {
+    isCollapsed: boolean;
+    t: TranslationDictionary;
+    setMobileOpen?: (open: boolean) => void;
+}) {
     const router = useRouter();
     const { data: session } = useSession();
     const [signingOut, setSigningOut] = useState(false);
@@ -158,6 +174,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
         e.preventDefault();
         e.stopPropagation();
         if (signingOut) return;
+        setMobileOpen?.(false);
         setSigningOut(true);
         try {
             await signOut();
@@ -173,6 +190,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
             <div className={cn('flex items-center gap-1.5', isCollapsed && 'justify-center')}>
                 <Link
                     href={href}
+                    onClick={() => setMobileOpen?.(false)}
                     className={cn(
                         'flex items-center gap-3 p-2 min-h-[44px] rounded-xl hover:bg-accent/60 transition-colors group flex-1 min-w-0 touch-manipulation',
                         isCollapsed && 'justify-center p-1.5 flex-initial'
@@ -228,7 +246,7 @@ function SidebarUserProfile({ isCollapsed, t }: { isCollapsed: boolean; t: Trans
                             aria-label={t.auth.signInCta}
                             className="size-11 md:size-9 shrink-0 text-primary hover:bg-primary/10 rounded-xl touch-manipulation"
                         >
-                            <Link href="/auth/login">
+                            <Link href="/auth/login" onClick={() => setMobileOpen?.(false)}>
                                 <LogIn className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -379,7 +397,11 @@ function SidebarBody({
                 'flex items-center px-4 py-5',
                 isCollapsed ? 'justify-center px-2' : 'justify-start'
             )}>
-                <Link href="/" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+                <Link
+                    href="/"
+                    onClick={() => setMobileOpen?.(false)}
+                    className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+                >
                     {isCollapsed ? (
                         <div className="p-1.5 rounded-xl bg-card border border-border shadow-xs hover:border-primary/50 hover:scale-105 transition-all">
                             <OffanIcon size={24} glow />
@@ -415,7 +437,7 @@ function SidebarBody({
             />
 
             {/* User Profile */}
-            <SidebarUserProfile isCollapsed={isCollapsed} t={t} />
+            <SidebarUserProfile isCollapsed={isCollapsed} t={t} setMobileOpen={setMobileOpen} />
 
             {/* Collapse Toggle - Desktop */}
             {onToggle && (
@@ -446,6 +468,13 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
     const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
     const [targetProtectedPath, setTargetProtectedPath] = useState<string>('/saved');
 
+    // Auto-close mobile drawer on route change
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    if (prevPathname !== pathname) {
+        setPrevPathname(pathname);
+        setMobileOpen(false);
+    }
+
     const handleProtectedClick = (href: string) => {
         setTargetProtectedPath(href);
         setAuthModalOpen(true);
@@ -458,57 +487,50 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
 
     return (
         <>
-            {/* Mobile Menu Button - Accessible 44x44px Touch Target */}
-            <button
-                onClick={() => setMobileOpen(true)}
-                className="md:hidden fixed top-3 left-3 z-40 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
-                aria-label={t.nav.openMenu}
-            >
-                <Menu className="h-5 w-5" />
-            </button>
-
-            {/* Mobile Sidebar Overlay */}
-            <AnimatePresence>
-                {mobileOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setMobileOpen(false)}
-                            className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+            {/* Mobile Sidebar via Accessible Radix Sheet (Focus trapping, Esc key, backdrop-blur) */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                    <button
+                        className="md:hidden fixed top-3 left-3 z-40 size-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
+                        aria-label={t.nav.openMenu}
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+                </SheetTrigger>
+                <SheetContent
+                    side="left"
+                    className="p-0 flex flex-col w-72 max-w-[85vw] h-full overflow-hidden pl-safe pb-safe"
+                    showCloseButton={false}
+                >
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>{t.nav.openMenu}</SheetTitle>
+                        <SheetDescription>Menu de navigation principal</SheetDescription>
+                    </SheetHeader>
+                    {/* Accessible Close Button with explicit aria-label for E2E tests */}
+                    <button
+                        onClick={() => setMobileOpen(false)}
+                        className="absolute top-4 right-4 z-10 size-11 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
+                        aria-label={t.nav.closeMenu}
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+                        <SidebarBody
+                            isCollapsed={false}
+                            onToggle={undefined}
+                            isActive={isActive}
+                            setMobileOpen={setMobileOpen}
+                            t={t}
+                            isGuest={isGuest}
+                            onProtectedClick={handleProtectedClick}
+                            onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
+                            isFr={isFr}
                         />
-                        <motion.aside
-                            initial={{ x: -288 }}
-                            animate={{ x: 0 }}
-                            exit={{ x: -288 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="md:hidden fixed left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-background border-r z-50 flex flex-col momentum-scroll overflow-y-auto pl-safe pb-safe"
-                        >
-                            <button
-                                onClick={() => setMobileOpen(false)}
-                                className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
-                                aria-label={t.nav.closeMenu}
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                            <SidebarBody
-                                isCollapsed={false}
-                                onToggle={undefined}
-                                isActive={isActive}
-                                setMobileOpen={setMobileOpen}
-                                t={t}
-                                isGuest={isGuest}
-                                onProtectedClick={handleProtectedClick}
-                                onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
-                                isFr={isFr}
-                            />
-                        </motion.aside>
-                    </>
-                )}
-            </AnimatePresence>
+                    </div>
+                </SheetContent>
+            </Sheet>
 
-            {/* Desktop Sidebar */}
+            {/* Desktop / Tablet Sidebar with dynamic icon rail */}
             <motion.aside
                 initial={false}
                 animate={{ width: isCollapsed ? 80 : 256 }}
