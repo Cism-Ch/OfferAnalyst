@@ -24,6 +24,14 @@ const ScoredOfferSchema = z.object({
     })
 });
 
+const AnalyzeInputSchema = z.object({
+    offers: z.array(z.any()).min(1, "Au moins une offre est requise pour l'analyse").max(100, "Maximum 100 offres par analyse"),
+    limit: z.number().int().min(1).max(20).default(3),
+    modelName: z.string().max(200).optional().default(DEFAULT_MODEL_ID),
+    clientApiKey: z.string().max(500).optional(),
+    language: z.enum(['fr', 'en']).default('fr'),
+});
+
 const AnalysisResponseSchema = z.object({
     topOffers: z.array(ScoredOfferSchema),
     marketSummary: z.string()
@@ -38,6 +46,17 @@ export async function analyzeOffersAction(
     language: 'fr' | 'en' = 'fr'
 ): Promise<AgentActionResult<AnalysisResponse>> {
     const startedAt = Date.now();
+    
+    const inputValidation = AnalyzeInputSchema.safeParse({ offers, limit, modelName, clientApiKey, language });
+    if (!inputValidation.success) {
+        return {
+            success: false,
+            error: {
+                code: 'VALIDATION_FAILED',
+                message: inputValidation.error.issues[0]?.message || 'Paramètres d\'analyse invalides',
+            }
+        };
+    }
     
     // Try to get API key with BYOK support
     const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');

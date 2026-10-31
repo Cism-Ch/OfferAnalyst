@@ -104,7 +104,7 @@ function AuthErrorContent() {
  */
 export default function ErrorPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background via-background/95 to-muted/30">
+    <main className="min-h-app flex items-center justify-center p-4 bg-gradient-to-b from-background via-background/95 to-muted/30">
       <Suspense
         fallback={
           <Card className="w-full max-w-md p-8 text-center text-muted-foreground">

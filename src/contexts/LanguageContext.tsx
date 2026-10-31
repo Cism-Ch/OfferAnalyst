@@ -973,6 +973,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     getLanguageServerSnapshot
   );
 
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
+  }, [language]);
+
   const setLanguage = (lang: SupportedLanguage) => {
     try {
       localStorage.setItem(STORAGE_KEY, lang);

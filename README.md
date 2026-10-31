@@ -56,8 +56,8 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 
 1.  **Install dependencies**
     ```bash
-    npm install
-    # or
+    pnpm install
+
     pnpm install
     ```
 
@@ -74,8 +74,8 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 
 3.  **Start Dev Server**
     ```bash
-    npm run dev
-    # or
+
+
     pnpm dev
     ```
 

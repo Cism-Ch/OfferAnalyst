@@ -188,9 +188,7 @@ runTest("BYOK bypass flag exists for database BYOK and guest 24h encrypted keys"
 console.log("\n[Suite 5: Enforcement in fetch and analyze Server Actions]");
 
 const fetchFile = fs.readFileSync("src/app/actions/fetch.ts", "utf8");
-const fetchV2File = fs.readFileSync("src/app/actions/fetchV2.ts", "utf8");
 const analyzeFile = fs.readFileSync("src/app/actions/analyze.ts", "utf8");
-const analyzeV2File = fs.readFileSync("src/app/actions/analyzeV2.ts", "utf8");
 
 runTest("fetchOffersAction checks quota and returns RATE_LIMIT_EXCEEDED error", () => {
   assert.ok(fetchFile.includes("checkDailyQuota(isByok)"), "Missing checkDailyQuota in fetch.ts");
@@ -199,22 +197,10 @@ runTest("fetchOffersAction checks quota and returns RATE_LIMIT_EXCEEDED error", 
   assert.ok(fetchFile.includes("incrementDailyQuota(isByok)"), "Missing incrementDailyQuota on success in fetch.ts");
 });
 
-runTest("fetchOffersActionV2 checks quota and returns RATE_LIMIT_EXCEEDED error", () => {
-  assert.ok(fetchV2File.includes("checkDailyQuota(isByok)"), "Missing checkDailyQuota in fetchV2.ts");
-  assert.ok(fetchV2File.includes("RATE_LIMIT_EXCEEDED"), "Missing RATE_LIMIT_EXCEEDED in fetchV2.ts");
-  assert.ok(fetchV2File.includes("incrementDailyQuota(isByok)"), "Missing incrementDailyQuota on success in fetchV2.ts");
-});
-
 runTest("analyzeOffersAction checks quota and increments on success", () => {
   assert.ok(analyzeFile.includes("checkDailyQuota(isByok)"), "Missing checkDailyQuota in analyze.ts");
   assert.ok(analyzeFile.includes("RATE_LIMIT_EXCEEDED"), "Missing RATE_LIMIT_EXCEEDED in analyze.ts");
   assert.ok(analyzeFile.includes("incrementDailyQuota(isByok)"), "Missing incrementDailyQuota on success in analyze.ts");
-});
-
-runTest("analyzeOffersActionV2 checks quota and increments on success", () => {
-  assert.ok(analyzeV2File.includes("checkDailyQuota(isByok)"), "Missing checkDailyQuota in analyzeV2.ts");
-  assert.ok(analyzeV2File.includes("RATE_LIMIT_EXCEEDED"), "Missing RATE_LIMIT_EXCEEDED in analyzeV2.ts");
-  assert.ok(analyzeV2File.includes("incrementDailyQuota(isByok)"), "Missing incrementDailyQuota on success in analyzeV2.ts");
 });
 
 // -------------------------------------------------------------

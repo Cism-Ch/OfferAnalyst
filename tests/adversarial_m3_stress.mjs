@@ -658,9 +658,7 @@ try {
 try {
   const filesToCheck = [
     "src/app/actions/fetch.ts",
-    "src/app/actions/fetchV2.ts",
-    "src/app/actions/analyze.ts",
-    "src/app/actions/analyzeV2.ts"
+    "src/app/actions/analyze.ts"
   ];
 
   for (const file of filesToCheck) {

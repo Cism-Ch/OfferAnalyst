@@ -31,12 +31,30 @@ const OfferSchema = z.object({
 
 const FetchResponseSchema = z.array(OfferSchema);
 
+const FetchInputSchema = z.object({
+    domain: z.string().trim().min(1, "Domain is required").max(500, "Domain exceeds 500 characters"),
+    context: z.string().max(10000, "Context exceeds 10000 characters").default(""),
+    modelName: z.string().max(200).optional().default(DEFAULT_MODEL_ID),
+    clientApiKey: z.string().max(500).optional(),
+});
+
 export async function fetchOffersAction(
     domain: string,
     context: string,
     modelName: string = DEFAULT_MODEL_ID,
     clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<AgentActionResult<Offer[]>> {
+    const inputValidation = FetchInputSchema.safeParse({ domain, context, modelName, clientApiKey });
+    if (!inputValidation.success) {
+        return {
+            success: false,
+            error: {
+                code: 'VALIDATION_FAILED',
+                message: inputValidation.error.issues[0]?.message || 'Paramètres de recherche invalides',
+            }
+        };
+    }
+
     const startTime = Date.now();
     let userId: string | undefined;
     

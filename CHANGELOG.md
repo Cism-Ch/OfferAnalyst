@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-31
+
+### 🚀 Responsive Design, Fluidité UI/UX, Z-Index Unifié & Remédiation Pré-Release (Sprints 7 à 23)
+
+- **Audit Pré-Release & Sécurité (Sprint 23)** :
+  - **Gestion stricte des Clés API** : Les clés vivent exclusivement dans `.env`. Clés de test remplacées par des fixtures synthétiques pour les suites d'intégrité et de résistance cryptographique.
+  - **Assainissement des Endpoints** : `POST /api/analytics/event` protégé par rate limiting (60 req/min/IP), validation stricte par schéma Zod (bornes de taille 16KB max) et suppression de la route modèle `/api/example`.
+  - **Purge de la Pile V2 Morte** : Élimination complète des actions orphelines `analyzeV2.ts`, `fetchV2.ts`, `organizeV2.ts` et du dossier obsolète `src/lib/export/`. Standardisation sur le moteur unifié `src/lib/export.ts` (anti-CWE-1236 et PDF binaire 1.4).
+  - **Validation Zod Binaire** : Protection des Server Actions `fetchOffersAction`, `analyzeOffersAction`, `organizeOffersAction` avec bornes strictes sur la taille des textes, du nombre d'offres (max 100) et des paramètres.
+  - **Hygiène HTML & Accessibilité** : Ajout de `data-scroll-behavior="smooth"` sur `<html>`, synchronisation réactive de `document.documentElement.lang` avec la langue active, et substitution des `min-h-screen` par `min-h-app`.
+  - **Documentation des Variables d'Environnement** : Complétion de `.env.example` avec les 9 variables de production et de test requises.
+
+- **Design System & Fluidité UI/UX (Sprints 17 à 22)** :
+  - **Architecture Responsive & Viewport** : Introduction des jetons de hauteur dynamique `100dvh` (`min-h-app`), prise en compte des encoches `viewport-fit=cover` et calibration des cibles tactiles mobiles à la norme W3C 44px (`h-11 md:h-9`).
+  - **AppShell & Navigation Adaptative** : Sidebar unifiée avec mode "icon rail" sur tablette (768-1023px) et tiroir mobile animé via Radix Sheet. Header compact 56px sur mobile avec safe area padding.
+  - **Container Queries & Grilles Fluides** : Grille d'offres `OfferCard` avec `@container` (passage compact/étendu selon la largeur réelle), table responsive générique (`ResponsiveTable`), snap scrolling horizontal sur la page `/compare`.
+  - **Système de Z-Index & Motion Unifiés** : Normalisation des calques d'empilement `--z-*` (20-80), `MotionProvider` respectant `prefers-reduced-motion` avec accélération matérielle GPU (`transform, opacity`), et squelettes de chargement limitant le CLS.
+
+- **Exportations Sécurisées & Partage Public (Sprint 15)** :
+  - **Moteur PDF 1.4 Binaire** : Génération de rapports exécutifs haute fidélité en pur TypeScript, multi-pages, sans dépendance tierce.
+  - **Export CSV RFC 4180** : Échappement anti-injection de formules tableurs (CWE-1236) avec BOM UTF-8 et en-têtes bilingues FR/EN.
+  - **Partage Sécurisé & Masquage** : Jeton cryptographique `shareToken`, routes publiques `/share/[id]` anonymisées et isolation stricte des données sensibles.
+
+- **Bilinguisme Intégral FR / EN (Sprints 13 & 14)** :
+  - Traduction réactive à 100% de l'interface (tableaux de bord, formulaires, dialogue d'ajout de clés, bannières d'alerte, erreurs) synchronisée via `LanguageContext`.
+
 ## [1.0.0] - 2026-10-26
 
 ### 🛡️ Audit & Durcissement de Sécurité Fullstack (Sprint 6 - Octobre 2026)

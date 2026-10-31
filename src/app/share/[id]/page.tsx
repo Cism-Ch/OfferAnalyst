@@ -84,7 +84,7 @@ export default async function SharedAnalysisPage(props: SharedPageProps) {
 
   if (!res.success) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="min-h-app flex items-center justify-center p-4 bg-background">
         <Card className="max-w-md w-full border-border/80 shadow-lg text-center p-6 space-y-4">
           <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
             <AlertCircle className="h-6 w-6" />
@@ -116,7 +116,7 @@ export default async function SharedAnalysisPage(props: SharedPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-16">
+    <div className="min-h-app bg-background text-foreground pb-16">
       {/* Top Read-Only Consultation Banner */}
       <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-xs">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">

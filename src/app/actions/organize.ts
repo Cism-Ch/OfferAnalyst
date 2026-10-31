@@ -18,6 +18,11 @@ const TimelineSchema = z.object({
     offers: z.array(z.any())
 });
 
+const OrganizeInputSchema = z.object({
+    offers: z.array(z.any()).max(100, "Maximum 100 offres à organiser"),
+    clientApiKey: z.string().max(500).optional(),
+});
+
 const OrganizedOffersSchema = z.object({
     categories: z.array(CategorySchema),
     timeline: z.array(TimelineSchema)
@@ -38,6 +43,14 @@ export async function organizeOffersAction(
     offers: Offer[],
     clientApiKey?: string // Optional BYOK key for temporary/authenticated users
 ): Promise<OrganizedOffers> {
+    const inputValidation = OrganizeInputSchema.safeParse({ offers, clientApiKey });
+    if (!inputValidation.success) {
+        throw new AgentError(inputValidation.error.issues[0]?.message || 'Paramètres invalides', 'VALIDATION_FAILED');
+    }
+    if (!offers || offers.length === 0) {
+        return { categories: [], timeline: [] };
+    }
+
     // Try to get API key with BYOK support
     const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
     const apiKeyResult = await getAPIKey('openrouter', clientApiKey);

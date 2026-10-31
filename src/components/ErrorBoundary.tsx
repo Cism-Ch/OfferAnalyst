@@ -71,7 +71,7 @@ class ErrorBoundary extends Component<Props, State> {
       // Default fallback UI
       return (
         <motion.div
-          className="flex min-h-screen items-center justify-center bg-background p-4"
+          className="flex min-h-app items-center justify-center bg-background p-4"
           variants={pageVariants}
           initial="initial"
           animate="animate"

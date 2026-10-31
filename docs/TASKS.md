@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 22 Achevés & Validés (Grand Cycle Responsive Design, Z-Index Unifié, Micro-animations Fluides, CLS < 0.05, E2E Playwright 112/112 PASS, 100/100 PASS) — Sprints 1 à 22 Archivés | V1.0 Release Prête pour Déploiement
+**Statut Global :** Sprints 1 à 23 Achevés & Validés (Sécurité Clés .env, Purge V2, Zod Actions, Next Build 40 routes, 100/100 PASS) — Prêt pour Release V1.1.0
 
 ---
 
@@ -13,31 +13,32 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 RELEASE ACTIVE (V1.0)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 RELEASE PRÊTE (V1.1) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-REL-01 (V1.0   │  │ [ ] V1.1 Multi-Tenant   │  │     - Sprint 22 (4)     │
-│     Production Deploy & │  │ [ ] Webhook Alerts      │  │     - Sprint 21 (4)     │
-│     Smoke Testing)      │  │ [ ] Chrome Extension    │  │     - Sprints 1-20 (All)│
+│ [ ] TASK-REL-01 (V1.1.0 │  │ [ ] Multi-Tenant DB     │  │     - Sprint 23 (Remed) │
+│     Production Deploy & │  │ [ ] Webhook Alerts      │  │     - Sprint 22 (Motion)│
+│     Smoke Testing)      │  │ [ ] Chrome Extension    │  │     - Sprints 1-21 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : V1.0 Release — Déploiement Production & Smoke Tests Finaux
+## 🚀 Sprint Actif : Release V1.1.0 — Déploiement & Vérification Finale
 
-- [ ] **`TASK-REL-01` — V1.0 Production Release, Next Build & Smoke Tests**
+- [ ] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
   - **Priorité :** 🔴 HAUTE
   - **Fichiers cibles :** `package.json`, `evals/run_fullstack_eval.py`, `docs/TASKS.md`
   - **Critères d'acceptation :**
-    - [ ] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des routes statiques/dynamiques.
-    - [ ] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
-    - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release `v1.0.0`.
+    - [x] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des routes statiques/dynamiques (40 routes, 34 statiques).
+    - [x] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
+    - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release `v1.1.0`.
 
 ---
 
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
+- 👉 **[Consulter l'Archive Complète du Sprint 23 (TASKS_HISTORY_S23_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S23_COMPLETED.md)** — Remédiation Pré-Release (Clés API .env Only, Purge V2 & Export ambigu, Zod Server Actions, .env.example 9 vars, HTML lang sync, min-h-app, 100/100 PASS, next build 0 err).
 - 👉 **[Consulter l'Archive Complète du Sprint 22 (TASKS_HISTORY_S22_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S22_COMPLETED.md)** — 4 Lots (Z-index 20-80 Unifié, Micro-animations 150-250ms, Prefers-Reduced-Motion, Skeletons CLS < 0.05, Scroll-padding 56px/72px, Playwright Responsive 112/112 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 21 (TASKS_HISTORY_S21_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S21_COMPLETED.md)** — 4 Lots (Auth & Clavier Virtuel, Landing text-fluid-hero, Onboarding sans overflow, Dialogs Bottom-sheet mobile, Playwright Responsive 102/102 PASS, 100/100 PASS).
 - 👉 **[Consulter l'Archive Complète du Sprint 20 (TASKS_HISTORY_S20_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S20_COMPLETED.md)** — 4 Lots (ResponsiveTable, Refonte /admin, Navigation Settings & Clés API fluides, Recharts calibrés R-UI-07, Flex-wrap History/Projects, Playwright Responsive 76/76 PASS, 100/100 PASS).
@@ -51,14 +52,14 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 - 👉 **[Consulter l'Archive Complète du Sprint 12 (TASKS_HISTORY_S12_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S12_COMPLETED.md)** — 4 tâches (Modal Détaillé Plein Écran, Redesign Lumineux OfferCard).
 - 👉 **[Consulter l'Archive Complète du Sprint 11 (TASKS_HISTORY_S11_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S11_COMPLETED.md)** — 5 tâches (Résolution Erreur Validation Fetch, Better-Auth 503 Fix).
 - 👉 **[Consulter l'Archive des Sprints 1 à 10 (TASKS_HISTORY_S10_COMPLETED.md & antérieurs)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S10_COMPLETED.md)**
+- 👉 **[Rapport d'Audit Pré-Release V1.x (AUDIT_PRE_RELEASE_COMPLIANCE_V1.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_PRE_RELEASE_COMPLIANCE_V1.md)**
 - 👉 **[Rapport d'Audit Final Responsive & Fluidité (AUDIT_RESPONSIVE_FLUIDITY_SPRINT_22.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_RESPONSIVE_FLUIDITY_SPRINT_22.md)**
-- 👉 **[Rapport d'Audit Multi-Domaines (AUDIT_AUTH_GUEST_QUALITY_SPRINT_14.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/reports/AUDIT_AUTH_GUEST_QUALITY_SPRINT_14.md)**
 
 ---
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 65 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 58 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.
