@@ -71,10 +71,10 @@ export function ModernHeader({
         <>
             {/* Sticky Header Bar - Height strictly <= 56px on mobile */}
             <motion.header
-                className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30"
+                className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-header"
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
             >
                 <div className="h-14 sm:h-auto px-2 sm:px-6 py-1.5 sm:py-4 pl-16 md:pl-6 flex flex-col justify-center">
                     {/* Top Row - Breadcrumbs and Actions */}
@@ -113,7 +113,7 @@ export function ModernHeader({
                                 <Input
                                     type="search"
                                     placeholder={t.nav.quickSearch}
-                                    className="w-52 pl-9 h-9 bg-muted/50 border-none transition-all duration-300 ease-in-out focus:bg-muted focus:w-64"
+                                    className="w-52 pl-9 h-9 bg-muted/50 border-none transition-[width,background-color] duration-200 ease-out focus:bg-muted focus:w-64"
                                 />
                             </motion.div>
 

@@ -103,7 +103,7 @@ export function CookieConsent() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4 pb-safe sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md max-h-[75dvh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-cookie p-2 sm:p-4 pb-safe sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md max-h-[75dvh] flex flex-col"
       >
         <PremiumCard className="shadow-2xl max-h-[70dvh] flex flex-col overflow-hidden border-border/80" animation="none">
           <div className="p-3 sm:p-5 overflow-y-auto momentum-scroll">

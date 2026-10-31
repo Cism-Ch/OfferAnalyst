@@ -3,30 +3,104 @@
  * Premium animation presets for consistent, smooth animations across the app
  */
 
-import { Variants, Transition } from 'framer-motion';
+import { useSyncExternalStore } from 'react';
+import { Variants, Variant, Transition } from 'framer-motion';
+
+function subscribeReducedMotion(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', callback);
+    return () => mediaQuery.removeEventListener('change', callback);
+  } else {
+    mediaQuery.addListener(callback);
+    return () => mediaQuery.removeListener(callback);
+  }
+}
+
+function getReducedMotionSnapshot(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function getReducedMotionServerSnapshot(): boolean {
+  return false;
+}
 
 /**
- * Transition Presets
+ * SSR-safe React hook detecting user preference for reduced motion
+ */
+export function useReducedMotionPreference(): boolean {
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot
+  );
+}
+
+/**
+ * Accessible Fade-Only Variants (for prefers-reduced-motion: reduce)
+ */
+export const accessibleFadeVariants: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.15 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
+};
+
+/**
+ * Motion variants adapter generating accessible motion when reduced motion is preferred
+ */
+export function createMotionVariants(
+  standard: Variants,
+  reduced?: Variants
+): (shouldReduceMotion: boolean) => Variants {
+  return (shouldReduceMotion: boolean) => {
+    if (!shouldReduceMotion) return standard;
+    if (reduced) return reduced;
+    // Auto-strip transforms (x, y, scale) to keep clean opacity fades
+    const accessible: Record<string, Variant> = {};
+    for (const [key, val] of Object.entries(standard)) {
+      if (typeof val === 'object' && val !== null) {
+        const valObj = val as { opacity?: number | number[] };
+        accessible[key] = {
+          opacity: valObj.opacity !== undefined ? valObj.opacity : 1,
+          transition: { duration: 0.15 },
+        };
+      }
+    }
+    return accessible;
+  };
+}
+
+/**
+ * Calibrated Transition Presets (TASK-MOT-02: 150-250ms hardware-accelerated curves)
  */
 export const transitions = {
-  // Smooth and natural transition
+  // Smooth and natural transition (200ms)
   smooth: {
     type: 'tween',
-    ease: 'easeInOut',
-    duration: 0.3,
+    ease: [0.4, 0, 0.2, 1],
+    duration: 0.2,
+  } as Transition,
+
+  // Snappy fast micro-interaction (150ms)
+  snappy: {
+    type: 'tween',
+    ease: [0.4, 0, 0.2, 1],
+    duration: 0.15,
   } as Transition,
 
   // Bouncy spring transition
   bounce: {
     type: 'spring',
     stiffness: 400,
-    damping: 10,
+    damping: 25,
   } as Transition,
 
   // Gentle spring transition
   spring: {
     type: 'spring',
-    stiffness: 300,
+    stiffness: 350,
     damping: 30,
   } as Transition,
 
@@ -37,11 +111,16 @@ export const transitions = {
     damping: 40,
   } as Transition,
 
-  // Slow and luxurious
+  // Calibrated luxury transition (250ms)
   luxury: {
     type: 'tween',
     ease: [0.25, 0.1, 0.25, 1],
-    duration: 0.6,
+    duration: 0.25,
+  } as Transition,
+
+  // Instant fallback for prefers-reduced-motion
+  reducedMotion: {
+    duration: 0.01,
   } as Transition,
 } as const;
 
@@ -320,7 +399,7 @@ export const staggerContainerProps = {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05,
       },
     },
   },

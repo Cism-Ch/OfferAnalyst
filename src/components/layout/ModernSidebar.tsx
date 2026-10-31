@@ -491,7 +491,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                     <button
-                        className="md:hidden fixed top-3 left-3 z-40 size-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
+                        className="md:hidden fixed top-3 left-3 z-sidebar size-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
                         aria-label={t.nav.openMenu}
                     >
                         <Menu className="h-5 w-5" />
@@ -534,9 +534,9 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <motion.aside
                 initial={false}
                 animate={{ width: isCollapsed ? 80 : 256 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className={cn(
-                    "hidden md:flex flex-col relative border-r bg-background h-app sticky top-0 shrink-0",
+                    "hidden md:flex flex-col relative border-r bg-background h-app sticky top-0 shrink-0 z-sidebar",
                     isCollapsed ? "w-20" : "w-64"
                 )}
             >

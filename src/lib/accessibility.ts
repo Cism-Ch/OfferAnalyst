@@ -108,7 +108,7 @@ export const focusVisibleClasses = 'focus-visible:outline-none focus-visible:rin
 export function getSkipToMainContentProps() {
   return {
     href: '#main-content',
-    className: `${srOnlyClasses} focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md`,
+    className: `${srOnlyClasses} focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-toast focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md`,
     children: 'Skip to main content',
   };
 }

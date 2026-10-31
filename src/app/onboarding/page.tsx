@@ -152,7 +152,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-app bg-gradient-to-br from-background to-muted flex flex-col overflow-x-hidden">
       {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 z-50">
+      <div className="fixed top-0 left-0 right-0 z-header">
         <Progress value={progress} className="h-1 rounded-none" />
       </div>
 

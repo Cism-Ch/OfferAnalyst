@@ -375,7 +375,7 @@ function APIKeysContent() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+                        className={`fixed top-4 right-4 z-toast p-4 rounded-lg shadow-lg ${
                             toast.type === 'success' 
                                 ? 'bg-green-500 text-white' 
                                 : 'bg-red-500 text-white'

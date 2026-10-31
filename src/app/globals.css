@@ -50,6 +50,43 @@
   --spacing-section: clamp(1.25rem, 0.8rem + 1.8vw, 2.5rem);
   --text-fluid-title: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
   --text-fluid-hero: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
+
+  /* Standardized Z-Index Hierarchy Scale (TASK-MOT-01) */
+  --z-dropdown: 20;
+  --z-header: 30;
+  --z-sidebar: 40;
+  --z-drawer: 50;
+  --z-dialog: 60;
+  --z-toast: 70;
+  --z-cookie: 80;
+}
+
+@utility z-dropdown {
+  z-index: var(--z-dropdown);
+}
+
+@utility z-header {
+  z-index: var(--z-header);
+}
+
+@utility z-sidebar {
+  z-index: var(--z-sidebar);
+}
+
+@utility z-drawer {
+  z-index: var(--z-drawer);
+}
+
+@utility z-dialog {
+  z-index: var(--z-dialog);
+}
+
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+
+@utility z-cookie {
+  z-index: var(--z-cookie);
 }
 
 @utility min-h-app {
@@ -107,6 +144,15 @@
   --spacing-section: clamp(1.25rem, 0.8rem + 1.8vw, 2.5rem);
   --text-fluid-title: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
   --text-fluid-hero: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
+
+  /* Standardized Z-Index Hierarchy Scale */
+  --z-dropdown: 20;
+  --z-header: 30;
+  --z-sidebar: 40;
+  --z-drawer: 50;
+  --z-dialog: 60;
+  --z-toast: 70;
+  --z-cookie: 80;
 }
 
 .dark {
@@ -402,9 +448,9 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* Hover lift effect */
+  /* Hover lift effect (Hardware-accelerated) */
   .hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
@@ -412,14 +458,14 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 
-  /* Premium card styles */
+  /* Premium card styles (Hardware-accelerated) */
   .card-premium {
     border-radius: 0.75rem;
     border-width: 1px;
     background-color: var(--card);
     color: var(--card-foreground);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-premium:hover {
@@ -473,4 +519,32 @@ html,
 body {
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* Scroll Behavior & Header Offset Synchronization (TASK-MOT-03) */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 3.5rem; /* 56px (compact mobile header h-14) */
+}
+
+@media (min-width: 640px) {
+  html {
+    scroll-padding-top: 4.5rem; /* ~72px sm+ header */
+  }
+}
+
+/* Global Prefers-Reduced-Motion accessibility reset (TASK-MOT-02) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -382,6 +382,48 @@ test.describe('Responsive Design & No-Horizontal-Scroll Verification', () => {
         });
       }
 
+      test('Unified Z-Index tokens scale is strictly respected (TASK-MOT-01)', async ({ page }) => {
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await page.waitForLoadState('load');
+
+        const zIndexes = await page.evaluate(() => {
+          const rootStyle = getComputedStyle(document.documentElement);
+          const header = document.querySelector('header');
+          const headerZ = header ? getComputedStyle(header).zIndex : null;
+          return {
+            varHeader: rootStyle.getPropertyValue('--z-header').trim(),
+            varDrawer: rootStyle.getPropertyValue('--z-drawer').trim(),
+            varDialog: rootStyle.getPropertyValue('--z-dialog').trim(),
+            varToast: rootStyle.getPropertyValue('--z-toast').trim(),
+            varCookie: rootStyle.getPropertyValue('--z-cookie').trim(),
+            headerZ,
+          };
+        });
+
+        expect(zIndexes.varHeader).toBe('30');
+        expect(zIndexes.varDrawer).toBe('50');
+        expect(zIndexes.varDialog).toBe('60');
+        expect(zIndexes.varToast).toBe('70');
+        expect(zIndexes.varCookie).toBe('80');
+        expect(zIndexes.headerZ).toBe('30');
+      });
+
+      test('Scroll padding and smooth behavior configured properly (TASK-MOT-03)', async ({ page }) => {
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await page.waitForLoadState('load');
+
+        const scrollProps = await page.evaluate(() => {
+          const htmlStyle = getComputedStyle(document.documentElement);
+          return {
+            scrollBehavior: htmlStyle.scrollBehavior,
+            scrollPaddingTop: htmlStyle.scrollPaddingTop,
+          };
+        });
+
+        expect(scrollProps.scrollBehavior).toBe('smooth');
+        expect(parseFloat(scrollProps.scrollPaddingTop)).toBeGreaterThanOrEqual(56);
+      });
+
       if (viewport.width === 768) {
         test('Tablet 768px viewport must automatically engage icon rail mode (TASK-SHL-01)', async ({ page }) => {
           await page.goto('/', { waitUntil: 'domcontentloaded' });

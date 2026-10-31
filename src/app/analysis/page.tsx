@@ -14,7 +14,12 @@ import { ScoreChart } from '@/components/offers/ScoreChart';
 import { ResultsSection } from '@/components/offers/ResultsSection';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
-import { Skeleton } from '@/components/ui/skeleton-premium';
+import { 
+    SkeletonScoreChart, 
+    SkeletonActionCard, 
+    SkeletonResultsHeader, 
+    SkeletonOfferCard 
+} from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, RefreshCw, ArrowLeft, Search } from 'lucide-react';
@@ -47,34 +52,21 @@ export default function AnalysisPage() {
                 {/* Intelligent Provider Error Diagnostic Panel */}
                 <ProviderErrorPanel />
 
-                {/* State 1: Active Analysis Loading Skeletons */}
+                {/* State 1: Active Analysis Loading Skeletons (Calibrated Geometry for CLS < 0.05) */}
                 {isLoading ? (
                     <div className="space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            {/* Left column loading preview */}
-                            <div className="lg:col-span-4 space-y-4">
-                                <Card className="border border-border/80 p-6 space-y-4 rounded-xl bg-card shadow-xs">
-                                    <Skeleton height={24} width="60%" rounded="md" gradient />
-                                    <Skeleton height={200} rounded="lg" gradient />
-                                    <Skeleton height={16} width="80%" rounded="sm" gradient />
-                                </Card>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                            {/* Left column loading preview (Score chart + Action buttons) */}
+                            <div className="lg:col-span-4 space-y-5">
+                                <SkeletonScoreChart />
+                                <SkeletonActionCard />
                             </div>
-                            {/* Right column loading preview */}
-                            <div className="lg:col-span-8 space-y-4">
+                            {/* Right column loading preview (Results header + Offer cards) */}
+                            <div className="lg:col-span-8 space-y-6">
+                                <SkeletonResultsHeader />
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {[1, 2, 3, 4].map((i) => (
-                                        <Card key={i} className="border border-border/80 p-5 space-y-3 rounded-xl bg-card shadow-xs">
-                                            <div className="flex items-center justify-between">
-                                                <Skeleton height={22} width="50%" rounded="md" gradient />
-                                                <Skeleton height={20} width={60} rounded="full" gradient />
-                                            </div>
-                                            <Skeleton height={14} width="90%" rounded="sm" gradient />
-                                            <Skeleton height={14} width="75%" rounded="sm" gradient />
-                                            <div className="flex gap-2 pt-2">
-                                                <Skeleton height={28} width={80} rounded="md" gradient />
-                                                <Skeleton height={28} width={80} rounded="md" gradient />
-                                            </div>
-                                        </Card>
+                                        <SkeletonOfferCard key={i} />
                                     ))}
                                 </div>
                             </div>
