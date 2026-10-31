@@ -83,6 +83,24 @@ export async function setCache<T>(key: string, value: T, ttlSeconds: number = 36
 }
 
 /**
+ * Get or compute an entry with cache hit/miss tracking
+ */
+export async function getOrSetCache<T>(
+  key: string,
+  factory: () => Promise<T>,
+  ttlSeconds: number = 3600
+): Promise<{ value: T; cached: boolean }> {
+  const cachedVal = await getCache<T>(key);
+  if (cachedVal !== null) {
+    return { value: cachedVal, cached: true };
+  }
+
+  const value = await factory();
+  await setCache(key, value, ttlSeconds);
+  return { value, cached: false };
+}
+
+/**
  * Remove an item from the cache
  */
 export async function deleteCache(key: string): Promise<boolean> {

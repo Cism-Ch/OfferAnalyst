@@ -57,6 +57,22 @@ export async function analyzeOffersAction(
             }
         };
     }
+
+    // Check Multi-Tier Cache to eliminate redundant AI evaluation
+    const { getCache, setCache, generateCacheKey } = await import('@/lib/cache');
+    const cacheKey = generateCacheKey('analyze_offers', offers, profile, limit, modelName, language);
+    const cachedAnalysis = await getCache<AnalysisResponse>(cacheKey);
+    if (cachedAnalysis && cachedAnalysis.topOffers && cachedAnalysis.topOffers.length > 0) {
+        return {
+            success: true,
+            data: cachedAnalysis,
+            meta: {
+                model: modelName,
+                latencyMs: Date.now() - startedAt,
+                cached: true
+            }
+        };
+    }
     
     // Try to get API key with BYOK support
     const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
@@ -95,7 +111,7 @@ export async function analyzeOffersAction(
         apiKey: apiKeyResult.key,
     });
 
-    // Optimize payload: Simplify offers to reduce token usage
+    // Optimize payload: Simplify offers to reduce token usage and prevent Vercel timeouts
     const simplifiedOffers = offers.map(offer => ({
         id: offer.id,
         title: offer.title,
@@ -218,6 +234,9 @@ export async function analyzeOffersAction(
         const data = await retryWithBackoff(operation, 3, 'analyze offers');
         const latencyMs = Date.now() - startedAt;
 
+        // Cache result for 2 hours (7200 seconds)
+        await setCache(cacheKey, data, 7200).catch(() => {});
+
         // Record granular telemetry and token FinOps
         await recordAITelemetry({
             apiKeyResult,
@@ -247,7 +266,8 @@ export async function analyzeOffersAction(
             data,
             meta: {
                 model: modelName,
-                latencyMs
+                latencyMs,
+                cached: false
             }
         };
     } catch (error) {

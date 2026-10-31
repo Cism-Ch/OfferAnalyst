@@ -3,16 +3,15 @@
 /**
  * URL Ingestion Tab
  * 
- * Allows users to paste 1 to 5 opportunity or job listing URLs.
+ * Allows users to paste 1 to 10 opportunity or job listing URLs.
  * Validates URLs for security (HTTPS, valid syntax) and structures them
- * as input candidates for the analysis engine.
+ * as input candidates for the analysis engine with anti-bot guidance.
  */
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import {
     Link as LinkIcon,
     Plus,
@@ -20,7 +19,8 @@ import {
     CheckCircle2,
     Globe,
     AlertCircle,
-    ExternalLink
+    ExternalLink,
+    ShieldCheck
 } from 'lucide-react';
 import { Offer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -84,7 +84,12 @@ export function UrlImportTab({ domain, onOffersExtracted }: UrlImportTabProps) {
 
     const syncOffers = (list: string[]) => {
         const structured: Offer[] = list.map((url, idx) => {
-            const domainName = (new URL(url)).hostname.replace('www.', '');
+            let domainName = "Source externe";
+            try {
+                domainName = (new URL(url)).hostname.replace('www.', '');
+            } catch {
+                // Keep default
+            }
             return {
                 id: String(idx + 1),
                 title: `${domain} - Offre #${idx + 1} (${domainName})`,
@@ -192,6 +197,16 @@ export function UrlImportTab({ domain, onOffersExtracted }: UrlImportTabProps) {
                         </Button>
                     </div>
                 ))}
+            </div>
+
+            {/* Anti-Bot & Cloudflare Fallback Guidance */}
+            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/70 flex items-start gap-2.5 text-xs text-muted-foreground">
+                <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                    {isFr 
+                        ? "Note de robustesse : Certaines plateformes fermées (LinkedIn, Indeed) bloquent l'accès direct des serveurs cloud via Cloudflare. En cas de blocage d'un lien, faites un simple Ctrl+A / Ctrl+C de l'annonce et collez le contenu dans l'onglet 'Texte Libre' pour une structuration instantanée sans blocage."
+                        : "Reliability notice: Some closed platforms (LinkedIn, Indeed) restrict direct cloud bot access via Cloudflare. If a link fails to fetch, simply Ctrl+A / Ctrl+C the job description and paste it into the 'Raw Text' tab for instant extraction."}
+                </p>
             </div>
 
             <div className="pt-2 flex justify-end">

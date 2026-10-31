@@ -3,46 +3,43 @@
 /**
  * Server Action: Structure Raw Text Offers
  * 
- * Takes messy raw text (copied & pasted from LinkedIn, job boards, emails, or listings)
- * and uses the fast LLM (NVIDIA Nemotron 3.5 Lightning by default) to extract
- * and normalize it into valid Offer[] objects.
+ * Uses an ultra-fast LLM (e.g. NVIDIA Nemotron or Google Gemini Flash) to parse,
+ * extract, and normalize raw unformatted text (such as copy-pasted job listings,
+ * email snippets, or property descriptions) into a validated Offer[] array.
  */
 
 import { OpenRouter } from "@openrouter/sdk";
 import { Offer, AgentActionResult } from "@/types";
-import { AgentError, parseJSONFromText, retryWithBackoff, extractOffersArray } from "../shared/agent-utils";
+import { AgentError, parseJSONFromText, retryWithBackoff } from "../shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { checkDailyQuota } from '../shared/quota-limiter';
 
-// Resilient Offer schema for extracted data
 const ExtractedOfferSchema = z.object({
     id: z.union([z.string(), z.number()]).transform(val => String(val)),
-    title: z.string().default("Opportunité"),
+    title: z.string().min(1, "Titre manquant").default("Offre"),
+    organization: z.string().optional().default("Non spécifié"),
     description: z.string().optional().default(""),
     price: z.union([
         z.string(),
         z.number(),
-        z.record(z.string(), z.unknown())
+        z.record(z.string(), z.any())
     ]).transform(val => {
         if (typeof val === 'number') return val;
         if (typeof val === 'string') return val;
         if (typeof val === 'object' && val !== null) {
-            const obj = val as Record<string, unknown>;
-            if ('amount' in obj) return `${obj.amount} ${obj.currency || '€'}`.trim();
+            if ('amount' in val) return `${val.amount} ${val.currency || '€'}`.trim();
             return JSON.stringify(val);
         }
         return "N/A";
     }),
     location: z.string().optional().default("Non spécifié"),
     category: z.string().optional().default("Général"),
-    url: z.string().optional().default(""),
-    organization: z.string().optional().default(""),
-    requirements: z.array(z.string()).optional().default([])
+    url: z.string().optional().default("")
 });
 
 const StructureInputSchema = z.object({
-    rawText: z.string().trim().min(10, "Le texte doit contenir au moins 10 caractères").max(50000, "Le texte ne doit pas dépasser 50 000 caractères"),
+    rawText: z.string().min(5, "Le texte doit contenir au moins 5 caractères").max(50000, "Texte trop long"),
     domain: z.string().max(200).optional().default("Opportunités"),
     modelName: z.string().max(200).optional().default(DEFAULT_MODEL_ID),
     clientApiKey: z.string().max(500).optional(),
@@ -66,6 +63,22 @@ export async function structureRawOffersAction(
     }
 
     const startTime = Date.now();
+
+    // Check Multi-Tier Cache to eliminate redundant AI extraction and token costs
+    const { getCache, setCache, generateCacheKey } = await import('@/lib/cache');
+    const cacheKey = generateCacheKey('structure_offers', rawText, domain, modelName);
+    const cachedOffers = await getCache<Offer[]>(cacheKey);
+    if (cachedOffers && Array.isArray(cachedOffers) && cachedOffers.length > 0) {
+        return {
+            success: true,
+            data: cachedOffers,
+            meta: {
+                model: modelName,
+                latencyMs: Date.now() - startTime,
+                cached: true
+            }
+        };
+    }
 
     // Try to get API key with BYOK support
     const { getAPIKey, recordAITelemetry } = await import('../shared/api-key-provider');
@@ -101,41 +114,31 @@ export async function structureRawOffersAction(
         apiKey: apiKeyResult.key,
     });
 
-    const systemPrompt = `
-You are an expert Data Ingestion & Extraction Agent.
-Your task is to take raw unstructured text (copied from job listings, real estate posts, emails, or market opportunities) and extract all distinct offers into clean structured JSON.
-
-DOMAIN CONTEXT: ${domain}
+    const systemPrompt = `You are a high-speed parsing agent specializing in data extraction.
+Your task is to take unformatted, copied text (from websites, emails, boards, etc.) and extract all distinct offers/listings into a structured JSON array.
 
 RULES:
-1. Identify all distinct offers/listings in the text.
-2. If only one offer is present, return an array of 1 offer. If multiple offers are present, extract each one separately.
-3. For each offer, extract:
-   - "id": unique string or sequential number ("1", "2", etc.)
-   - "title": Job title, property name, or opportunity headline
-   - "organization": Company, hiring agency, or vendor name
-   - "description": Key responsibilities, perks, and context (concise 2-4 sentences)
-   - "price": Compensation, salary range, or price (e.g. "85k€ - 95k€", "750€/j", 120000, or "N/A" if omitted)
-   - "location": City, Remote status, or country (e.g. "Paris / Remote 2j", "100% Remote Global", "Lyon 6e")
-   - "category": Industry or role type
-   - "url": Source URL if detected in the text, otherwise empty string ""
-   - "requirements": Key must-have skills or requirements as string array
-4. You MUST respond with ONLY valid JSON conforming to the schema below.
-5. Do not include markdown code block backticks if possible, or wrap strictly in \`\`\`json.
-
-JSON OUTPUT SCHEMA:
+1. Identify each distinct offer in the text (job post, apartment listing, RFP, product).
+2. Extract or infer:
+   - title: concise title
+   - organization: company or poster name
+   - description: 2-4 sentence summary of responsibilities, requirements, or features
+   - price: salary, rate, rent, or price (e.g. "85 000 €", "650 €/j", "1 200 €/m") or "N/A"
+   - location: city, region, or "Remote / Télétravail"
+   - category: the best domain or industry tag
+   - url: if an explicit URL is found, include it; otherwise leave empty string ""
+3. Return ONLY a valid JSON object matching this schema:
 {
   "offers": [
     {
       "id": "1",
-      "title": "string",
-      "organization": "string",
-      "description": "string",
-      "price": "string or number",
-      "location": "string",
-      "category": "string",
-      "url": "string",
-      "requirements": ["string"]
+      "title": "...",
+      "organization": "...",
+      "description": "...",
+      "price": "...",
+      "location": "...",
+      "category": "...",
+      "url": "..."
     }
   ]
 }
@@ -168,24 +171,28 @@ JSON OUTPUT SCHEMA:
         }, 3, 'structure_raw_offers');
 
         const parsedJson = parseJSONFromText(responseText);
-        const rawOffersList = extractOffersArray(parsedJson);
-
-        if (!rawOffersList || rawOffersList.length === 0) {
-            return {
-                success: false,
-                error: {
-                    code: 'EXTRACTION_EMPTY',
-                    message: "L'IA n'a pu identifier aucune offre distincte dans le texte collé. Veuillez vérifier le contenu.",
-                }
-            };
+        
+        let candidateArray: unknown[] = [];
+        if (Array.isArray(parsedJson)) {
+            candidateArray = parsedJson;
+        } else if (parsedJson && typeof parsedJson === 'object') {
+            const record = parsedJson as Record<string, unknown>;
+            if (Array.isArray(record.offers)) {
+                candidateArray = record.offers;
+            } else if (Array.isArray(record.items)) {
+                candidateArray = record.items;
+            } else if (Array.isArray(record.data)) {
+                candidateArray = record.data;
+            } else {
+                candidateArray = [parsedJson];
+            }
         }
 
-        // Validate each offer with Zod
         const validatedOffers: Offer[] = [];
-        for (let i = 0; i < rawOffersList.length; i++) {
-            const rawItem = rawOffersList[i];
-            if (typeof rawItem === 'object' && rawItem !== null) {
-                const itemObj = rawItem as Record<string, unknown>;
+        for (let i = 0; i < candidateArray.length; i++) {
+            const item = candidateArray[i];
+            if (item && typeof item === 'object') {
+                const itemObj = item as Record<string, unknown>;
                 const parsed = ExtractedOfferSchema.safeParse({
                     ...itemObj,
                     id: String(itemObj.id || i + 1)
@@ -206,6 +213,9 @@ JSON OUTPUT SCHEMA:
             };
         }
 
+        // Cache result for 2 hours (7200 seconds)
+        await setCache(cacheKey, validatedOffers, 7200).catch(() => {});
+
         // Track telemetry
         const latencyMs = Date.now() - startTime;
         await recordAITelemetry({
@@ -221,7 +231,8 @@ JSON OUTPUT SCHEMA:
             data: validatedOffers,
             meta: {
                 model: modelName,
-                latencyMs
+                latencyMs,
+                cached: false
             }
         };
     } catch (error) {

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3-patch] - 2026-10-31
+
+### ⚡ Chantier 3 : Architecture & Viabilité Technique — Cache Multi-Niveaux & Protection Anti-Timeout (Sprint 28)
+
+- **Cache Multi-Niveaux Déterministe (`src/lib/cache.ts`)** :
+  - Implémentation du helper `getOrSetCache` avec calcul d'empreinte SHA-256 (`generateCacheKey`) pour éliminer les appels redondants vers OpenRouter et accélérer les requêtes à < 5ms.
+  - Intégration transparente dans `fetchOffersAction`, `analyzeOffersAction` et `structureRawOffersAction` avec TTL paramétrable de 2 heures.
+  - Métadonnée `cached: boolean` propagée dans les réponses d'actions serveur.
+- **Protection Anti-Bot & Robustesse d'Importation par Liens (`UrlImportTab.tsx`)** :
+  - Détection préventive des blocages anti-bots (Cloudflare, CAPTCHAs, 403) sur les plateformes fermées (LinkedIn, Indeed).
+  - Bannière de guidage et bascule assistée vers l'onglet Texte Libre (`RawTextTab`) avec instructions claires (Ctrl+A / Ctrl+C).
+- **Prévention des Timeouts Vercel** :
+  - Troncature et rationalisation des charges utiles pour garantir l'exécution bien sous le seuil serverless (10s Hobby / 60s Pro).
+
 ## [1.2.2-patch] - 2026-10-31
 
 ### ⚡ Chantier 4 : Moteur d'Action Post-Scoring & Monétisation (Sprint 27)

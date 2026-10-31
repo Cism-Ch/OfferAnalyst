@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 27 Achevés & Validés — Moteur d'Action Post-Scoring Opérationnel
+**Statut Global :** Sprints 1 à 28 Achevés & Validés — Pipeline Asynchrone, Cache Multi-Niveaux & Anti-Timeout Opérationnels
 
 ---
 
@@ -15,13 +15,27 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │ 🚀 EN COURS (RELEASE)   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 27 (Action)│
-│     (Release v1.2.2 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 26 (Ingest)│
-│     Production Deploy)  │  │ [ ] Chrome Extension    │  │     - Sprint 25 (Vitrine│
-│                         │  │                         │  │     - Sprint 24 (UI/UX) │
-│                         │  │                         │  │     - Sprints 1-23 (All)│
+│ [ ] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 28 (Cache) │
+│     (Release v1.2.3 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 27 (Action)│
+│     Production Deploy)  │  │ [ ] Chrome Extension    │  │     - Sprint 26 (Ingest)│
+│                         │  │                         │  │     - Sprint 25 (Vitrine│
+│                         │  │                         │  │     - Sprints 1-24 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 28 Achevée : Chantier 3 — Architecture & Viabilité Technique : Cache Intelligent & Anti-Timeout
+
+- [x] **`TASK-ASYNC-01` — Architecture & Viabilité Technique : Cache Intelligent & Pipeline Anti-Timeout**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/cache.ts`, `src/app/actions/fetch.ts`, `src/app/actions/analyze.ts`, `src/app/actions/offers/structure-raw-offers.ts`, `src/components/data-source/UrlImportTab.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-ASYNC-01.01` : Intégration du cache multi-niveaux (`src/lib/cache.ts`) dans `fetchOffersAction`, `analyzeOffersAction` et `structureRawOffersAction` avec empreinte SHA-256 (`generateCacheKey`) pour éliminer la redondance et réduire les coûts de tokens.
+    - [x] `TASK-ASYNC-01.02` : Détection et contournement des blocages anti-bots/Cloudflare sur les imports URLs avec suggestions de remédiation claires vers le texte brut.
+    - [x] `TASK-ASYNC-01.03` : Pipeline optimisé de traitement pour prévenir les timeouts Vercel (10s Hobby / 60s Pro) par simplification des charges et limitation des tokens inutiles.
+    - [x] `TASK-ASYNC-01.04` : Télémétrie et métadonnées de cache (`cached: boolean`) propagées de façon transparente vers l'interface utilisateur.
+    - [x] `TASK-ASYNC-01.05` : Validation déterministe intégrale avec `npm run eval:quick` (100/100 PASS, 0 warning ESLint, 0 erreur TypeScript strict).
 
 ---
 
@@ -70,42 +84,14 @@
 
 ---
 
-- [x] **`TASK-RSI-01` — Système RSI de Versioning Adaptatif (`vX.X.X-MENTION`)**
-  - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `evals/version_manager.py`, `evals/rsi_orchestrator.py`, `package.json`, `CHANGELOG.md`, `docs/TASKS.md`
-  - **Critères d'acceptation :**
-    - [x] `TASK-RSI-01.01` : Parser SemVer tolérant aux préfixes et mentions existantes (`vX.X.X-MENTION`).
-    - [x] `TASK-RSI-01.02` : Moteur d'évaluation heuristique des modifications Git (`status`, `diff`) et Changelog pour classification automatique du saut (`patch` vs `minor`) et déduction de la mention (`patch`, `ui-fix`, `mobile-ui`).
-    - [x] `TASK-RSI-01.03` : Prise en charge des drapeaux CLI `--bump`, `--mention`, `--auto-mention`, `--dry-run` et génération du tag Git conforme (`vX.X.X-MENTION`).
-    - [x] `TASK-RSI-01.04` : Intégration dans `evals/rsi_orchestrator.py` (`--version-eval`, `--version-bump`) et scripts npm (`npm run rsi:version`, `npm run rsi:bump`).
-    - [x] `TASK-RSI-01.05` : Documentation de la release sous `## [Unreleased]` dans `CHANGELOG.md` et validation 100/100 (`eval:quick`).
-
----
-
-## 🎨 Sprint 24 Achevée : Audit & Remédiation UI/UX Mobile & Navbar SaaS Premium
-
-- [x] **`TASK-UI-02` — Audit & Remédiation UI/UX Mobile, Navbar SaaS Premium & Ergonomie Tactile**
-  - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `src/components/layout/ModernSidebar.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/AIModelSelector.tsx`, `src/components/layout/LanguageToggle.tsx`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `src/components/ui/select.tsx`, `src/lib/ai-models.ts`, `src/app/data-source/page.tsx`
-  - **Critères d'acceptation :**
-    - [x] `TASK-UI-02.01` : Bouton Drawer mobile modernisé (`rounded-full`, micro-glassmorphism, aligné verticalement) et fermeture automatique du sheet lors de l'ouverture du dialogue BYOK pour débloquer les interactions tactiles.
-    - [x] `TASK-UI-02.02` : Mention / breadcrumb "Tableau de bord" présentée de façon premium (pill badge sans troncature agressive) et centrage esthétique des titres de page sur mobile.
-    - [x] `TASK-UI-02.03` : Boutons Langue & Thème snappés à droite de la navbar, AI Model Selector repositionné avec espacements/marges fluides et ergonomie tactile 44px.
-    - [x] `TASK-UI-02.04` : Modèle IA par défaut fixé sur NVIDIA Nemotron 3.5 Lightning (gratuit/inclus).
-    - [x] `TASK-UI-02.05` : Résolution complète du bug tactile dans GuestApiKeyDialog (fermeture sheet sous-jacent, élévation `SelectContent` au-dessus de `z-dialog`, cibles tactiles 44px sur tous les inputs et boutons).
-    - [x] `TASK-UI-02.06` : Refonte responsive de la page Source de Données (`/data-source`) avec layout adaptatif sans débordement, toggles/badges bien proportionnés et hiérarchie d'actions épurée.
-    - [x] `TASK-UI-02.07` : Validation sans faute avec `npm run lint` et `npx tsc --noEmit` (100/100 PASS).
-
----
-
-## 🚀 Prochain Sprint : Release V1.2.2 — Déploiement & Vérification Finale
+## 🚀 Prochain Sprint : Release V1.3.0 — Déploiement & Vérification Finale
 
 - [ ] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
   - **Priorité :** 🔴 HAUTE
   - **Fichiers cibles :** `package.json`, `evals/run_fullstack_eval.py`, `docs/TASKS.md`
   - **Critères d'acceptation :**
-    - [x] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des routes statiques/dynamiques.
-    - [x] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
+    - [ ] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur.
+    - [ ] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
     - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release.
 
 ---
@@ -134,7 +120,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 141 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 146 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.

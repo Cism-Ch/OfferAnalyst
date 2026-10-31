@@ -56,6 +56,23 @@ export async function fetchOffersAction(
     }
 
     const startTime = Date.now();
+
+    // Check Multi-Tier Cache to avoid duplicate token burning and eliminate Vercel timeouts
+    const { getCache, setCache, generateCacheKey } = await import('@/lib/cache');
+    const cacheKey = generateCacheKey('fetch_offers', domain, context, modelName);
+    const cachedOffers = await getCache<Offer[]>(cacheKey);
+    if (cachedOffers && Array.isArray(cachedOffers) && cachedOffers.length > 0) {
+        return {
+            success: true,
+            data: cachedOffers,
+            meta: {
+                model: modelName,
+                latencyMs: Date.now() - startTime,
+                cached: true
+            }
+        };
+    }
+
     let userId: string | undefined;
     
     // Try to get API key with BYOK support
@@ -149,7 +166,7 @@ export async function fetchOffersAction(
                 model: modelName,
                 messages: [
                     { role: "system", content: systemInstruction },
-                    { role: "user", content: `Find live offers for domain "${domain}" with this context: "${context}". Return a JSON object with an "offers" array.` }
+                    { role: "user", content: `Find real, current offers for: Domain: "${domain}", Context: "${context}". Return valid JSON only.` }
                 ],
                 responseFormat: { type: "json_object" }
             }
@@ -190,6 +207,9 @@ export async function fetchOffersAction(
     try {
         const offers = await retryWithBackoff(operation, 3, 'fetch offers');
         
+        // Cache result for 2 hours (7200 seconds)
+        await setCache(cacheKey, offers, 7200).catch(() => {});
+
         // Track BYOK usage if using a user's key
         if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
             await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
@@ -227,7 +247,8 @@ export async function fetchOffersAction(
             data: offers,
             meta: {
                 model: modelName,
-                latencyMs: responseTime
+                latencyMs: responseTime,
+                cached: false
             }
         };
     } catch (error) {
