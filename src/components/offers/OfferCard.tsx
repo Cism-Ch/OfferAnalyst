@@ -13,7 +13,9 @@ import {
     Tag, 
     CheckCheck, 
     TrendingUp, 
-    Award 
+    Award,
+    Zap,
+    Send
 } from 'lucide-react';
 import { ScoredOffer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -32,15 +34,28 @@ interface OfferCardProps {
     isSaved: boolean;
     /** Function to open the detailed modal view */
     onOpenDetail?: (offer: ScoredOffer) => void;
+    /** Function to open negotiation pitch modal */
+    onOpenNegotiate?: (offer: ScoredOffer) => void;
+    /** Function to open custom application modal */
+    onOpenApply?: (offer: ScoredOffer) => void;
 }
 
 /**
  * OfferCard Component
  * 
  * Luminous, accessible, and high-readability card displaying an offer with its
- * AI ranking, price tag, 3-axis score overview, and instant detail modal launcher.
+ * AI ranking, price tag, 3-axis score overview, instant detail modal launcher,
+ * and high-converting post-scoring action shortcuts (Negotiation & Application).
  */
-export function OfferCard({ offer, index, onSave, isSaved, onOpenDetail }: OfferCardProps) {
+export function OfferCard({ 
+    offer, 
+    index, 
+    onSave, 
+    isSaved, 
+    onOpenDetail,
+    onOpenNegotiate,
+    onOpenApply
+}: OfferCardProps) {
     const { t } = useLanguage();
 
     const formattedPrice = offer.price && typeof offer.price === 'number' 
@@ -183,11 +198,41 @@ export function OfferCard({ offer, index, onSave, isSaved, onOpenDetail }: Offer
                     </div>
                 )}
 
-                {/* Card Action: View Details Button */}
-                <div className="pt-1 flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                        {offer.webInsights?.length ? `${offer.webInsights.length} ${t.offer.webInsight}(s)` : ''}
-                    </span>
+                {/* Action Buttons: Post-Score Quick Actions + Details */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-border/50">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {onOpenNegotiate && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenNegotiate(offer);
+                                }}
+                                className="text-[11px] h-7 px-2 gap-1 rounded-md text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 font-semibold touch-manipulation"
+                                title={t.postScoreActions?.negotiationTitle || "Stratégie de négociation"}
+                            >
+                                <Zap className="h-3 w-3" />
+                                <span>{t.postScoreActions?.negotiationBtn || "Négocier"}</span>
+                            </Button>
+                        )}
+                        {onOpenApply && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenApply(offer);
+                                }}
+                                className="text-[11px] h-7 px-2 gap-1 rounded-md text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/10 font-semibold touch-manipulation"
+                                title={t.postScoreActions?.applicationTitle || "Candidature sur-mesure"}
+                            >
+                                <Send className="h-3 w-3" />
+                                <span>{t.postScoreActions?.applicationBtn || "Candidater"}</span>
+                            </Button>
+                        )}
+                    </div>
+
                     <Button 
                         variant="ghost" 
                         size="sm" 
@@ -195,7 +240,7 @@ export function OfferCard({ offer, index, onSave, isSaved, onOpenDetail }: Offer
                             e.stopPropagation();
                             if (onOpenDetail) onOpenDetail(offer);
                         }}
-                        className="text-xs h-7 gap-1.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md font-semibold touch-manipulation"
+                        className="text-xs h-7 gap-1.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md font-semibold touch-manipulation ml-auto"
                     >
                         <Maximize2 className="h-3.5 w-3.5" />
                         {t.offer.viewDetails}

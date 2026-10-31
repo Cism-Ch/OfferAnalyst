@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2-patch] - 2026-10-31
+
+### ⚡ Chantier 4 : Moteur d'Action Post-Scoring & Monétisation (Sprint 27)
+
+- **Génération de Livrables Post-Scoring (`generateOfferActionContentAction.ts`)** :
+  - Server Action déterministe pour transformer les scores d'excellence (ex. 85%) en résultats concrets :
+    - `negotiation_pitch` : Formule des angles stratégiques, des contre-termes cibles (+15%, compensation coût de la vie) et un script complet prêt à copier.
+    - `custom_application` : Rédige une accroche non-générique, des arguments d'alignement profil/besoins et un message d'impact prêt à l'envoi.
+  - Télémétrie IA et protection des quotas journaliers intégrées avec support BYOK.
+- **Modaux d'Action Haute-Conversion** :
+  - **`NegotiationPitchModal.tsx`** : Modal interactif avec badges de leviers, boîte de termes cibles suggérés, script formatté et bouton de copie 1-clic.
+  - **`TailoredApplicationModal.tsx`** : Modal de candidature sur-mesure avec accroche à fort impact, points d'alignement et lettre de motivation optimisée.
+- **Intégration UI Omniprésente** :
+  - Raccourcis directs sur chaque fiche d'offre (`OfferCard.tsx`).
+  - Bloc d'action dédié dans le modal d'exploration approfondie (`OfferDetailModal.tsx`).
+  - Carte latérale d'action prioritaire sur l'offre #1 sur la page d'analyse (`src/app/analysis/page.tsx`).
+  - Prise en charge complète dans `ResultsSection.tsx`.
+- **Bilinguisme Intégral FR/EN** :
+  - Ajout des dictionnaires `postScoreActions` dans `LanguageContext.tsx`.
+
 ## [1.2.1-multi-ingest] - 2026-10-31
 
 ### 📥 Chantier 2 : Ingestion Multi-Sources sans Friction & Masquage de la Complexité JSON (Sprint 26)

@@ -4,7 +4,8 @@
  * ResultsSection Component
  * 
  * Displays the results of the offer analysis with customizable view modes (Grid / List),
- * luminous card layout, and an integrated modal for full offer details.
+ * luminous card layout, an integrated modal for full offer details, and 1-click
+ * action modals for Negotiation Pitch and Tailored Application deliverables.
  * Features bilingual action toolbar:
  * - Download styled PDF report
  * - Export structured CSV file
@@ -31,6 +32,8 @@ import { AnalysisResponse, ScoredOffer } from '@/types';
 import { OfferCard } from './OfferCard';
 import { OfferDetailModal } from './OfferDetailModal';
 import { ShareAnalysisModal } from './ShareAnalysisModal';
+import { NegotiationPitchModal } from './NegotiationPitchModal';
+import { TailoredApplicationModal } from './TailoredApplicationModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { exportAnalysisAsCsv, exportAnalysisAsPdf } from '@/lib/export';
 import { useToast } from '@/components/ui/toast';
@@ -64,7 +67,10 @@ export function ResultsSection({
     const { t, language } = useLanguage();
     const toast = useToast();
     const [selectedOffer, setSelectedOffer] = useState<ScoredOffer | null>(null);
+    const [actionOffer, setActionOffer] = useState<ScoredOffer | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isNegotiateModalOpen, setIsNegotiateModalOpen] = useState(false);
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isExportingCsv, setIsExportingCsv] = useState(false);
@@ -78,6 +84,16 @@ export function ResultsSection({
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedOffer(null);
+    };
+
+    const handleOpenNegotiate = (offer: ScoredOffer) => {
+        setActionOffer(offer);
+        setIsNegotiateModalOpen(true);
+    };
+
+    const handleOpenApply = (offer: ScoredOffer) => {
+        setActionOffer(offer);
+        setIsApplyModalOpen(true);
     };
 
     const isEn = language === 'en';
@@ -141,6 +157,32 @@ export function ResultsSection({
                 onClose={handleCloseModal}
                 onSave={onSaveOffer}
                 isSaved={selectedOffer ? isOfferSaved(selectedOffer.id) : false}
+                onOpenNegotiate={handleOpenNegotiate}
+                onOpenApply={handleOpenApply}
+            />
+
+            {/* Modal for Negotiation Strategy & Pitch */}
+            <NegotiationPitchModal
+                offer={actionOffer}
+                isOpen={isNegotiateModalOpen}
+                onClose={() => {
+                    setIsNegotiateModalOpen(false);
+                    setActionOffer(null);
+                }}
+                domain={domain}
+                userContext={criteria}
+            />
+
+            {/* Modal for Tailored Application Pitch */}
+            <TailoredApplicationModal
+                offer={actionOffer}
+                isOpen={isApplyModalOpen}
+                onClose={() => {
+                    setIsApplyModalOpen(false);
+                    setActionOffer(null);
+                }}
+                domain={domain}
+                userContext={criteria}
             />
 
             {/* Modal for sharing analysis */}
@@ -241,6 +283,8 @@ export function ResultsSection({
                         onSave={onSaveOffer}
                         isSaved={isOfferSaved(offer.id)}
                         onOpenDetail={handleOpenDetail}
+                        onOpenNegotiate={handleOpenNegotiate}
+                        onOpenApply={handleOpenApply}
                     />
                 ))}
             </div>

@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 24 Achevés & Validés — Système RSI de Versioning Dynamique `vX.X.X-MENTION` Opérationnel
+**Statut Global :** Sprints 1 à 27 Achevés & Validés — Moteur d'Action Post-Scoring Opérationnel
 
 ---
 
@@ -13,19 +13,34 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 26) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (RELEASE)   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [x] TASK-INGEST-01      │  │ [ ] Multi-Tenant DB     │  │     - Sprint 25 (Vitrine│
-│     (Ingestion Multi-   │  │ [ ] Webhook Alerts      │  │     - Sprint 24 (UI/UX) │
-│     Sources sans JSON)  │  │ [ ] Chrome Extension    │  │     - Sprint 23 (Remed) │
-│ [ ] TASK-REL-01 (V1.2.0 │  │                         │  │     - Sprints 1-22 (All)│
-│     Release & Deploy)   │  │                         │  │                         │
+│ [ ] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 27 (Action)│
+│     (Release v1.2.2 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 26 (Ingest)│
+│     Production Deploy)  │  │ [ ] Chrome Extension    │  │     - Sprint 25 (Vitrine│
+│                         │  │                         │  │     - Sprint 24 (UI/UX) │
+│                         │  │                         │  │     - Sprints 1-23 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 📥 Sprint 26 : Chantier 2 — Ingestion Multi-Sources sans Friction (`/data-source`)
+## ⚡ Sprint 27 Achevée : Chantier 4 — Actions & Monétisation Post-Scoring (Négociation & Candidature Sur-Mesure)
+
+- [x] **`TASK-ACTION-01` — Moteur d'Action Post-Scoring (Arguments de Négociation & Candidature Sur-Mesure)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/actions/offers/generate-action-content.ts`, `src/components/offers/NegotiationPitchModal.tsx`, `src/components/offers/TailoredApplicationModal.tsx`, `src/components/offers/OfferCard.tsx`, `src/components/offers/OfferDetailModal.tsx`, `src/components/offers/ResultsSection.tsx`, `src/app/analysis/page.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-ACTION-01.01` : Server Action déterministe `generateOfferActionContentAction` (`negotiation_pitch` et `custom_application`) utilisant le contexte utilisateur et les données multi-axes pour produire des livrables exploitables immédiatement.
+    - [x] `TASK-ACTION-01.02` : Modal interactif d'arguments de négociation (`NegotiationPitchModal.tsx`) avec points de levier, contre-propositions de salaire/reste-à-vivre, et script de négociation prêt à copier.
+    - [x] `TASK-ACTION-01.03` : Modal de réponse / candidature sur-mesure (`TailoredApplicationModal.tsx`) avec accroche personnalisée, alignement profil-offre et synthèse percutante.
+    - [x] `TASK-ACTION-01.04` : Intégration des boutons d'actions directes sur les fiches d'offres (`OfferCard.tsx`), le modal de détail (`OfferDetailModal.tsx`), la section de résultats (`ResultsSection.tsx`) et la colonne latérale d'action (`AnalysisPage.tsx`).
+    - [x] `TASK-ACTION-01.05` : Bilinguisme intégral FR/EN dans `LanguageContext.tsx` (`postScoreActions`).
+    - [x] `TASK-ACTION-01.06` : Validation sans faute avec `npx tsc --noEmit`, `npm run lint` et `npm run eval:quick` (100/100 PASS).
+
+---
+
+## 📥 Sprint 26 Achevée : Chantier 2 — Ingestion Multi-Sources sans Friction (`/data-source`)
 
 - [x] **`TASK-INGEST-01` — Système d'Ingestion Multi-Sources (Texte Libre, URLs, Fichiers & JSON Développeur)**
   - **Priorité :** 🔴 HAUTE
@@ -83,15 +98,15 @@
 
 ---
 
-## 🚀 Prochain Sprint : Release V1.1.0 — Déploiement & Vérification Finale
+## 🚀 Prochain Sprint : Release V1.2.2 — Déploiement & Vérification Finale
 
 - [ ] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
   - **Priorité :** 🔴 HAUTE
   - **Fichiers cibles :** `package.json`, `evals/run_fullstack_eval.py`, `docs/TASKS.md`
   - **Critères d'acceptation :**
-    - [x] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des routes statiques/dynamiques (40 routes, 34 statiques).
+    - [x] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des routes statiques/dynamiques.
     - [x] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
-    - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release `v1.1.0`.
+    - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release.
 
 ---
 
@@ -119,7 +134,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 92 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 141 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.

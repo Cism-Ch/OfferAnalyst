@@ -25,7 +25,9 @@ import {
     Award,
     FileText,
     Share2,
-    Check
+    Check,
+    Zap,
+    Send
 } from 'lucide-react';
 import { ScoredOffer } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -37,6 +39,8 @@ interface OfferDetailModalProps {
     onClose: () => void;
     onSave: (offer: ScoredOffer) => void;
     isSaved: boolean;
+    onOpenNegotiate?: (offer: ScoredOffer) => void;
+    onOpenApply?: (offer: ScoredOffer) => void;
 }
 
 /**
@@ -44,14 +48,17 @@ interface OfferDetailModalProps {
  * 
  * Accessible, expansive dialog providing full readability for any analyzed offer:
  * complete title, pricing details, 3-axis score breakdown, full AI justification,
- * all collected web insights, description, and direct external listing link.
+ * all collected web insights, description, direct external listing link, and
+ * 1-click action triggers for AI Negotiation and Tailored Application deliverables.
  */
 export function OfferDetailModal({
     offer,
     isOpen,
     onClose,
     onSave,
-    isSaved
+    isSaved,
+    onOpenNegotiate,
+    onOpenApply
 }: OfferDetailModalProps) {
     const { t, language } = useLanguage();
     const isEn = language === 'en';
@@ -200,6 +207,53 @@ export function OfferDetailModal({
                                     <span className="font-bold">{offer.breakdown?.trend ?? 0}%</span>
                                 </div>
                                 <Progress value={offer.breakdown?.trend ?? 0} className="h-2" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* High-Impact Post-Scoring Action Callout */}
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-primary/10 to-blue-500/10 border border-primary/25 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="space-y-0.5">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    {isEn ? "Post-Score AI Actions" : "Actions d'Exécution Post-Scoring"}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                    {isEn 
+                                        ? "Generate instant deliverables to negotiate terms or apply with tailored arguments."
+                                        : "Générez immédiatement vos livrables de négociation ou votre candidature personnalisée."}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                                {onOpenNegotiate && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            onClose();
+                                            onOpenNegotiate(offer);
+                                        }}
+                                        className="text-xs gap-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-semibold"
+                                    >
+                                        <Zap className="h-3.5 w-3.5" />
+                                        <span>{t.postScoreActions?.negotiationBtn || (isEn ? "Negotiate" : "Négocier")}</span>
+                                    </Button>
+                                )}
+                                {onOpenApply && (
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        onClick={() => {
+                                            onClose();
+                                            onOpenApply(offer);
+                                        }}
+                                        className="text-xs gap-1.5 font-semibold shadow-xs"
+                                    >
+                                        <Send className="h-3.5 w-3.5" />
+                                        <span>{t.postScoreActions?.applicationBtn || (isEn ? "Apply" : "Candidater")}</span>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

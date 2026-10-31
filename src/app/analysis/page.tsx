@@ -3,10 +3,12 @@
 /**
  * Analysis Page
  * 
- * Display analysis results with scores and recommendations
+ * Display analysis results with scores, recommendations, and
+ * 1-click execution actions (Negotiation Strategy & Tailored Application)
+ * on the top-ranking offer.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { useSavedOffers } from '@/hooks/use-saved-offers';
@@ -14,6 +16,8 @@ import { ScoreChart } from '@/components/offers/ScoreChart';
 import { ResultsSection } from '@/components/offers/ResultsSection';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
+import { NegotiationPitchModal } from '@/components/offers/NegotiationPitchModal';
+import { TailoredApplicationModal } from '@/components/offers/TailoredApplicationModal';
 import { 
     SkeletonScoreChart, 
     SkeletonActionCard, 
@@ -21,18 +25,24 @@ import {
     SkeletonOfferCard 
 } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { LineChart, RefreshCw, ArrowLeft, Search } from 'lucide-react';
+import { LineChart, RefreshCw, ArrowLeft, Search, Zap, Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AnalysisPage() {
     const dashboardState = useDashboardState();
     const { saveOffer, isSaved } = useSavedOffers();
-    const { language } = useLanguage();
+    const { t, language } = useLanguage();
+    const isEn = language === 'en';
+
+    const [isNegotiateModalOpen, setIsNegotiateModalOpen] = useState(false);
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
     const hasResults = dashboardState.results?.topOffers && dashboardState.results.topOffers.length > 0;
     const isLoading = dashboardState.loading;
+    const topOffer = hasResults ? dashboardState.results!.topOffers[0] : null;
 
     const pageTitle = language === 'fr' ? "Résultats de l'Analyse" : "Analysis Results";
     const pageDescription = language === 'fr' 
@@ -80,8 +90,55 @@ export default function AnalysisPage() {
                             {dashboardState.results && (
                                 <ScoreChart offers={dashboardState.results.topOffers} />
                             )}
+
+                            {/* Priority Action Card for Top Offer (#1) */}
+                            {topOffer && (
+                                <Card className="border border-primary/30 bg-gradient-to-br from-card via-primary/5 to-card shadow-xs rounded-xl overflow-hidden">
+                                    <CardContent className="p-4 space-y-3">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <Badge variant="outline" className="text-[11px] font-bold border-primary/40 bg-primary/10 text-primary">
+                                                #{topOffer.rank || 1} {t.offer.rankBadge} • {topOffer.finalScore}%
+                                            </Badge>
+                                            <span className="text-[11px] text-muted-foreground font-semibold flex items-center gap-1">
+                                                <Sparkles className="h-3 w-3 text-amber-500" />
+                                                {isEn ? "Top Priority Action" : "Action Prioritaire #1"}
+                                            </span>
+                                        </div>
+                                        
+                                        <div>
+                                            <h4 className="text-sm font-bold text-foreground line-clamp-1">
+                                                {topOffer.title}
+                                            </h4>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                {t.postScoreActions?.priorityActionDesc || (isEn ? "Turn this top match into tangible results:" : "Transformez ce score d'excellence en résultat concret :")}
+                                            </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsNegotiateModalOpen(true)}
+                                                className="w-full text-xs gap-1.5 h-8 border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-semibold"
+                                            >
+                                                <Zap className="h-3.5 w-3.5" />
+                                                <span>{t.postScoreActions?.negotiationBtn || (isEn ? "Negotiate" : "Négocier")}</span>
+                                            </Button>
+                                            <Button
+                                                variant="default"
+                                                size="sm"
+                                                onClick={() => setIsApplyModalOpen(true)}
+                                                className="w-full text-xs gap-1.5 h-8 font-semibold shadow-xs"
+                                            >
+                                                <Send className="h-3.5 w-3.5" />
+                                                <span>{t.postScoreActions?.applicationBtn || (isEn ? "Apply" : "Candidater")}</span>
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                             
-                            {/* Action Buttons */}
+                            {/* General Navigation Buttons */}
                             <Card className="border border-border/80 bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardContent className="p-4 sm:p-5 space-y-2.5">
                                     <Button variant="default" className="w-full gap-2 font-semibold shadow-xs" asChild>
@@ -156,6 +213,23 @@ export default function AnalysisPage() {
                     </Card>
                 ) : null}
             </div>
+
+            {/* Negotiation & Application Modals for Top Offer from Left Column */}
+            <NegotiationPitchModal
+                offer={topOffer}
+                isOpen={isNegotiateModalOpen}
+                onClose={() => setIsNegotiateModalOpen(false)}
+                domain={dashboardState.domain}
+                userContext={dashboardState.explicitCriteria}
+            />
+
+            <TailoredApplicationModal
+                offer={topOffer}
+                isOpen={isApplyModalOpen}
+                onClose={() => setIsApplyModalOpen(false)}
+                domain={dashboardState.domain}
+                userContext={dashboardState.explicitCriteria}
+            />
         </SimpleLayout>
     );
 }
