@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.3-patch] - 2026-10-31
 
-## [1.3.3-patch] - 2026-10-31
-
 ### 🎨 Audit & Remédiation UI/UX Navbar & Drawer SaaS Luxury (Sprint 32)
 
 - **Élimination Stricte des Emojis de Drapeaux (`src/components/layout/LanguageToggle.tsx`)** :
