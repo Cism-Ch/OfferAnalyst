@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.2-patch] - 2026-10-31
+## [1.3.3-patch] - 2026-10-31
+
+## [1.3.3-patch] - 2026-10-31
+
+### 🎨 Audit & Remédiation UI/UX Navbar & Drawer SaaS Luxury (Sprint 32)
+
+- **Élimination Stricte des Emojis de Drapeaux (`src/components/layout/LanguageToggle.tsx`)** :
+  - Remplacement complet des drapeaux emojis natifs par des icônes vectorielles SVG Lucide (`Globe`) et pastilles typographiques épurées `FR` / `EN` conformes à `AGENTS.md`.
+- **Optimisation Responsive Sélecteur de Thème (`src/components/theme-selector.tsx`)** :
+  - Sur mobile (< 640px), pastille circulaire jewel minimaliste (`size-10 rounded-full`) masquant le chevron textuel superflu pour préserver l'espace horizontal sur les écrans 320px-375px.
+  - Cibles tactiles WCAG 44x44px garanties avec `touch-manipulation`.
+- **En-tête et Déclencheur Drawer Mobile (`src/components/layout/ModernSidebar.tsx`)** :
+  - Déclencheur mobile transformé en pastille micro-glassmorphism circulaire (`size-11 min-h-[44px] min-w-[44px]`) parfaitement alignée verticalement dans le header de 56px (`top-1.5 left-2`).
+  - Intérieur du Drawer Radix Sheet repensé avec disposition unifiée coordonnant sur une seule et même ligne horizontale le logo de marque `OffanLogo`, le badge de version `v1.2.1` et la croix de fermeture sans aucun chevauchement.
+  - Éléments de navigation rehaussés avec indicateur d'accentuation actif Linear/Vercel-style (`before:w-1 before:bg-primary`).
+- **Header & Fil d'Ariane Adaptatif (`src/components/layout/ModernHeader.tsx`)** :
+  - Remplacement du bouton Quota par une pastille compacte circulaire sur mobile.
+  - Fil d'Ariane responsive avec micro-glassmorphism et troncature adaptative (`max-w-[110px]` à `max-w-[160px]`) éliminant toute collision ou wrap sur petits écrans.
+- **Validation & Qualité** :
+  - 100/100 au Juge Déterministe (`eval:quick`), 0 erreur TypeScript, 0 warning ESLint.
 
 ### 🏢 Multi-Tenancy B2B & Espaces de Travail Collaboratifs (Sprint 31)
 

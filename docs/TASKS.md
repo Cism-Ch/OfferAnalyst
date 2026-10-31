@@ -13,17 +13,33 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS             │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 33) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochains Sprints   │  │ [ ] Chrome Store Publish│  │     - Sprint 31 (Tenant)│
-│     (Backlog Produit)   │  │ [ ] Advanced Billing    │  │     - Sprint 30 (Alerts)│
-│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 29 (Capture│
+│ [ ] Prochaine Évolution │  │ [ ] Chrome Store Publish│  │     - Sprint 32 (Navbar)│
+│     SaaS & Analytics    │  │ [ ] Advanced Billing    │  │     - Sprint 31 (Tenant)│
+│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 30 (Alerts)│
+│                         │  │                         │  │     - Sprint 29 (Capture│
 │                         │  │                         │  │     - Sprint 28 (Cache) │
 │                         │  │                         │  │     - Sprint 27 (Action)│
 │                         │  │                         │  │     - Sprint 26 (Ingest)│
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🎨 Sprint 32 Achevée : Audit & Remédiation Navbar & Drawer UI/UX SaaS Luxury
+
+- [x] **`TASK-UI-03` — Ajustements de Style UI/UX Navbar & Drawer Mobile / Desktop**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/components/layout/LanguageToggle.tsx`, `src/components/theme-selector.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-03.01` : Élimination stricte des emojis de drapeaux dans `LanguageToggle.tsx` au profit d'icônes vectorielles SVG Lucide (`Globe`) et typographie pill premium.
+    - [x] `TASK-UI-03.02` : Optimisation responsive du sélecteur de thème `PremiumThemeSelector` sur mobile (pastille circulaire luxueuse épurée sans chevron encombrant sur petits écrans).
+    - [x] `TASK-UI-03.03` : Remédiation du positionnement et du style du déclencheur de drawer mobile (pastille micro-glassmorphism, alignement vertical parfait, safe-area).
+    - [x] `TASK-UI-03.04` : Refonte du Drawer Radix Sheet (en-tête coordonnée logo + close cross alignée, items de navigation tactiles min 44px avec accent bar active Linear-style, widget quota et profil utilisateur harmonisés).
+    - [x] `TASK-UI-03.05` : Élimination du débordement / collision sur mobile 320px-375px dans `ModernHeader.tsx` et fil d'Ariane adaptatif sans troncature disgracieuse.
+    - [x] `TASK-UI-03.06` : Validation sans faute avec `npm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

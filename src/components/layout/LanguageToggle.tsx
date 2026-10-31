@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * LanguageToggle Component
+ * Allows seamless 1-click toggling between French and English with instant persistence.
+ * Strict adherence to zero-emoji design rules: uses Lucide vector icons and typography badges.
+ */
+
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe } from 'lucide-react';
@@ -10,10 +16,6 @@ interface LanguageToggleProps {
   variant?: 'pill' | 'button' | 'compact';
 }
 
-/**
- * LanguageToggle Component
- * Allows seamless 1-click toggling between French and English with instant persistence.
- */
 export function LanguageToggle({ className, variant = 'pill' }: LanguageToggleProps) {
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
 
@@ -42,14 +44,14 @@ export function LanguageToggle({ className, variant = 'pill' }: LanguageTogglePr
         type="button"
         onClick={toggleLanguage}
         className={cn(
-          "inline-flex lg:hidden items-center justify-center min-h-[44px] min-w-[44px] md:min-h-9 md:min-w-9 gap-1 px-2.5 py-1.5 rounded-full sm:rounded-xl border border-border/60 bg-background/70 backdrop-blur-md text-xs font-semibold select-none touch-manipulation hover:bg-accent/40 active:scale-95 shadow-xs transition-all",
+          "group inline-flex lg:hidden items-center justify-center min-h-[44px] min-w-[44px] md:min-h-9 md:min-w-9 gap-1.5 px-2.5 py-1.5 rounded-full sm:rounded-xl border border-border/60 bg-background/70 backdrop-blur-md text-xs font-semibold select-none touch-manipulation hover:bg-accent/40 active:scale-95 shadow-xs transition-all",
           className
         )}
         title={t.nav.toggleLang}
         aria-label={t.nav.toggleLang}
       >
-        <span className="text-[12px] leading-none">{language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-        <span className="leading-none text-[11px] uppercase tracking-wider">{language}</span>
+        <Globe className="h-3.5 w-3.5 text-primary shrink-0 transition-transform duration-200 group-hover:rotate-12" />
+        <span className="leading-none text-[11px] font-bold uppercase tracking-wider text-foreground/90">{language}</span>
       </button>
 
       {/* Desktop segmented pill (lg+) */}
@@ -67,14 +69,13 @@ export function LanguageToggle({ className, variant = 'pill' }: LanguageTogglePr
           aria-checked={language === 'fr'}
           onClick={() => setLanguage('fr')}
           className={cn(
-            "flex items-center justify-center min-h-7 gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all duration-150 touch-manipulation",
+            "flex items-center justify-center min-h-7 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 touch-manipulation",
             language === 'fr'
-              ? "bg-background text-foreground font-semibold shadow-xs border border-border/50"
+              ? "bg-background text-foreground font-semibold shadow-xs border border-border/50 text-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <span className="text-[11px] leading-none">🇫🇷</span>
-          <span className="leading-none">FR</span>
+          <span className="leading-none font-bold">FR</span>
         </button>
 
         <button
@@ -83,14 +84,13 @@ export function LanguageToggle({ className, variant = 'pill' }: LanguageTogglePr
           aria-checked={language === 'en'}
           onClick={() => setLanguage('en')}
           className={cn(
-            "flex items-center justify-center min-h-7 gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all duration-150 touch-manipulation",
+            "flex items-center justify-center min-h-7 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 touch-manipulation",
             language === 'en'
-              ? "bg-background text-foreground font-semibold shadow-xs border border-border/50"
+              ? "bg-background text-foreground font-semibold shadow-xs border border-border/50 text-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <span className="text-[11px] leading-none">🇬🇧</span>
-          <span className="leading-none">EN</span>
+          <span className="leading-none font-bold">EN</span>
         </button>
       </div>
     </>

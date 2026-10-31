@@ -1,6 +1,6 @@
 {
     "name": "offer-analyst",
-    "version": "1.3.2-patch",
+    "version": "1.3.3-patch",
     "private": true,
     "packageManager": "pnpm@12.15.0",
     "scripts": {

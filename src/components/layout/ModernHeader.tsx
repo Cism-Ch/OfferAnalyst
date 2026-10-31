@@ -77,15 +77,16 @@ export function ModernHeader({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.2 }}
             >
-                <div className="h-14 sm:h-auto px-2 sm:px-6 py-1.5 sm:py-4 pl-16 md:pl-6 flex flex-col justify-center">
+                <div className="h-14 sm:h-auto px-2 sm:px-6 py-1.5 sm:py-4 pl-14 sm:pl-16 md:pl-6 flex flex-col justify-center">
                     {/* Top Row - Breadcrumbs and Actions */}
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                         {/* Breadcrumbs */}
                         <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
                             {/* Mobile Single Crumb — Premium Pill Badge */}
                             <div className="sm:hidden flex items-center min-w-0">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted/70 border border-border/70 text-foreground/90 truncate max-w-[125px] min-[375px]:max-w-[155px] shadow-2xs">
-                                    {routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-muted/80 backdrop-blur-md border border-border/70 text-foreground/90 truncate max-w-[110px] min-[360px]:max-w-[130px] min-[400px]:max-w-[160px] shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/80 shrink-0" />
+                                    <span className="truncate">{routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}</span>
                                 </span>
                             </div>
                             {/* Desktop Full Breadcrumb Trail */}
@@ -149,7 +150,7 @@ export function ModernHeader({
                                         size="sm"
                                         onClick={() => setGuestKeyDialogOpen(true)}
                                         className={cn(
-                                             "min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-11 md:h-8 px-2 sm:px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation",
+                                             "min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-11 md:h-8 p-0 sm:px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation flex items-center justify-center shrink-0",
                                             quota.isByok
                                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
                                                 : quota.remaining === 0
@@ -192,7 +193,7 @@ export function ModernHeader({
                             </motion.div>
 
                             {/* Right-Snapped Controls: Language & Theme grouped together */}
-                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 pl-1 border-l border-border/50 sm:border-transparent sm:pl-0">
+                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 sm:pl-1.5 sm:border-l sm:border-border/50">
                                 <motion.div
                                     initial={{ opacity: 0, y: -4 }}
                                     animate={{ opacity: 1, y: 0 }}

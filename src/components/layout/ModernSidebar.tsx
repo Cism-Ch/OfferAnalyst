@@ -1,14 +1,14 @@
 'use client';
 
 /**
- * Modern Premium Sidebar Component
+ * Modern Premium Sidebar & Drawer Component
  * 
  * Features:
- * - Collapsible design for more space
- * - Organized navigation with sections
- * - Smooth animations
- * - Bilingual FR/EN Guest User CTA & Authenticated Sign Out button
- * - Mobile-responsive with overlay
+ * - Luxury SaaS aesthetic with Linear/Vercel active state indicators
+ * - Touch-manipulation and WCAG 44x44px minimum touch targets
+ * - Dedicated mobile Drawer header with horizontally aligned brand logo, version badge, and close cross
+ * - Vertically centered micro-glassmorphic mobile drawer trigger button
+ * - Clean section hierarchy and compact footer widgets
  */
 
 import React, { useState } from 'react';
@@ -97,7 +97,7 @@ function renderNavItems(
     return (
         <div className="space-y-1">
             {section && !isCollapsed && (
-                <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                <p className="px-3 pt-2 text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest mb-1.5 select-none">
                     {section}
                 </p>
             )}
@@ -106,6 +106,7 @@ function renderNavItems(
                     (route) => item.href === route || item.href.startsWith(route + '/')
                 );
                 const isRestrictedForGuest = isGuest && isProtectedItem;
+                const active = isActive(item.href);
 
                 const handleClick = (e: React.MouseEvent) => {
                     if (isRestrictedForGuest) {
@@ -125,20 +126,24 @@ function renderNavItems(
                         <Button
                             variant="ghost"
                             className={cn(
-                                'w-full justify-start gap-3 transition-all duration-200',
+                                'w-full justify-start gap-3 min-h-[44px] transition-all duration-200 rounded-xl relative touch-manipulation',
                                 isCollapsed ? 'px-2' : 'px-3',
-                                isActive(item.href)
-                                    ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                                active
+                                    ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/15 shadow-2xs before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
                             )}
                             title={isRestrictedForGuest ? `${item.label} (${t.auth.signInCta})` : item.label}
                         >
-                            <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed && 'mx-auto')} />
+                            <item.icon className={cn(
+                                'h-5 w-5 shrink-0 transition-colors',
+                                isCollapsed && 'mx-auto',
+                                active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                            )} />
                             {!isCollapsed && (
                                 <>
-                                    <span className="flex-1 text-left">{item.label}</span>
+                                    <span className="flex-1 text-left truncate">{item.label}</span>
                                     {item.badge && (
-                                        <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                                        <span className="text-[10px] font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full shrink-0">
                                             {item.badge}
                                         </span>
                                     )}
@@ -187,7 +192,7 @@ function SidebarUserProfile({
     };
 
     return (
-        <div className="border-t p-3">
+        <div className="border-t border-border/70 p-3">
             <div className={cn('flex items-center gap-1.5', isCollapsed && 'justify-center')}>
                 <Link
                     href={href}
@@ -224,34 +229,36 @@ function SidebarUserProfile({
                     )}
                 </Link>
 
-                {!isCollapsed && (
-                    user ? (
+                {!isCollapsed && user && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleQuickSignOut}
+                        disabled={signingOut}
+                        className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors touch-manipulation"
+                        title={t.nav.signOut}
+                        aria-label={t.nav.signOut}
+                    >
+                        <LogOut className={cn('h-4 w-4', signingOut && 'animate-spin')} />
+                    </Button>
+                )}
+
+                {!isCollapsed && !user && (
+                    <Link
+                        href="/auth/login"
+                        onClick={() => setMobileOpen?.(false)}
+                        className="shrink-0"
+                    >
                         <Button
-                            type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={handleQuickSignOut}
-                            disabled={signingOut}
-                            title={t.auth.signOut}
-                            aria-label={t.auth.signOut}
-                            className="size-11 md:size-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl touch-manipulation"
+                            className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl transition-colors touch-manipulation"
+                            title={t.nav.signIn}
+                            aria-label={t.nav.signIn}
                         >
-                            <LogOut className="h-4 w-4" />
+                            <LogIn className="h-4 w-4" />
                         </Button>
-                    ) : (
-                        <Button
-                            asChild
-                            variant="ghost"
-                            size="icon"
-                            title={t.auth.signInCta}
-                            aria-label={t.auth.signInCta}
-                            className="size-11 md:size-9 shrink-0 text-primary hover:bg-primary/10 rounded-xl touch-manipulation"
-                        >
-                            <Link href="/auth/login" onClick={() => setMobileOpen?.(false)}>
-                                <LogIn className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                    )
+                    </Link>
                 )}
             </div>
         </div>
@@ -261,13 +268,13 @@ function SidebarUserProfile({
 function SidebarDailyQuotaWidget({
     isCollapsed,
     onOpenKeyDialog,
-    isFr
+    isFr,
 }: {
     isCollapsed: boolean;
     onOpenKeyDialog: () => void;
     isFr: boolean;
 }) {
-    const [quota, setQuota] = useState<{ used: number; total: number; remaining: number; isByok: boolean } | null>(null);
+    const [quota, setQuota] = React.useState<{ remaining: number; total: number; isByok: boolean } | null>(null);
 
     const loadQuota = React.useCallback(async () => {
         try {
@@ -291,7 +298,7 @@ function SidebarDailyQuotaWidget({
 
     if (isCollapsed) {
         return (
-            <div className="px-2 py-3 border-t flex justify-center">
+            <div className="px-2 py-3 border-t border-border/70 flex justify-center">
                 <button
                     onClick={onOpenKeyDialog}
                     className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
@@ -306,8 +313,8 @@ function SidebarDailyQuotaWidget({
     const pct = quota.isByok ? 100 : Math.round((quota.remaining / quota.total) * 100);
 
     return (
-        <div className="px-3 py-3 border-t">
-            <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+        <div className="px-3 py-2.5 border-t border-border/70">
+            <div className="p-3 rounded-2xl bg-muted/40 border border-border/70 space-y-2">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                         <Zap className={cn("h-3.5 w-3.5", quota.isByok ? "text-emerald-500 fill-emerald-500/20" : "text-amber-500 fill-amber-500/20")} />
@@ -330,7 +337,7 @@ function SidebarDailyQuotaWidget({
                 {!quota.isByok && (
                     <button
                         onClick={onOpenKeyDialog}
-                        className="text-[11px] text-primary hover:underline font-medium block pt-1 pb-1 min-h-[32px] text-left touch-manipulation"
+                        className="text-[11px] text-primary hover:underline font-semibold block pt-0.5 min-h-[36px] text-left touch-manipulation active:scale-95 transition-transform"
                     >
                         {isFr ? "+ Ajouter clé API (BYOK)" : "+ Add API Key (BYOK)"}
                     </button>
@@ -350,6 +357,7 @@ function SidebarBody({
     onProtectedClick,
     onOpenKeyDialog,
     isFr,
+    isDrawer = false,
 }: {
     isCollapsed: boolean;
     onToggle: (() => void) | undefined;
@@ -360,6 +368,7 @@ function SidebarBody({
     onProtectedClick: (href: string) => void;
     onOpenKeyDialog: () => void;
     isFr: boolean;
+    isDrawer?: boolean;
 }) {
     const { data: session } = useSession();
     const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
@@ -394,38 +403,64 @@ function SidebarBody({
 
     return (
         <>
-            {/* Logo and Brand */}
-            <div className={cn(
-                'flex items-center px-4 py-5',
-                isCollapsed ? 'justify-center px-2' : 'justify-start'
-            )}>
-                <Link
-                    href="/"
-                    onClick={() => setMobileOpen?.(false)}
-                    className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
-                >
-                    {isCollapsed ? (
-                        <div className="p-1.5 rounded-xl bg-card border border-border shadow-xs hover:border-primary/50 hover:scale-105 transition-all">
-                            <OffanIcon size={24} glow />
-                        </div>
-                    ) : (
-                        <OffanLogo variant="full" size="md" glow />
-                    )}
-                </Link>
-            </div>
-
-            <Separator />
+            {/* Header: in Drawer mode, unified horizontal row with logo, version badge, and close button */}
+            {isDrawer ? (
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/70 bg-muted/20 shrink-0">
+                    <Link
+                        href="/"
+                        onClick={() => setMobileOpen?.(false)}
+                        className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+                    >
+                        <OffanLogo variant="full" size="sm" glow />
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold">
+                            v1.2.1
+                        </span>
+                        <button
+                            onClick={() => setMobileOpen?.(false)}
+                            className="size-9 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-full border border-border/70 bg-background/80 hover:bg-accent active:scale-95 transition-all text-muted-foreground hover:text-foreground touch-manipulation"
+                            aria-label={t.nav.closeMenu}
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* Desktop / Tablet Logo and Brand */}
+                    <div className={cn(
+                        'flex items-center px-4 py-5 shrink-0',
+                        isCollapsed ? 'justify-center px-2' : 'justify-start'
+                    )}>
+                        <Link
+                            href="/"
+                            onClick={() => setMobileOpen?.(false)}
+                            className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+                        >
+                            {isCollapsed ? (
+                                <div className="p-1.5 rounded-xl bg-card border border-border shadow-xs hover:border-primary/50 hover:scale-105 transition-all">
+                                    <OffanIcon size={24} glow />
+                                </div>
+                            ) : (
+                                <OffanLogo variant="full" size="md" glow />
+                            )}
+                        </Link>
+                    </div>
+                    <Separator />
+                </>
+            )}
 
             {/* Navigation */}
-            <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
+            <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
                 {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
-                <Separator className="my-4" />
+                <Separator className="my-2 opacity-60" />
                 {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
-                <Separator className="my-4" />
+                <Separator className="my-2 opacity-60" />
                 {renderNavItems(dashboardNavItems, !isCollapsed ? t.nav.sectionDashboard : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 {isAdmin && (
                     <>
-                        <Separator className="my-4" />
+                        <Separator className="my-2 opacity-60" />
                         {renderNavItems(adminNavItems, !isCollapsed ? t.nav.sectionAdmin : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                     </>
                 )}
@@ -445,7 +480,7 @@ function SidebarBody({
             {onToggle && (
                 <button
                     onClick={onToggle}
-                    className="hidden lg:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md hover:bg-accent transition-colors"
+                    className="hidden lg:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full border border-border/80 bg-background shadow-md hover:bg-accent transition-colors"
                     aria-label={isCollapsed ? t.nav.expandSidebar : t.nav.collapseSidebar}
                 >
                     {isCollapsed ? (
@@ -493,7 +528,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                     <button
-                        className="md:hidden fixed top-2 left-2.5 z-sidebar size-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-background/80 hover:bg-accent/80 active:scale-95 border border-border/70 shadow-sm backdrop-blur-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-all duration-150 touch-manipulation text-foreground/85 hover:text-foreground"
+                        className="md:hidden fixed top-1.5 left-2 sm:top-2 sm:left-2.5 z-sidebar size-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-background/90 hover:bg-accent/80 active:scale-95 border border-border/80 shadow-xs hover:shadow-md hover:border-primary/40 backdrop-blur-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-all duration-150 touch-manipulation text-foreground/90 hover:text-foreground"
                         aria-label={t.nav.openMenu}
                     >
                         <Menu className="h-5 w-5" />
@@ -501,21 +536,13 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 </SheetTrigger>
                 <SheetContent
                     side="left"
-                    className="p-0 flex flex-col w-72 max-w-[85vw] h-full overflow-hidden pl-safe pb-safe"
+                    className="p-0 flex flex-col w-72 sm:w-80 max-w-[85vw] h-full overflow-hidden pl-safe pb-safe bg-background/95 backdrop-blur-2xl border-r border-border/80 shadow-2xl"
                     showCloseButton={false}
                 >
                     <SheetHeader className="sr-only">
                         <SheetTitle>{t.nav.openMenu}</SheetTitle>
                         <SheetDescription>Menu de navigation principal</SheetDescription>
                     </SheetHeader>
-                    {/* Accessible Close Button with explicit aria-label for E2E tests */}
-                    <button
-                        onClick={() => setMobileOpen(false)}
-                        className="absolute top-3.5 right-3.5 z-drawer size-10 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full border border-border/50 bg-background/70 hover:bg-accent active:scale-95 transition-all touch-manipulation text-muted-foreground hover:text-foreground"
-                        aria-label={t.nav.closeMenu}
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
                     <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
                         <SidebarBody
                             isCollapsed={false}
@@ -530,6 +557,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                                 setTimeout(() => setGuestKeyDialogOpen(true), 120);
                             }}
                             isFr={isFr}
+                            isDrawer={true}
                         />
                     </div>
                 </SheetContent>
@@ -555,6 +583,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     onProtectedClick={handleProtectedClick}
                     onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
                     isFr={isFr}
+                    isDrawer={false}
                 />
             </motion.aside>
 

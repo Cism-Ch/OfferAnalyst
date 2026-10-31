@@ -39,6 +39,8 @@ export const translations = {
       collapseSidebar: "Réduire la barre latérale",
       openMenu: "Ouvrir le menu de navigation",
       closeMenu: "Fermer le menu de navigation",
+      signOut: "Se déconnecter",
+      signIn: "Se connecter",
     },
     // Route Meta (Header & Breadcrumbs)
     routes: {
@@ -607,6 +609,8 @@ export const translations = {
       collapseSidebar: "Collapse sidebar",
       openMenu: "Open navigation menu",
       closeMenu: "Close navigation menu",
+      signOut: "Sign out",
+      signIn: "Sign in",
     },
     // Route Meta (Header & Breadcrumbs)
     routes: {
