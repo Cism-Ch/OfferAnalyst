@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 28 Achevés & Validés — Pipeline Asynchrone, Cache Multi-Niveaux & Anti-Timeout Opérationnels
+**Statut Global :** Sprints 1 à 28 Achevés & Validés — Release V1.3.0 Production Build Validé (0 erreur)
 
 ---
 
@@ -13,15 +13,27 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (RELEASE)   │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (PRODUCTION)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 28 (Cache) │
+│ [x] TASK-REL-01         │  │ [ ] Multi-Tenant DB     │  │     - Sprint 28 (Cache) │
 │     (Release v1.2.3 &   │  │ [ ] Webhook Alerts      │  │     - Sprint 27 (Action)│
-│     Production Deploy)  │  │ [ ] Chrome Extension    │  │     - Sprint 26 (Ingest)│
+│     Build 40/40 Validé) │  │ [ ] Chrome Extension    │  │     - Sprint 26 (Ingest)│
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 │                         │  │                         │  │     - Sprints 1-24 (All)│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🚀 Release V1.3.0 Achevée : Déploiement & Vérification Finale
+
+- [x] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `package.json`, `evals/run_fullstack_eval.py`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur et génération des 40 routes (34 statiques, dynamic endpoints, middleware proxy).
+    - [x] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
+    - [x] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release.
 
 ---
 
@@ -84,18 +96,6 @@
 
 ---
 
-## 🚀 Prochain Sprint : Release V1.3.0 — Déploiement & Vérification Finale
-
-- [ ] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
-  - **Priorité :** 🔴 HAUTE
-  - **Fichiers cibles :** `package.json`, `evals/run_fullstack_eval.py`, `docs/TASKS.md`
-  - **Critères d'acceptation :**
-    - [ ] `TASK-REL-01.01` : Validation du build de production complet (`npm run build`) avec 0 erreur.
-    - [ ] `TASK-REL-01.02` : Validation `eval:quick` déterministe (100/100, 0 warning ESLint, 0 erreur TypeScript strict).
-    - [ ] `TASK-REL-01.03` : Vérification finale des variables d'environnement de production et préparation du tag git release.
-
----
-
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
@@ -120,7 +120,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 146 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 133 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.
