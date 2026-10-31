@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 31 Octobre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 23 Achevés & Validés (Sécurité Clés .env, Purge V2, Zod Actions, Next Build 40 routes, 100/100 PASS) — Prêt pour Release V1.1.0
+**Statut Global :** Sprints 1 à 24 Achevés & Validés — Système RSI de Versioning Dynamique `vX.X.X-MENTION` Opérationnel
 
 ---
 
@@ -13,17 +13,48 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 RELEASE PRÊTE (V1.1) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (RSI / V1.1)│  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-REL-01 (V1.1.0 │  │ [ ] Multi-Tenant DB     │  │     - Sprint 23 (Remed) │
-│     Production Deploy & │  │ [ ] Webhook Alerts      │  │     - Sprint 22 (Motion)│
-│     Smoke Testing)      │  │ [ ] Chrome Extension    │  │     - Sprints 1-21 (All)│
+│ [x] TASK-RSI-01 (SemVer │  │ [ ] Multi-Tenant DB     │  │     - Sprint 24 (UI/UX) │
+│     vX.X.X-MENTION)     │  │ [ ] Webhook Alerts      │  │     - Sprint 23 (Remed) │
+│ [ ] TASK-REL-01 (V1.1.0 │  │ [ ] Chrome Extension    │  │     - Sprints 1-22 (All)│
+│     Release & Deploy)   │  │                         │  │                         │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Sprint Actif : Release V1.1.0 — Déploiement & Vérification Finale
+## 🤖 Protocole RSI : Versioning Automatique & Évaluation SemVer
+
+- [x] **`TASK-RSI-01` — Système RSI de Versioning Adaptatif (`vX.X.X-MENTION`)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `evals/version_manager.py`, `evals/rsi_orchestrator.py`, `package.json`, `CHANGELOG.md`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-RSI-01.01` : Parser SemVer tolérant aux préfixes et mentions existantes (`vX.X.X-MENTION`).
+    - [x] `TASK-RSI-01.02` : Moteur d'évaluation heuristique des modifications Git (`status`, `diff`) et Changelog pour classification automatique du saut (`patch` vs `minor`) et déduction de la mention (`patch`, `ui-fix`, `mobile-ui`).
+    - [x] `TASK-RSI-01.03` : Prise en charge des drapeaux CLI `--bump`, `--mention`, `--auto-mention`, `--dry-run` et génération du tag Git conforme (`vX.X.X-MENTION`).
+    - [x] `TASK-RSI-01.04` : Intégration dans `evals/rsi_orchestrator.py` (`--version-eval`, `--version-bump`) et scripts npm (`npm run rsi:version`, `npm run rsi:bump`).
+    - [x] `TASK-RSI-01.05` : Documentation de la release sous `## [Unreleased]` dans `CHANGELOG.md` et validation 100/100 (`eval:quick`).
+
+---
+
+## 🎨 Sprint 24 Achevée : Audit & Remédiation UI/UX Mobile & Navbar SaaS Premium
+
+- [x] **`TASK-UI-02` — Audit & Remédiation UI/UX Mobile, Navbar SaaS Premium & Ergonomie Tactile**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/ModernSidebar.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/AIModelSelector.tsx`, `src/components/layout/LanguageToggle.tsx`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `src/components/ui/select.tsx`, `src/lib/ai-models.ts`, `src/app/data-source/page.tsx`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-02.01` : Bouton Drawer mobile modernisé (`rounded-full`, micro-glassmorphism, aligné verticalement) et fermeture automatique du sheet lors de l'ouverture du dialogue BYOK pour débloquer les interactions tactiles.
+    - [x] `TASK-UI-02.02` : Mention / breadcrumb "Tableau de bord" présentée de façon premium (pill badge sans troncature agressive) et centrage esthétique des titres de page sur mobile.
+    - [x] `TASK-UI-02.03` : Boutons Langue & Thème snappés à droite de la navbar, AI Model Selector repositionné avec espacements/marges fluides et ergonomie tactile 44px.
+    - [x] `TASK-UI-02.04` : Modèle IA par défaut fixé sur NVIDIA Nemotron 3.5 Lightning (gratuit/inclus).
+    - [x] `TASK-UI-02.05` : Résolution complète du bug tactile dans GuestApiKeyDialog (fermeture sheet sous-jacent, élévation `SelectContent` au-dessus de `z-dialog`, cibles tactiles 44px sur tous les inputs et boutons).
+    - [x] `TASK-UI-02.06` : Refonte responsive de la page Source de Données (`/data-source`) avec layout adaptatif sans débordement, toggles/badges bien proportionnés et hiérarchie d'actions épurée.
+    - [x] `TASK-UI-02.07` : Validation sans faute avec `npm run lint` et `npx tsc --noEmit` (100/100 PASS).
+
+---
+
+## 🚀 Prochain Sprint : Release V1.1.0 — Déploiement & Vérification Finale
 
 - [ ] **`TASK-REL-01` — Production Release, Next Build & Smoke Tests**
   - **Priorité :** 🔴 HAUTE
@@ -59,7 +90,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 58 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 92 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `npx tsc --noEmit` et `npm run lint` à 0 erreur.

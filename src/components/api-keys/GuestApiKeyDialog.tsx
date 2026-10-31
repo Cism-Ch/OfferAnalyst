@@ -255,7 +255,7 @@ export function GuestApiKeyDialog({
                                         variant="outline"
                                         size="sm"
                                         onClick={() => setIsEditing(true)}
-                                        className="text-xs min-h-[36px]"
+                                        className="text-xs min-h-[44px] touch-manipulation rounded-xl"
                                     >
                                         {isFr ? 'Remplacer la clé' : 'Replace Key'}
                                     </Button>
@@ -265,7 +265,7 @@ export function GuestApiKeyDialog({
                                         size="sm"
                                         onClick={handleClear}
                                         disabled={isClearing}
-                                        className="text-xs text-destructive hover:bg-destructive/10 min-h-[36px] gap-1.5"
+                                        className="text-xs text-destructive hover:bg-destructive/10 min-h-[44px] gap-1.5 touch-manipulation rounded-xl"
                                     >
                                         {isClearing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                                         {isFr ? 'Supprimer' : 'Clear Key'}
@@ -293,7 +293,7 @@ export function GuestApiKeyDialog({
                                         onValueChange={setProvider}
                                         disabled={isSaving}
                                     >
-                                        <SelectTrigger id="guest-provider" className="min-h-[40px] text-xs">
+                                        <SelectTrigger id="guest-provider" className="min-h-[44px] h-11 text-xs touch-manipulation rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -319,13 +319,13 @@ export function GuestApiKeyDialog({
                                             onChange={(e) => setApiKey(e.target.value)}
                                             disabled={isSaving}
                                             required
-                                            className="font-mono text-xs pr-10 min-h-[40px]"
+                                            className="font-mono text-xs pr-11 min-h-[44px] h-11 rounded-xl"
                                             autoComplete="off"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowKey(!showKey)}
-                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 size-10 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg touch-manipulation"
                                             aria-label={showKey ? 'Hide key' : 'Show key'}
                                         >
                                             {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -343,7 +343,7 @@ export function GuestApiKeyDialog({
                                             variant="ghost"
                                             onClick={() => setIsEditing(false)}
                                             disabled={isSaving}
-                                            className="text-xs min-h-[40px]"
+                                            className="text-xs min-h-[44px] h-11 touch-manipulation rounded-xl"
                                         >
                                             {isFr ? 'Annuler' : 'Cancel'}
                                         </Button>
@@ -351,7 +351,7 @@ export function GuestApiKeyDialog({
                                     <Button
                                         type="submit"
                                         disabled={isSaving || !apiKey.trim()}
-                                        className="text-xs min-h-[40px] gap-2 font-medium"
+                                        className="text-xs min-h-[44px] h-11 gap-2 font-medium touch-manipulation rounded-xl"
                                     >
                                         {isSaving ? (
                                             <>

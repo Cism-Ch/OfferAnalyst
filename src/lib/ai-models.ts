@@ -10,11 +10,11 @@ export interface AIModelOption {
   highlights: string[];
 }
 
-export const DEFAULT_MODEL_ID = 'google/gemini-3.5-flash-lite';
+export const DEFAULT_MODEL_ID = 'nvidia/nemotron-3.5-lightning:free';
 
 export const AI_MODEL_OPTIONS: AIModelOption[] = [
   {
-    id: DEFAULT_MODEL_ID,
+    id: 'google/gemini-3.5-flash-lite',
     label: 'Gemini 3.5 Flash Lite (Inclus)',
     provider: 'Google via OpenRouter',
     tier: 'free',
@@ -25,15 +25,15 @@ export const AI_MODEL_OPTIONS: AIModelOption[] = [
     highlights: ['Modèle Inclus', 'Ultra-rapide', '1M tokens']
   },
   {
-    id: 'nvidia/nemotron-3.5-lightning:free',
-    label: 'NVIDIA Nemotron 3.5 Lightning (Gratuit)',
+    id: DEFAULT_MODEL_ID,
+    label: 'NVIDIA Nemotron 3.5 Lightning (Défaut)',
     provider: 'NVIDIA via OpenRouter',
     tier: 'free',
     latency: 'fast',
     contextWindow: '128k tokens',
     price: '$0 / requête (Gratuit)',
     description: 'Modèle léger ultra-rapide de NVIDIA optimisé pour le raisonnement instantané et l\'analyse textuelle.',
-    highlights: ['Modèle Gratuit', 'NVIDIA GPU Acceleration', 'Haute vitesse']
+    highlights: ['Modèle Par Défaut', 'NVIDIA GPU Acceleration', 'Haute vitesse']
   },
   {
     id: 'anthropic/claude-3.7-sonnet',

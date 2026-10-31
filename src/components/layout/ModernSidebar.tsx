@@ -491,7 +491,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                     <button
-                        className="md:hidden fixed top-3 left-3 z-sidebar size-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-background/95 backdrop-blur border shadow-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors touch-manipulation"
+                        className="md:hidden fixed top-2 left-2.5 z-sidebar size-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-background/80 hover:bg-accent/80 active:scale-95 border border-border/70 shadow-sm backdrop-blur-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-all duration-150 touch-manipulation text-foreground/85 hover:text-foreground"
                         aria-label={t.nav.openMenu}
                     >
                         <Menu className="h-5 w-5" />
@@ -509,10 +509,10 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     {/* Accessible Close Button with explicit aria-label for E2E tests */}
                     <button
                         onClick={() => setMobileOpen(false)}
-                        className="absolute top-4 right-4 z-drawer size-11 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-accent touch-manipulation"
+                        className="absolute top-3.5 right-3.5 z-drawer size-10 min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full border border-border/50 bg-background/70 hover:bg-accent active:scale-95 transition-all touch-manipulation text-muted-foreground hover:text-foreground"
                         aria-label={t.nav.closeMenu}
                     >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                     </button>
                     <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
                         <SidebarBody
@@ -523,7 +523,10 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                             t={t}
                             isGuest={isGuest}
                             onProtectedClick={handleProtectedClick}
-                            onOpenKeyDialog={() => setGuestKeyDialogOpen(true)}
+                            onOpenKeyDialog={() => {
+                                setMobileOpen(false);
+                                setTimeout(() => setGuestKeyDialogOpen(true), 120);
+                            }}
                             isFr={isFr}
                         />
                     </div>

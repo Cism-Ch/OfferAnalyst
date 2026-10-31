@@ -65,7 +65,7 @@ function DialogContent({
         data-slot="dialog-content"
         data-variant={variant}
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 outline-none z-dialog",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 outline-none z-[65]",
           isBottomSheet ? [
             // Mobile: Bottom sheet docked to bottom, rounded top, max-h 100dvh-1rem, pb-safe
             "fixed inset-x-0 bottom-0 top-auto translate-x-0 translate-y-0 w-full max-w-full rounded-t-2xl rounded-b-none border-x-0 border-b-0 border-t max-h-[calc(100dvh-1rem)] pb-safe overflow-y-auto p-4 sm:p-6 shadow-2xl gap-4 grid",

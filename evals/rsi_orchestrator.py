@@ -29,6 +29,7 @@ SYSTEM_CORE_PATH = ROOT_DIR / ".agents" / "rules" / "system_core.md"
 LOG_PATH = ROOT_DIR / "evals" / "logs" / "trajectory_latest.json"
 HISTORY_PATH = ROOT_DIR / "evals" / "logs" / "trajectory_history.jsonl"
 EVAL_SCRIPT = ROOT_DIR / "evals" / "run_fullstack_eval.py"
+VERSION_SCRIPT = ROOT_DIR / "evals" / "version_manager.py"
 
 MAX_PLAYBOOK_LINES = 150
 
@@ -87,6 +88,34 @@ def get_git_status() -> dict:
     except Exception:
         return {"modified_files": [], "diff_stat": ""}
 
+def run_version_action(bump: str = "auto", mention: str | None = None, dry_run: bool = True) -> dict:
+    is_windows = os.name == "nt"
+    python_executable = sys.executable
+    cmd_parts = [f'"{python_executable}"', f'"{VERSION_SCRIPT}"']
+    if bump and bump != "auto":
+        cmd_parts.append(f"--bump {bump}")
+    if mention:
+        cmd_parts.append(f"--mention {mention}")
+    else:
+        cmd_parts.append("--auto-mention")
+    if dry_run:
+        cmd_parts.append("--dry-run")
+
+    cmd = " ".join(cmd_parts)
+    res = subprocess.run(
+        cmd,
+        shell=True if is_windows else False,
+        cwd=str(ROOT_DIR),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace"
+    )
+    try:
+        return json.loads(res.stdout) if res.stdout.strip() else {}
+    except Exception:
+        return {"status": "FAIL", "raw_output": res.stdout, "stderr": res.stderr}
+
 def record_trajectory(report: dict, attempt: int, note: str = ""):
     entry = {
         "timestamp": datetime.now().isoformat(),
@@ -106,7 +135,17 @@ def main():
     parser.add_argument("--quick", "-q", action="store_true", help="Mode rapide sans build Next.js")
     parser.add_argument("--guardrail", action="store_true", help="Vérifier uniquement les contraintes architecturales (playbook <= 150 lignes)")
     parser.add_argument("--attempt", type=int, default=1, help="Numéro de tentative courante (1, 2 ou 3)")
+    parser.add_argument("--version-eval", action="store_true", help="Évalue les modifications et affiche la version vX.X.X-MENTION recommandée (dry-run)")
+    parser.add_argument("--version-bump", action="store_true", help="Applique l'incrément de versioning vX.X.X-MENTION")
+    parser.add_argument("--bump", choices=["auto", "patch", "minor", "major"], default="auto", help="Type de saut SemVer pour le versioning")
+    parser.add_argument("--mention", type=str, default=None, help="Mention pour vX.X.X-MENTION (ex: patch, mobile-ui)")
     args = parser.parse_args()
+
+    # Si action de versioning autonome demandée
+    if args.version_eval or args.version_bump:
+        v_res = run_version_action(bump=args.bump, mention=args.mention, dry_run=not args.version_bump)
+        print(json.dumps(v_res, indent=2, ensure_ascii=False))
+        sys.exit(0 if v_res.get("status") == "SUCCESS" else 1)
 
     # Si vérification des guardrails uniquement
     if args.guardrail:

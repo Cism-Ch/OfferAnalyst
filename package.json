@@ -1,6 +1,6 @@
 {
     "name": "offer-analyst",
-    "version": "1.1.0",
+    "version": "1.1.1-patch",
     "private": true,
     "packageManager": "pnpm@12.15.0",
     "scripts": {
@@ -13,6 +13,8 @@
         "eval:quick": "python evals/run_fullstack_eval.py --quick",
         "rsi:orchestrate": "python evals/rsi_orchestrator.py",
         "rsi:guardrail": "python evals/rsi_orchestrator.py --guardrail",
+        "rsi:version": "python evals/rsi_orchestrator.py --version-eval",
+        "rsi:bump": "python evals/rsi_orchestrator.py --version-bump",
         "db:validate": "python .agents/skills/db_schema_validator.py",
         "db:generate": "prisma generate",
         "version:bump": "python evals/version_manager.py",

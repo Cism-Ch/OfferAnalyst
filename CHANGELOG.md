@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1-patch] - 2026-10-31
+
+### 🎨 UI/UX Mobile & Navbar SaaS Premium (Sprint 24)
+
+- **Navbar & Navigation Mobile SaaS Premium** :
+  - **Bouton Drawer Arrondi** : Transformation en pastille circulaire `rounded-full` avec micro-glassmorphism (`bg-background/80 backdrop-blur-md`), bordure discrète et centrage vertical dans les 56px du header.
+  - **Fil d'Ariane & Titres** : Remplacement du fil d'Ariane brut par un Pill Badge unifié évitant les coupures sur petits écrans, et centrage esthétique des titres de pages sur mobile.
+  - **Alignement Snappé à Droite** : Regroupement et ancrage à l'extrémité droite (`ml-auto`) du sélecteur de langue et du sélecteur de thèmes avec bordures coordonnées.
+  - **Sélecteur de Modèle IA & NVIDIA par Défaut** : Modèle d'inférence par défaut fixé sur `nvidia/nemotron-3.5-lightning:free` avec padding tactile confortable (`px-2.5 sm:px-3`) et affichage réactif à partir de 480px.
+  - **Correctif Tactile Dialogue Clé API Invité** : Fermeture automatique du sheet sous-jacent lors de l'ouverture du dialog pour libérer le focus-trap Radix, élévation du z-index du composant `SelectContent` (`z-[70]`), et calibration des cibles tactiles à la norme WCAG 44px (`touch-manipulation`).
+  - **Refonte Responsive de `/data-source`** : Header de carte flexible (`flex-col sm:flex-row`), switch d'extraction automatique isolé sans rétrécissement, bannières quota/BYOK adaptatives et boutons d'action épurés.
+
 ## [1.1.0] - 2026-10-31
 
 ### 🚀 Responsive Design, Fluidité UI/UX, Z-Index Unifié & Remédiation Pré-Release (Sprints 7 à 23)
@@ -264,4 +276,4 @@ For historical changes before the security system redesign, please refer to git 
 
 ---
 
-**Note**: This changelog will be updated as new features and fixes are added to the project.
+**Note**: This changelog will be updated as new features and fixes a

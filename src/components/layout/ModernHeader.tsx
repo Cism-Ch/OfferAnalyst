@@ -81,10 +81,12 @@ export function ModernHeader({
                     <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                         {/* Breadcrumbs */}
                         <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
-                            {/* Mobile Single Crumb */}
-                            <span className="sm:hidden text-xs text-foreground font-semibold truncate max-w-[110px] min-[375px]:max-w-[140px]">
-                                {routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}
-                            </span>
+                            {/* Mobile Single Crumb — Premium Pill Badge */}
+                            <div className="sm:hidden flex items-center min-w-0">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted/70 border border-border/70 text-foreground/90 truncate max-w-[125px] min-[375px]:max-w-[155px] shadow-2xs">
+                                    {routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}
+                                </span>
+                            </div>
                             {/* Desktop Full Breadcrumb Trail */}
                             <div className="hidden sm:flex items-center gap-2">
                                 {routeInfo.breadcrumbs.map((crumb, index) => (
@@ -101,7 +103,7 @@ export function ModernHeader({
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+                        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 ml-auto">
                             {/* Desktop Quick Search */}
                             <motion.div
                                 className="relative hidden xl:block"
@@ -117,12 +119,28 @@ export function ModernHeader({
                                 />
                             </motion.div>
 
+                            {/* Model Switcher with tactile margins */}
+                            {showModelSelector && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.12 }}
+                                    className="shrink-0"
+                                >
+                                    <AIModelSelector
+                                        selectedModel={selectedModel}
+                                        onModelChange={onModelChange}
+                                        compact
+                                    />
+                                </motion.div>
+                            )}
+
                             {/* Daily Quota Badge & Key Dialog Trigger */}
                             <motion.div
                                 initial={{ opacity: 0, y: -4 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.12 }}
-                                className="flex items-center gap-1.5"
+                                transition={{ delay: 0.15 }}
+                                className="flex items-center gap-1.5 shrink-0"
                             >
                                 {quota && (
                                     <Button
@@ -160,38 +178,24 @@ export function ModernHeader({
                                 </Button>
                             </motion.div>
 
-                            {/* Language Switcher */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.15 }}
-                            >
-                                <LanguageToggle />
-                            </motion.div>
-
-                            {/* Theme Selector */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                            >
-                                <PremiumThemeSelector />
-                            </motion.div>
-
-                            {/* Model Switcher */}
-                            {showModelSelector && (
+                            {/* Right-Snapped Controls: Language & Theme grouped together */}
+                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 pl-1 border-l border-border/50 sm:border-transparent sm:pl-0">
                                 <motion.div
                                     initial={{ opacity: 0, y: -4 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.25 }}
+                                    transition={{ delay: 0.18 }}
                                 >
-                                    <AIModelSelector
-                                        selectedModel={selectedModel}
-                                        onModelChange={onModelChange}
-                                        compact
-                                    />
+                                    <LanguageToggle />
                                 </motion.div>
-                            )}
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                >
+                                    <PremiumThemeSelector />
+                                </motion.div>
+                            </div>
                         </div>
                     </div>
 
@@ -217,13 +221,13 @@ export function ModernHeader({
                 </div>
             </motion.header>
 
-            {/* Mobile Non-Sticky Title Banner: Scrolls with page content, preventing viewport hoarding */}
-            <div className="sm:hidden px-4 pt-3 pb-1">
+            {/* Mobile Non-Sticky Title Banner: Scrolls with page content, centered for SaaS premium elegance */}
+            <div className="sm:hidden px-4 pt-3 pb-1 text-center">
                 <h1 className="text-xl font-bold tracking-tight text-foreground break-words">
                     {pageTitle}
                 </h1>
                 {pageDescription && (
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words">
+                    <p className="text-xs text-muted-foreground mt-0.5 max-w-sm mx-auto line-clamp-2 break-words">
                         {pageDescription}
                     </p>
                 )}

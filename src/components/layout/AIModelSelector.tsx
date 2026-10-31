@@ -62,10 +62,10 @@ export function AIModelSelector({
                     variant="outline"
                     size="sm"
                     className={cn(
-                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-3 gap-2 rounded-xl transition-[background-color,border-color,box-shadow] duration-200 touch-manipulation",
-                        "border-border/60 bg-background/60 hover:bg-accent/40 backdrop-blur-md shadow-xs shrink-0",
+                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 sm:px-3 gap-2 rounded-full sm:rounded-xl transition-all duration-200 touch-manipulation",
+                        "border-border/60 bg-background/70 hover:bg-accent/40 active:scale-95 backdrop-blur-md shadow-xs shrink-0",
                         "focus-visible:ring-2 focus-visible:ring-primary/40",
-                        compact && "px-2"
+                        compact && "px-2.5 sm:px-3"
                     )}
                     aria-label={`Modèle d'IA actif : ${activeModel.label}`}
                 >
@@ -74,14 +74,14 @@ export function AIModelSelector({
                         <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
                     </div>
 
-                    <div className="hidden xl:flex flex-col items-start leading-none text-left">
+                    <div className="hidden min-[480px]:flex flex-col items-start leading-none text-left">
                         {!compact && (
                             <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Moteur IA
                             </span>
                         )}
                         <span className="text-xs font-semibold max-w-[90px] sm:max-w-32 truncate text-foreground/90">
-                            {activeModel.label.replace(/\s*\(Free\)/i, '')}
+                            {activeModel.label.replace(/\s*\(Free\)|\s*\(Gratuit\)|\s*\(Défaut\)|\s*\(Inclus\)/i, '')}
                         </span>
                     </div>
 
@@ -177,7 +177,7 @@ export function AIModelSelector({
                                 whileHover={{ scale: 1.006 }}
                                 whileTap={{ scale: 0.995 }}
                                 className={cn(
-                                    'w-full text-left rounded-xl p-3.5 sm:p-4 transition-all duration-200 border relative group',
+                                    'w-full text-left rounded-xl p-3.5 sm:p-4 transition-all duration-200 border relative group touch-manipulation cursor-pointer',
                                     isActive
                                         ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary/40'
                                         : 'border-border/60 bg-card/60 hover:border-primary/40 hover:bg-accent/40'

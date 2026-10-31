@@ -167,7 +167,7 @@ export function PremiumThemeSelector() {
           variant="outline" 
           size="sm"
           className={cn(
-            "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2 sm:px-2.5 gap-2 rounded-xl transition-all duration-200 touch-manipulation",
+            "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 sm:px-2.5 gap-2 rounded-full sm:rounded-xl transition-all duration-200 touch-manipulation active:scale-95",
             "border-border/60 bg-background/70 hover:bg-accent/40 backdrop-blur-md shadow-xs",
             "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1"
           )}
