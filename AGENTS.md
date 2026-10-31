@@ -48,3 +48,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <!-- .env .env.local .env.example -->
 Les Clé doivent être stockées de manière sécurisée et ne doivent jamais être partagées.
 Elles doivent être stockées dans un fichier `.env` et ne doivent jamais être partagées.
+
+<!-- Emoji -->
+Ne pas utiliser d'emoji dans le code.
