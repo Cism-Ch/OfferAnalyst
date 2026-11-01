@@ -124,6 +124,8 @@ export interface SearchHistoryItem {
   expiresAt?: number;
   model?: string;
   resultCount?: number;
+  isByok?: boolean;
+  keyType?: 'byok' | 'free';
 }
 
 // Zod schemas for validation

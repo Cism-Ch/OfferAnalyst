@@ -107,6 +107,8 @@ function mapDbRecordToItem(dbRecord: any): SearchHistoryItem {
     pinned: !!dbRecord.isPinned,
     model: dbRecord.model || "default",
     resultCount: dbRecord.resultCount || 0,
+    isByok: !!dbRecord.isByok,
+    keyType: (dbRecord.keyType as 'byok' | 'free') || (dbRecord.isByok ? 'byok' : 'free'),
   };
 }
 
@@ -174,6 +176,8 @@ export function useSearchHistory() {
               timestamp: item.timestamp,
               isPinned: !!item.pinned,
               expiresAt: item.expiresAt,
+              isByok: item.isByok ?? false,
+              keyType: item.keyType || (item.isByok ? 'byok' : 'free'),
             }));
 
             migrateGuestSearchesAction(payload)
@@ -212,12 +216,14 @@ export function useSearchHistory() {
     async (
       inputs: { domain: string; criteria: string; context: string },
       results: AnalysisResponse,
-      model?: string
+      model?: string,
+      isByok?: boolean
     ) => {
       const now = Date.now();
       const modelUsed = model || results.modelUsed || "default";
       const resultCount = results.topOffers?.length || results.totalAnalyzed || 0;
 
+      const keyType = isByok ? 'byok' : 'free';
       const newItem: SearchHistoryItem = {
         id: crypto.randomUUID(),
         timestamp: now,
@@ -225,6 +231,10 @@ export function useSearchHistory() {
         results,
         pinned: false,
         expiresAt: now + GUEST_RETENTION_MS,
+        model: modelUsed,
+        resultCount,
+        isByok: !!isByok,
+        keyType,
       };
 
       // Optimistic state update
@@ -247,6 +257,8 @@ export function useSearchHistory() {
             implicitContext: inputs.context,
             model: modelUsed,
             resultCount,
+            isByok: !!isByok,
+            keyType,
           });
 
           if (actionRes.success && actionRes.data?.id) {

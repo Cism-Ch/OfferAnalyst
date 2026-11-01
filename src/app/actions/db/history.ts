@@ -28,6 +28,8 @@ const SaveSearchInputSchema = z.object({
   implicitContext: z.string().trim().max(2000).optional().nullable(),
   model: z.string().trim().min(1, 'Model is required').max(100).default('default'),
   resultCount: z.number().int().nonnegative().default(0),
+  isByok: z.boolean().default(false).optional(),
+  keyType: z.string().trim().max(50).default('free').optional(),
 });
 export type SaveSearchInput = z.infer<typeof SaveSearchInputSchema>;
 
@@ -57,6 +59,8 @@ const GuestSearchItemSchema = z.object({
   timestamp: z.union([z.number(), z.string(), z.date()]).optional(),
   isPinned: z.boolean().default(false),
   expiresAt: z.number().optional(),
+  isByok: z.boolean().default(false).optional(),
+  keyType: z.string().trim().max(50).default('free').optional(),
 });
 export type GuestSearchItem = z.infer<typeof GuestSearchItemSchema>;
 
@@ -124,7 +128,7 @@ export async function saveSearchHistoryAction(
       };
     }
 
-    const { domain, criteria, implicitContext, model, resultCount } = parsed.data;
+    const { domain, criteria, implicitContext, model, resultCount, isByok, keyType } = parsed.data;
 
     const created = await prisma.searchHistory.create({
       data: {
@@ -135,6 +139,8 @@ export async function saveSearchHistoryAction(
         model,
         resultCount,
         isPinned: false,
+        isByok: isByok ?? false,
+        keyType: keyType || (isByok ? 'byok' : 'free'),
       },
     });
 
@@ -366,6 +372,8 @@ export async function migrateGuestSearchesAction(
           model: item.model || 'default',
           resultCount: item.resultCount || 0,
           isPinned: item.isPinned || false,
+          isByok: item.isByok ?? false,
+          keyType: item.keyType || (item.isByok ? 'byok' : 'free'),
           timestamp: item.timestamp ? new Date(item.timestamp) : new Date(),
         });
       }

@@ -31,6 +31,10 @@ import {
     HardDrive,
     Info,
     Sparkles,
+    KeyRound,
+    Eye,
+    ExternalLink,
+    BarChart3,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { SearchHistoryItem } from '@/types';
@@ -45,6 +49,7 @@ export default function HistoryPage() {
     // Search and filter state
     const [searchQuery, setSearchQuery] = useState('');
     const [showClearDialog, setShowClearDialog] = useState(false);
+    const [selectedDetailItem, setSelectedDetailItem] = useState<SearchHistoryItem | null>(null);
     
     // Filter history based on search query
     const filteredHistory = useMemo(() => {
@@ -163,7 +168,7 @@ export default function HistoryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredHistory.map((item) => (
                             <Card key={item.id} className={`flex flex-col relative transition-all duration-200 border shadow-sm hover:shadow-md ${item.pinned ? 'ring-2 ring-primary/30 bg-primary/5' : 'bg-card text-card-foreground'}`}>
-                                <div className="absolute top-3 right-3 flex gap-1">
+                                <div className="absolute top-3 right-3 flex gap-1 z-10">
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -185,7 +190,7 @@ export default function HistoryPage() {
                                 </div>
 
                                 <CardHeader className="pb-3">
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2 pr-16">
                                         <Calendar className="h-3 w-3" />
                                         <span>{formatDistanceToNow(item.timestamp, { addSuffix: true })}</span>
                                         {!isAuthenticated && item.expiresAt && (
@@ -194,6 +199,27 @@ export default function HistoryPage() {
                                             </span>
                                         )}
                                     </div>
+
+                                    {/* BYOK / Free Key & Model Indicators */}
+                                    <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
+                                        {item.isByok || item.keyType === 'byok' ? (
+                                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-semibold gap-1">
+                                                <KeyRound className="h-3 w-3" />
+                                                BYOK
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="secondary" className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 text-[11px] font-medium gap-1">
+                                                <Sparkles className="h-3 w-3" />
+                                                Free Key
+                                            </Badge>
+                                        )}
+                                        {item.results?.modelUsed && (
+                                            <Badge variant="outline" className="text-[10px] opacity-75">
+                                                {item.results.modelUsed}
+                                            </Badge>
+                                        )}
+                                    </div>
+
                                     <CardTitle className="text-lg line-clamp-1 pr-16">{item.inputs.domain}</CardTitle>
                                     <CardDescription className="line-clamp-2 min-h-10">
                                         {item.inputs.criteria}
@@ -210,11 +236,6 @@ export default function HistoryPage() {
                                         <Badge variant="outline" className="text-xs">
                                             {item.results?.topOffers?.length ?? item.results?.totalAnalyzed ?? 0} Results
                                         </Badge>
-                                        {item.results?.modelUsed && (
-                                            <Badge variant="outline" className="text-[10px] opacity-70">
-                                                {item.results.modelUsed}
-                                            </Badge>
-                                        )}
                                     </div>
 
                                     {item.results?.topOffers && item.results.topOffers.length > 0 ? (
@@ -232,21 +253,29 @@ export default function HistoryPage() {
                                         <div className="min-h-[110px] max-h-36 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground flex flex-col justify-center items-center text-center">
                                             <Info className="h-4 w-4 mb-1 opacity-50" />
                                             <span>Search archived in cloud</span>
-                                            <span className="mt-1 opacity-70">Click restore to rerun or reload offers</span>
+                                            <span className="mt-1 opacity-70">Click details to inspect or restore</span>
                                         </div>
                                     )}
                                 </CardContent>
 
-                                <CardFooter className="pt-2">
+                                <CardFooter className="pt-2 gap-2 flex items-center justify-between">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1 text-xs gap-1.5 h-8"
+                                        onClick={() => setSelectedDetailItem(item)}
+                                    >
+                                        <Eye className="h-3.5 w-3.5" />
+                                        Détails
+                                    </Button>
                                     <Button 
                                         variant="ghost" 
-                                        className="w-full justify-between text-xs group"
+                                        size="sm"
+                                        className="flex-1 text-xs gap-1.5 h-8 group"
                                         onClick={() => handleRestoreSearch(item)}
                                     >
-                                        <span className="flex items-center gap-1">
-                                            <RotateCcw className="h-3 w-3" />
-                                            Restore Search
-                                        </span>
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                        <span>Restaurer</span>
                                         <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Button>
                                 </CardFooter>
@@ -255,6 +284,157 @@ export default function HistoryPage() {
                     </div>
                 )}
                 </div>
+
+                {/* Large Search Details Modal */}
+                <Dialog open={!!selectedDetailItem} onOpenChange={(open) => !open && setSelectedDetailItem(null)}>
+                    <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+                        {selectedDetailItem && (
+                            <div className="space-y-6">
+                                <DialogHeader>
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        {selectedDetailItem.isByok || selectedDetailItem.keyType === 'byok' ? (
+                                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-xs font-semibold gap-1">
+                                                <KeyRound className="h-3.5 w-3.5" />
+                                                Mode Clé BYOK
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="secondary" className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 text-xs font-semibold gap-1">
+                                                <Sparkles className="h-3.5 w-3.5" />
+                                                Clé Gratuite / Free Key
+                                            </Badge>
+                                        )}
+                                        <Badge variant="outline" className="text-xs">
+                                            {selectedDetailItem.results?.modelUsed || selectedDetailItem.model || 'Modèle par défaut'}
+                                        </Badge>
+                                        <Badge variant="secondary" className="text-xs">
+                                            {selectedDetailItem.results?.topOffers?.length || selectedDetailItem.results?.totalAnalyzed || 0} résultats
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground ml-auto">
+                                            {formatDistanceToNow(selectedDetailItem.timestamp, { addSuffix: true })}
+                                        </span>
+                                    </div>
+                                    <DialogTitle className="text-2xl font-bold tracking-tight">
+                                        {selectedDetailItem.inputs.domain}
+                                    </DialogTitle>
+                                    <DialogDescription className="text-sm text-muted-foreground">
+                                        Détails complets de l&apos;analyse sémantique, critères de recherche et justification des scores.
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                {/* Criteria section */}
+                                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                                    <div>
+                                        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                                            Critères de Recherche
+                                        </div>
+                                        <p className="text-sm font-medium leading-relaxed">
+                                            {selectedDetailItem.inputs.criteria}
+                                        </p>
+                                    </div>
+                                    {selectedDetailItem.inputs.context && (
+                                        <div>
+                                            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                                                Contexte Implicite
+                                            </div>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                {selectedDetailItem.inputs.context}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Market Summary */}
+                                {selectedDetailItem.results?.marketSummary && (
+                                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+                                            <BarChart3 className="h-4 w-4" />
+                                            Synthèse du Marché
+                                        </div>
+                                        <p className="text-sm text-foreground/90 leading-relaxed">
+                                            {selectedDetailItem.results.marketSummary}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Offers List */}
+                                <div className="space-y-3">
+                                    <div className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Offres Analysées & Classées ({selectedDetailItem.results?.topOffers?.length || 0})
+                                    </div>
+
+                                    {selectedDetailItem.results?.topOffers && selectedDetailItem.results.topOffers.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {selectedDetailItem.results.topOffers.map((offer, idx) => (
+                                                <div key={idx} className="rounded-lg border bg-card p-4 space-y-3 shadow-xs">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="h-6 w-6 rounded-full p-0 flex items-center justify-center font-bold text-xs bg-muted">
+                                                                #{idx + 1}
+                                                            </Badge>
+                                                            <span className="font-semibold text-base line-clamp-1">{offer.title}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 self-start sm:self-auto">
+                                                            <Badge className={`font-bold text-xs ${offer.finalScore >= 80 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                                                                Score : {offer.finalScore}/100
+                                                            </Badge>
+                                                            {offer.url && (
+                                                                <a href={offer.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                                                                    Voir <ExternalLink className="h-3 w-3" />
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Multi-axis score breakdown */}
+                                                    {offer.scoreBreakdown && (
+                                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 rounded-md bg-muted/40 text-xs">
+                                                            <div>
+                                                                <span className="text-muted-foreground">Adéquation critères : </span>
+                                                                <span className="font-semibold">{offer.scoreBreakdown.criteriaMatch}/100</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-muted-foreground">Rapport prix/valeur : </span>
+                                                                <span className="font-semibold">{offer.scoreBreakdown.priceScore}/100</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-muted-foreground">Crédibilité & pertinence : </span>
+                                                                <span className="font-semibold">{offer.scoreBreakdown.credibilityScore}/100</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Justification */}
+                                                    {offer.justification && (
+                                                        <p className="text-xs text-muted-foreground leading-relaxed pl-2 border-l-2 border-primary/30">
+                                                            {offer.justification}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                                            Aucune offre détaillée n&apos;est stockée pour cette recherche archivée. Cliquez sur &quot;Restaurer la Recherche&quot; pour relancer l&apos;analyse.
+                                        </div>
+                                    )}
+                                </div>
+
+                                <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2 border-t">
+                                    <Button variant="outline" onClick={() => setSelectedDetailItem(null)}>
+                                        Fermer
+                                    </Button>
+                                    <Button onClick={() => {
+                                        handleRestoreSearch(selectedDetailItem);
+                                        setSelectedDetailItem(null);
+                                    }} className="gap-2">
+                                        <RotateCcw className="h-4 w-4" />
+                                        Restaurer cette Recherche
+                                    </Button>
+                                </DialogFooter>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
 
                 {/* Clear Confirmation Dialog */}
                 <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>

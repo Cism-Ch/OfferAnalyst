@@ -212,6 +212,8 @@ model SearchHistory {
   timestamp        DateTime @default(now())
   resultCount      Int      @default(0)
   isPinned         Boolean  @default(false)
+  isByok           Boolean  @default(false)
+  keyType          String?  @default("free")
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

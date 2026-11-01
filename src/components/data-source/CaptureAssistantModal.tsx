@@ -5,11 +5,12 @@
  * 
  * Provides:
  * - 1-Click Drag-and-Drop Universal Bookmarklet (zero-install, works across all browsers)
+ * - Safe native DOM href attachment bypassing React 19 synthetic URL security sanitizer
  * - Solves the critical anti-bot/Cloudflare scraping wall by capturing job text client-side.
  * - Clean, ultra-simple UX without any complex extension installations.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -25,7 +26,8 @@ import {
     Check,
     ShieldCheck,
     Sparkles,
-    MousePointerClick
+    MousePointerClick,
+    Info
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/toast';
@@ -51,9 +53,19 @@ export function CaptureAssistantModal({
         }
         return 'https://offer-analyst.vercel.app';
     });
+    const bookmarkletAnchorRef = useRef<HTMLAnchorElement>(null);
 
-    // Deterministic bookmarklet code pointing to current origin
-    const bookmarkletCode = `javascript:(function(){try{const s=window.getSelection()?.toString()?.trim();let t=s;if(!t||t.length<30){const q=['.jobs-description__content','.jobs-description','#job-details','#jobDescriptionText','.jobsearch-JobComponent-description','[data-testid="job-section-description"]','article','main'];for(const sel of q){const el=document.querySelector(sel);if(el&&el.innerText&&el.innerText.trim().length>60){t=el.innerText.trim();break;}}}if(!t){t=document.body?.innerText?.slice(0,10000)||'';}const p='[Source: '+window.location.href+']\\n[Titre: '+document.title+']\\n\\n'+t;window.open('${appOrigin}/data-source#capture='+encodeURIComponent(p),'_blank');}catch(e){alert('Erreur: '+e.message);}})();`;
+    // Deterministic bookmarklet code pointing strictly to current origin
+    const bookmarkletCode = useMemo(() => {
+        return `javascript:(function(){try{const s=window.getSelection()?.toString()?.trim();let t=s;if(!t||t.length<30){const q=['.jobs-description__content','.jobs-description','#job-details','#jobDescriptionText','.jobsearch-JobComponent-description','[data-testid="job-section-description"]','article','main'];for(const sel of q){const el=document.querySelector(sel);if(el&&el.innerText&&el.innerText.trim().length>60){t=el.innerText.trim();break;}}}if(!t){t=document.body?.innerText?.slice(0,10000)||'';}const p='[Source: '+window.location.href+']\\n[Titre: '+document.title+']\\n\\n'+t;window.open('${appOrigin}/data-source#capture='+encodeURIComponent(p),'_blank');}catch(e){alert('Erreur: '+e.message);}})();`;
+    }, [appOrigin]);
+
+    // Attach href safely via native DOM API to bypass React 19 synthetic URL security sanitizer
+    useEffect(() => {
+        if (bookmarkletAnchorRef.current && bookmarkletCode) {
+            bookmarkletAnchorRef.current.setAttribute('href', bookmarkletCode);
+        }
+    }, [bookmarkletCode]);
 
     const handleCopyBookmarklet = async () => {
         try {
@@ -113,13 +125,20 @@ export function CaptureAssistantModal({
 
                             <div className="pt-1 pb-1">
                                 <a
-                                    href={bookmarkletCode}
+                                    ref={bookmarkletAnchorRef}
+                                    draggable="true"
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('text/uri-list', bookmarkletCode);
+                                        e.dataTransfer.setData('text/plain', bookmarkletCode);
+                                    }}
                                     onClick={(e) => {
                                         if (e.button === 0) {
                                             e.preventDefault();
-                                            alert(isFr 
-                                                ? "Glissez ce bouton vers votre barre de favoris (en haut de votre navigateur) pour l'installer !" 
-                                                : "Drag this button into your bookmarks bar (at the top of your browser) to install it!"
+                                            toast.info(
+                                                isFr ? "Comment installer le bookmarklet :" : "How to install the bookmarklet:",
+                                                isFr 
+                                                    ? "Glissez ce bouton directement dans la barre de favoris de votre navigateur (Ctrl+Shift+B si masquée)." 
+                                                    : "Drag this button into your browser bookmarks bar (Ctrl+Shift+B if hidden)."
                                             );
                                         }
                                     }}
@@ -143,6 +162,17 @@ export function CaptureAssistantModal({
                                     <span>{copied ? ca.codeCopied : ca.copyCodeBtn}</span>
                                 </Button>
                             </div>
+                        </div>
+
+                        {/* Security Notice */}
+                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-background/60 border border-border/40 text-[11px] text-muted-foreground">
+                            <Info className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                            <span>
+                                {isFr
+                                    ? "Sécurité garantie : Le bookmarklet s'exécute exclusivement en local dans votre navigateur pour extraire le texte public de l'annonce et l'importer sans cookies ni accès distant."
+                                    : "Security guaranteed: The bookmarklet executes exclusively locally in your browser to extract public offer text and import it without cookies or remote access."
+                                }
+                            </span>
                         </div>
                     </div>
 

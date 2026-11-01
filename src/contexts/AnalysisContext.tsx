@@ -347,10 +347,12 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         setProviderError(null);
 
         // Sauvegarde dans l'historique
+        const isByokUsed = !!clientKey;
         addToHistory(
           { domain, criteria: explicitCriteria, context: implicitContext },
           analysisResult.data,
-          targetModel
+          targetModel,
+          isByokUsed
         );
 
         toast.success(
