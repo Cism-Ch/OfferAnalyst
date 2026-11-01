@@ -44,7 +44,10 @@ export function LanguageToggle({ className, variant = 'pill' }: LanguageTogglePr
         type="button"
         onClick={toggleLanguage}
         className={cn(
-          "group inline-flex lg:hidden items-center justify-center min-h-[44px] min-w-[44px] md:min-h-9 md:min-w-9 gap-1.5 px-2.5 py-1.5 rounded-full sm:rounded-xl border border-border/60 bg-background/70 backdrop-blur-md text-xs font-semibold select-none touch-manipulation hover:bg-accent/40 active:scale-95 shadow-xs transition-all",
+          "group inline-flex lg:hidden items-center justify-center gap-1.5 rounded-full sm:rounded-xl border border-border/60 bg-background/70 backdrop-blur-md text-xs font-semibold select-none touch-manipulation hover:bg-accent/40 active:scale-95 shadow-xs transition-all",
+          variant === 'compact'
+            ? "h-8 min-h-0 min-w-0 px-2 rounded-lg sm:rounded-xl"
+            : "min-h-[44px] min-w-[44px] md:min-h-9 md:min-w-9 px-2.5 py-1.5",
           className
         )}
         title={t.nav.toggleLang}

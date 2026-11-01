@@ -134,7 +134,12 @@ export const THEME_OPTIONS: ThemeOption[] = [
 
 const emptySubscribe = () => () => {};
 
-export function PremiumThemeSelector() {
+export interface PremiumThemeSelectorProps {
+  className?: string;
+  compact?: boolean;
+}
+
+export function PremiumThemeSelector({ className, compact = false }: PremiumThemeSelectorProps = {}) {
   const { setTheme, theme } = useTheme();
   const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [open, setOpen] = React.useState(false);
@@ -149,7 +154,13 @@ export function PremiumThemeSelector() {
       <Button 
         variant="outline" 
         size="sm" 
-        className="min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 rounded-xl border-border/60 bg-background/50 backdrop-blur-md touch-manipulation"
+        className={cn(
+          compact 
+            ? "h-8 w-8 min-h-0 min-w-0 p-0 rounded-lg sm:rounded-xl"
+            : "min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 rounded-xl",
+          "border-border/60 bg-background/50 backdrop-blur-md touch-manipulation",
+          className
+        )}
       >
         <div className="h-4 w-4 rounded-full bg-muted animate-pulse" />
       </Button>
@@ -167,9 +178,13 @@ export function PremiumThemeSelector() {
           variant="outline" 
           size="sm"
           className={cn(
-            "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 p-0 sm:px-2.5 gap-1.5 sm:gap-2 rounded-full sm:rounded-xl transition-all duration-200 touch-manipulation active:scale-95 flex items-center justify-center shrink-0",
+            "group relative transition-all duration-200 touch-manipulation active:scale-95 flex items-center justify-center shrink-0",
+            compact
+              ? "h-8 w-8 min-h-0 min-w-0 p-0 rounded-lg sm:rounded-xl"
+              : "min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 p-0 sm:px-2.5 gap-1.5 sm:gap-2 rounded-full sm:rounded-xl",
             "border-border/60 bg-background/70 hover:bg-accent/40 backdrop-blur-md shadow-xs",
-            "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1"
+            "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+            className
           )}
           aria-label={`Thème actif : ${activeTheme.name}`}
         >
@@ -184,14 +199,18 @@ export function PremiumThemeSelector() {
             <ActiveIcon className={cn("h-3 w-3 stroke-[2.5]", activeTheme.iconColor)} />
           </div>
 
-          <span className="text-xs font-semibold tracking-wide hidden lg:inline text-foreground/90">
-            {activeTheme.name}
-          </span>
+          {!compact && (
+            <span className="text-xs font-semibold tracking-wide hidden lg:inline text-foreground/90">
+              {activeTheme.name}
+            </span>
+          )}
 
-          <ChevronDown className={cn(
-            "h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 hidden sm:inline-block",
-            open && "rotate-180 text-foreground"
-          )} />
+          {!compact && (
+            <ChevronDown className={cn(
+              "h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 hidden sm:inline-block",
+              open && "rotate-180 text-foreground"
+            )} />
+          )}
         </Button>
       </DropdownMenuTrigger>
 

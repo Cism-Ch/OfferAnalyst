@@ -62,10 +62,12 @@ export function AIModelSelector({
                     variant="outline"
                     size="sm"
                     className={cn(
-                        "group relative min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 sm:px-3 gap-2 rounded-full sm:rounded-xl transition-all duration-200 touch-manipulation",
+                        "group relative transition-all duration-200 touch-manipulation",
+                        compact
+                            ? "h-8 min-h-0 min-w-0 px-2.5 gap-1.5 rounded-lg sm:rounded-xl"
+                            : "min-h-[44px] min-w-[44px] h-11 md:h-9 md:min-h-0 md:min-w-0 px-2.5 sm:px-3 gap-2 rounded-full sm:rounded-xl",
                         "border-border/60 bg-background/70 hover:bg-accent/40 active:scale-95 backdrop-blur-md shadow-xs shrink-0",
-                        "focus-visible:ring-2 focus-visible:ring-primary/40",
-                        compact && "px-2.5 sm:px-3"
+                        "focus-visible:ring-2 focus-visible:ring-primary/40"
                     )}
                     aria-label={`Modèle d'IA actif : ${activeModel.label}`}
                 >

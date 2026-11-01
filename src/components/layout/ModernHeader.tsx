@@ -79,9 +79,9 @@ export function ModernHeader({
                 transition={{ duration: 0.2 }}
             >
                 {/* 1. Mobile 2-Row Header (< sm) */}
-                <div className="sm:hidden flex flex-col">
+                <div className="sm:hidden flex flex-col w-full">
                     {/* Mobile Line 1: Route Breadcrumb + Quota Pill & Quick Actions */}
-                    <div className="h-12 pl-14 pr-2.5 flex items-center justify-between gap-2">
+                    <div className="min-h-[50px] py-2 px-3 pl-14 flex items-center justify-between gap-2 w-full">
                         {/* Route Crumb Badge */}
                         <div className="flex items-center min-w-0">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[170px] min-[400px]:max-w-[210px] shadow-2xs">
@@ -128,8 +128,8 @@ export function ModernHeader({
                         </div>
                     </div>
 
-                    {/* Mobile Line 2: Scaled Compact Action Toolbar (Full Width) */}
-                    <div className="h-10 px-2.5 py-1 border-t border-border/40 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-1.5">
+                    {/* Mobile Line 2: Scaled Compact Action Toolbar (Full Width with Proper Breathing Space) */}
+                    <div className="min-h-[46px] py-1.5 px-3 border-t border-border/40 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-2 w-full">
                         {/* Left Group: AI Model Selector + BYOK Key Trigger */}
                         <div className="flex items-center gap-1.5 min-w-0">
                             {showModelSelector && (
@@ -151,10 +151,10 @@ export function ModernHeader({
                             </Button>
                         </div>
 
-                        {/* Right Group: Language & Theme Controls */}
+                        {/* Right Group: Language & Theme Controls (Compact Mode) */}
                         <div className="flex items-center gap-1.5 shrink-0">
-                            <LanguageToggle />
-                            <PremiumThemeSelector />
+                            <LanguageToggle variant="compact" />
+                            <PremiumThemeSelector compact />
                         </div>
                     </div>
                 </div>

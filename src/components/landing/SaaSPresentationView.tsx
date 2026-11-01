@@ -133,27 +133,59 @@ export function SaaSPresentationView() {
         <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
             {/* Top Showcase Navigation Bar */}
             <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/85 backdrop-blur-md">
-                <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                {/* 1. Mobile 2-Row Showcase Navbar (< sm) */}
+                <div className="sm:hidden flex flex-col w-full">
+                    {/* Line 1: Logo + B2B Badge */}
+                    <div className="h-12 px-3.5 flex items-center justify-between">
                         <Link href="/" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
-                            <OffanLogo variant="full" size="md" glow />
+                            <OffanLogo variant="full" size="sm" glow />
                         </Link>
-                        <Badge variant="outline" className="hidden md:inline-flex text-[11px] font-mono border-primary/30 text-primary bg-primary/5">
+                        <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/5 py-0.5 px-2">
                             B2B & Prosumer
                         </Badge>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="flex items-center gap-1.5">
-                            <LanguageToggle />
-                            <PremiumThemeSelector />
-                        </div>
+                    {/* Line 2: Scaled Compact Action Buttons (50/50 Flex) */}
+                    <div className="py-2 px-3 border-t border-border/40 bg-muted/20 backdrop-blur-md flex items-center gap-2 w-full">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGoToDashboard}
+                            className="h-8 flex-1 text-xs font-semibold rounded-xl text-center px-2 touch-manipulation hover:bg-muted"
+                        >
+                            {isFr ? "Dashboard" : "Dashboard"}
+                        </Button>
 
+                        <Button
+                            size="sm"
+                            asChild
+                            className="h-8 flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-xl text-center px-2 gap-1 shadow-xs touch-manipulation"
+                        >
+                            <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
+                                <span>{isFr ? "Démarrer" : "Launch App"}</span>
+                                <ArrowRight className="h-3 w-3" />
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* 2. Desktop Showcase Navbar (sm+) */}
+                <div className="hidden sm:flex container mx-auto px-4 h-16 items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Link href="/" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+                            <OffanLogo variant="full" size="md" glow />
+                        </Link>
+                        <Badge variant="outline" className="text-[11px] font-mono border-primary/30 text-primary bg-primary/5 py-0.5 px-2.5">
+                            B2B & Prosumer
+                        </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleGoToDashboard}
-                            className="text-xs sm:text-sm font-medium min-h-[38px] px-3 touch-manipulation"
+                            className="text-xs sm:text-sm font-medium h-9 px-3.5 rounded-xl touch-manipulation hover:bg-muted"
                         >
                             {isFr ? "Accéder au Dashboard" : "Dashboard"}
                         </Button>
@@ -161,7 +193,7 @@ export function SaaSPresentationView() {
                         <Button
                             size="sm"
                             asChild
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold min-h-[38px] px-3.5 gap-1.5 shadow-sm touch-manipulation"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold h-9 px-4 gap-1.5 rounded-xl shadow-xs touch-manipulation"
                         >
                             <Link href="/search-context" onClick={() => setAppModeCookie('app')}>
                                 <span>{isFr ? "Démarrer l'App" : "Launch App"}</span>
@@ -536,6 +568,15 @@ export function SaaSPresentationView() {
                     </Button>
                 </div>
             </footer>
+
+            {/* Floating Language & Theme Dock */}
+            <aside 
+                aria-label={isFr ? "Préférences d'affichage et langue" : "Display preferences and language"}
+                className="fixed bottom-5 right-5 z-50 flex items-center gap-1.5 p-1.5 rounded-full bg-background/90 backdrop-blur-xl border border-border/80 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 hover:border-primary/40 transition-all duration-200"
+            >
+                <LanguageToggle />
+                <PremiumThemeSelector />
+            </aside>
         </div>
     );
 }
