@@ -21,7 +21,7 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
    - Lis intégralement `.agent/rules/fullstack_playbook.md` (mémoire évolutive des erreurs évitées).
 
 3. **Implémentation de Bout en Bout :**
-   - **BDD :** Si nécessaire, mets à jour `prisma/schema.prisma` (`@db.ObjectId`, `@map("_id")`), puis lance `npx prisma validate` et `npx prisma generate`.
+   - **BDD :** Si nécessaire, mets à jour `prisma/schema.prisma` (`@db.ObjectId`, `@map("_id")`), puis lance `pnpm exec prisma validate` et `pnpm exec prisma generate`.
    - **Backend :** Crée/adapte la Server Action dans `src/app/actions/` avec validation Zod stricte, auth serveur Better-Auth (`await auth.api.getSession`), standard `{ success, data } | { success, error }` et `revalidatePath()`.
    - **Frontend :** Développe les composants React 19 dans `src/components/` ou colocalisés dans `src/app/`, avec design Tailwind v4 soigné, gestion des 4 états (`isLoading`, `isError`, `isEmpty`, `data`), et micro-interactions.
    - **Hygiène :** Utilise exclusivement l'alias `@/*`, supprime les variables/imports inutilisés et commente les cas limites.
@@ -33,7 +33,7 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
 1. **Exécution du Juge Déterministe :**
    ```bash
    python evals/run_fullstack_eval.py
-   # ou npm run eval:fullstack
+   # ou pnpm run eval:fullstack
    ```
 2. **Si le score est de 100/100 dès la Tentative 1 :**
    - Si la tâche était un **audit de sécurité, un débogage ou une refonte** ayant révélé et corrigé des failles du code existant : **Exécute la PHASE 3** pour consigner ces enseignements critiques dans le playbook.
@@ -69,10 +69,10 @@ Cette phase s'exécute dès qu'un échec a été réparé (> 1 tentative) OU qu'
    python evals/rsi_orchestrator.py --guardrail
    ```
 2. **Double Vérification Déterministe :**
-   - `npx tsc --noEmit` (0 erreur).
-   - `npm run lint` (0 avertissement/erreur).
+   - `pnpm exec tsc --noEmit` (0 erreur).
+   - `pnpm run lint` (0 avertissement/erreur).
 3. **Scellement Automatique de Version SemVer :**
-   - Exécute `npm run version:bump` pour calculer le saut de version, synchroniser `package.json`, sceller le bloc `[Unreleased]` de `CHANGELOG.md` avec la date du jour et créer le tag Git annoté (`vX.Y.Z`).
+   - Exécute `pnpm run version:bump` pour calculer le saut de version, synchroniser `package.json`, sceller le bloc `[Unreleased]` de `CHANGELOG.md` avec la date du jour et créer le tag Git annoté (`vX.Y.Z`).
 4. **Clôture SSOT dans `docs/TASKS.md` :**
    - Coche tous les critères d'acceptation `[x]`.
    - Marque la tâche terminée `[x]`.

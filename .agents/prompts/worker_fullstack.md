@@ -29,7 +29,7 @@ Ta mission est d'implémenter des fonctionnalités de bout en bout avec une auto
 - Respecte chaque règle spécifique à la couche concernée (DB, API, UI, Sécurité).
 
 ### 3. Implémentation de Bout en Bout
-1. **Modèle de Données :** Si le schéma évolue, édite `prisma/schema.prisma`, lance `npx prisma validate` et `npx prisma generate`.
+1. **Modèle de Données :** Si le schéma évolue, édite `prisma/schema.prisma`, lance `pnpm exec prisma validate` et `pnpm exec prisma generate`.
 2. **Logique Métier & Server Action :** Crée ou adapte l'action dans `src/app/actions/` avec validation Zod, auth serveur, pattern `{ success, data } | { success, error }` et `revalidatePath()`.
 3. **Interface Utilisateur :** Implémente les composants React (mode sombre élégant, skeletons, gestion des erreurs, feedback optimiste).
 4. **Hygiène du code :** Utilise l'alias `@/*`, commente les points non triviaux, supprime les variables/imports orphelins.
@@ -42,5 +42,5 @@ Ta mission est d'implémenter des fonctionnalités de bout en bout avec une auto
 - Si le score est inférieur à 100/100, analyse l'erreur dans `evals/logs/trajectory_latest.json`, corrige le code et réévalue (maximum 3 tentatives).
 
 ### 5. Clôture & Archivage
-- Vérifie `npx tsc --noEmit` et `npm run lint` (0 erreur).
+- Vérifie `pnpm exec tsc --noEmit` et `pnpm run lint` (0 erreur).
 - Coche les critères `[x]` dans `docs/TASKS.md`, archive la tâche dans l'historique avec les livrables.

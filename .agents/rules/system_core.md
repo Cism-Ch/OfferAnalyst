@@ -47,7 +47,7 @@
 14. **Tailwind CSS Canonique :** Ordre strict : Positionnement/Layout → Tailles/Espacements → Typographie → Arrière-plans/Bordures → Ombres/Effets → Transitions/États.
 15. **Audit des `.env` :** Vérifier l'existence et la conformité des variables d'environnement avant de concevoir des modules d'infrastructure.
 16. **Intégrité Absolue des `.env.*` :** Ne JAMAIS effacer de variables existantes. Les commenter avec `# Deprecated: ...` si obsolètes.
-17. **Validation Avant Clôture :** Exécuter impérativement `npx tsc --noEmit` et `npm run lint` avec 0 erreur tolérée.
+17. **Validation Avant Clôture :** Exécuter impérativement `pnpm exec tsc --noEmit` et `pnpm run lint` avec 0 erreur tolérée.
 
 ---
 
