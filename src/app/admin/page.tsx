@@ -38,6 +38,9 @@ import {
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
 import { getAdminTelemetryStats, type AdminTelemetryStats } from '@/app/actions/db/api-key-analytics';
+import { getRecentUsers, getOnboardingUseCasesSummary, type UserData, type UseCaseStat } from '@/app/actions/db/admin';
+import { Target, Compass } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function AdminPage() {
     const [featureFlags, setFeatureFlags] = useState({
@@ -52,12 +55,9 @@ export default function AdminPage() {
     const [telemetry, setTelemetry] = useState<AdminTelemetryStats | null>(null);
     const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const recentUsers = [
-        { id: '1', name: 'Administrateur Principal', email: 'admin@offeranalyst.com', role: 'Superadmin', status: 'Active' },
-        { id: '2', name: 'Analyste Recrutement', email: 'analyst@offeranalyst.com', role: 'Editor', status: 'Active' },
-        { id: '3', name: 'Utilisateur Démo', email: 'demo@offeranalyst.com', role: 'Viewer', status: 'Active' }
-    ];
+    const [usersList, setUsersList] = useState<UserData[]>([]);
+    const [useCasesSummary, setUseCasesSummary] = useState<UseCaseStat[]>([]);
+    const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
     type TelemetryLogItem = NonNullable<AdminTelemetryStats['recentLogs']>[number];
 
@@ -139,15 +139,15 @@ export default function AdminPage() {
         }
     ];
 
-    const userColumns: ResponsiveTableColumn<(typeof recentUsers)[0]>[] = [
+    const userColumns: ResponsiveTableColumn<UserData>[] = [
         {
             key: 'name',
             header: 'Utilisateur',
             mobileClassName: 'col-span-2',
             render: (user) => (
                 <div className="min-w-0">
-                    <h4 className="font-medium truncate">{user.name}</h4>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <h4 className="font-medium truncate">{user.name || 'Utilisateur'}</h4>
+                    <p className="text-xs text-muted-foreground truncate font-mono">{user.email}</p>
                 </div>
             )
         },
@@ -155,14 +155,46 @@ export default function AdminPage() {
             key: 'role',
             header: 'Rôle',
             mobileClassName: 'col-span-2',
-            render: (user) => <Badge variant="outline">{user.role}</Badge>
+            render: (user) => (
+                <Badge variant={user.role === 'ADMIN' ? 'default' : 'outline'} className="text-[11px]">
+                    {user.role}
+                </Badge>
+            )
+        },
+        {
+            key: 'useCase',
+            header: "Motif / Raison d'Inscription",
+            render: (user) => {
+                const labels: Record<string, string> = {
+                    'jobs': 'Emploi & Carrière',
+                    'real-estate': 'Immobilier',
+                    'startups': 'Startups & Inv.',
+                    'business': 'Services B2B',
+                    'e-commerce': 'E-commerce',
+                    'other': 'Autre Domaine'
+                };
+                const text = user.useCase ? (labels[user.useCase] || user.useCase) : 'Non renseigné';
+                return (
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            "text-xs font-medium",
+                            user.useCase
+                                ? "bg-primary/10 text-primary border-primary/25"
+                                : "text-muted-foreground bg-muted/30"
+                        )}
+                    >
+                        {text}
+                    </Badge>
+                );
+            }
         },
         {
             key: 'status',
             header: 'Statut',
             hideOnMobile: true,
             render: (user) => (
-                <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>
+                <Badge variant={user.status === 'Active' ? 'default' : 'destructive'} className="text-[11px]">
                     {user.status}
                 </Badge>
             )
@@ -171,12 +203,19 @@ export default function AdminPage() {
 
     const loadTelemetry = useCallback(async () => {
         try {
-            const stats = await getAdminTelemetryStats();
+            const [stats, users, useCases] = await Promise.all([
+                getAdminTelemetryStats(),
+                getRecentUsers(25),
+                getOnboardingUseCasesSummary()
+            ]);
             setTelemetry(stats);
+            setUsersList(users);
+            setUseCasesSummary(useCases);
         } catch (err) {
-            console.error('Failed to load admin telemetry:', err);
+            console.error('Failed to load admin data:', err);
         } finally {
             setIsLoadingTelemetry(false);
+            setIsLoadingUsers(false);
             setIsRefreshing(false);
         }
     }, []);
@@ -184,16 +223,26 @@ export default function AdminPage() {
     useEffect(() => {
         let isMounted = true;
         
-        getAdminTelemetryStats()
-            .then(stats => {
+        Promise.all([
+            getAdminTelemetryStats(),
+            getRecentUsers(25),
+            getOnboardingUseCasesSummary()
+        ])
+            .then(([stats, users, useCases]) => {
                 if (isMounted) {
                     setTelemetry(stats);
+                    setUsersList(users);
+                    setUseCasesSummary(useCases);
                     setIsLoadingTelemetry(false);
+                    setIsLoadingUsers(false);
                 }
             })
             .catch(err => {
-                console.error('Failed to load admin telemetry:', err);
-                if (isMounted) setIsLoadingTelemetry(false);
+                console.error('Failed to load admin data:', err);
+                if (isMounted) {
+                    setIsLoadingTelemetry(false);
+                    setIsLoadingUsers(false);
+                }
             });
 
         const timer = setTimeout(async () => {
@@ -332,9 +381,9 @@ export default function AdminPage() {
                                         <span className="text-sm font-normal text-muted-foreground">/ {telemetry?.keysHealthSummary.total ?? 0}</span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-1 text-[11px]">
-                                        <span className="text-emerald-500 font-medium">🟢 {telemetry?.keysHealthSummary.operational ?? 0}</span>
-                                        <span className="text-amber-500 font-medium">🟡 {(telemetry?.keysHealthSummary.degraded ?? 0) + (telemetry?.keysHealthSummary.quotaExceeded ?? 0)}</span>
-                                        <span className="text-rose-500 font-medium">🔴 {telemetry?.keysHealthSummary.invalid ?? 0}</span>
+                                        <span className="text-emerald-500 font-medium"> {telemetry?.keysHealthSummary.operational ?? 0}</span>
+                                        <span className="text-amber-500 font-medium"> {(telemetry?.keysHealthSummary.degraded ?? 0) + (telemetry?.keysHealthSummary.quotaExceeded ?? 0)}</span>
+                                        <span className="text-rose-500 font-medium"> {telemetry?.keysHealthSummary.invalid ?? 0}</span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -426,36 +475,91 @@ export default function AdminPage() {
                     </motion.div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* User Management */}
-                        <motion.div {...staggerItemProps}>
+                        {/* User Management & Onboarding Causes */}
+                        <motion.div {...staggerItemProps} className="space-y-6">
+                            {/* Onboarding Reasons Analytics Card */}
+                            <Card className="border-primary/20 bg-card">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base font-bold flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Target className="w-5 h-5 text-primary" />
+                                            <span>Motifs & Raisons d&apos;Inscription (Onboarding)</span>
+                                        </div>
+                                        <Badge variant="outline" className="text-xs font-mono">
+                                            {usersList.length} Inscrits
+                                        </Badge>
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Répartition déclarée des domaines et intentions d&apos;usage lors du choix d&apos;onboarding.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {isLoadingUsers ? (
+                                        <div className="py-6 text-center text-sm text-muted-foreground">
+                                            Chargement des motifs d&apos;inscription...
+                                        </div>
+                                    ) : useCasesSummary.length === 0 ? (
+                                        <div className="py-6 text-center text-xs text-muted-foreground">
+                                            Aucun profil d&apos;onboarding enregistré pour le moment.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2.5">
+                                            {useCasesSummary.map((item) => (
+                                                <div key={item.useCase} className="p-2.5 rounded-xl border border-border/50 bg-muted/30 flex items-center justify-between gap-3 text-xs">
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                        <span className="font-semibold truncate">{item.label}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <span className="font-mono text-muted-foreground font-medium">
+                                                            {item.count} ({item.percentage}%)
+                                                        </span>
+                                                        <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+                                                            <div 
+                                                                className="h-full bg-primary rounded-full"
+                                                                style={{ width: `${Math.max(item.percentage, 8)}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            {/* Recent Users Table with Live DB Data */}
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Users className="w-5 h-5" />
-                                        Recent Users
+                                        <span>Utilisateurs Récents</span>
                                     </CardTitle>
                                     <CardDescription>
-                                        User management and role assignment
+                                        Comptes enregistrés et attribution des rôles en base de données
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ResponsiveTable
-                                        data={recentUsers}
-                                        columns={userColumns}
-                                        keyExtractor={(u) => u.id}
-                                        caption="Liste des utilisateurs récents"
-                                        mobileCardTitle={(u) => (
-                                            <div className="flex items-center justify-between w-full">
-                                                <span className="font-semibold text-sm">{u.name}</span>
-                                                <Badge variant={u.status === 'Active' ? 'default' : 'destructive'} className="text-[10px]">
-                                                    {u.status}
-                                                </Badge>
-                                            </div>
-                                        )}
-                                    />
-                                    <Button variant="outline" className="w-full mt-4 min-h-[44px]">
-                                        View All Users
-                                    </Button>
+                                    {isLoadingUsers ? (
+                                        <div className="py-10 text-center text-sm text-muted-foreground">
+                                            Chargement des utilisateurs récents...
+                                        </div>
+                                    ) : (
+                                        <ResponsiveTable
+                                            data={usersList}
+                                            columns={userColumns}
+                                            keyExtractor={(u) => u.id}
+                                            caption="Liste des utilisateurs récents et leurs motifs d'inscription"
+                                            mobileCardTitle={(u) => (
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span className="font-semibold text-sm">{u.name || 'Utilisateur'}</span>
+                                                    <Badge variant={u.status === 'Active' ? 'default' : 'destructive'} className="text-[10px]">
+                                                        {u.status}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        />
+                                    )}
                                 </CardContent>
                             </Card>
                         </motion.div>

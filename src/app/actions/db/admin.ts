@@ -33,6 +33,14 @@ export interface UserData {
     role: string;
     status: string;
     createdAt: string;
+    useCase: string | null;
+}
+
+export interface UseCaseStat {
+    useCase: string;
+    label: string;
+    count: number;
+    percentage: number;
 }
 
 /**
@@ -130,17 +138,23 @@ export async function getRecentUsers(limit: number = 10): Promise<UserData[]> {
                 name: true,
                 email: true,
                 role: true,
-                createdAt: true
+                createdAt: true,
+                profile: {
+                    select: {
+                        useCase: true
+                    }
+                }
             }
         });
 
-        return users.map((user: { id: string; name: string | null; email: string; role: string; createdAt: Date }): UserData => ({
+        return users.map((user): UserData => ({
             id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
             status: 'Active',
-            createdAt: user.createdAt.toISOString()
+            createdAt: user.createdAt.toISOString(),
+            useCase: user.profile?.useCase || null
         }));
     } catch (error) {
         console.error('Error fetching recent users:', error);
@@ -239,5 +253,48 @@ export async function updateUserRole(
             message: 'Failed to update user role',
             error: 'Failed to update user role'
         };
+    }
+}
+
+/**
+ * Get aggregated summary of onboarding use cases / signup reasons (Admin only)
+ */
+export async function getOnboardingUseCasesSummary(): Promise<UseCaseStat[]> {
+    try {
+        const isAdmin = await ensureAdminSession();
+        if (!isAdmin) return [];
+
+        const profiles = await prisma.profile.findMany({
+            select: { useCase: true }
+        });
+
+        const total = profiles.length;
+        if (total === 0) return [];
+
+        const counts: Record<string, number> = {};
+        profiles.forEach((p: { useCase: string | null }) => {
+            const key = p.useCase || 'unspecified';
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        const labelMap: Record<string, string> = {
+            'jobs': 'Emploi & Carrière',
+            'real-estate': 'Immobilier & Logement',
+            'startups': 'Startups & Investissements',
+            'business': 'Services B2B & Sourcing',
+            'e-commerce': 'E-commerce & Tech',
+            'other': 'Autre Domaine',
+            'unspecified': 'Non Spécifié'
+        };
+
+        return Object.entries(counts).map(([useCase, count]) => ({
+            useCase,
+            label: labelMap[useCase] || useCase,
+            count,
+            percentage: Math.round((count / total) * 100)
+        })).sort((a, b) => b.count - a.count);
+    } catch (error) {
+        console.error('Error fetching use cases summary:', error);
+        return [];
     }
 }

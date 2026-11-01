@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 01 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 37 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
+**Statut Global :** Sprints 1 à 38 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
 
 ---
 
@@ -13,16 +13,43 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 38) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 39) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-E2E-01         │  │ [ ] Chrome Store Publish│  │     - Sprint 37 (Doc &  │
-│     (E2E Playwright     │  │ [ ] Advanced Billing    │  │       Readme Modern)    │
-│      Auth & Workflows)  │  │                         │  │     - Sprint 36 (Auth & │
-│                         │  │                         │  │       Admin Seed DB)    │
+│ [-] TASK-HISTORY-01     │  │ [ ] Sprint 40: Safe     │  │     - Sprint 38 (Onboard│
+│     (History BYOK/Free, │  │     1-Click Capture Ref │  │       Streamline & Admin│
+│      NVIDIA Solo & Mod) │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 37 (Doc)   │
+│                         │  │ [ ] Chrome Store Publish│  │     - Sprint 36 (Auth)  │
 │                         │  │                         │  │     - Sprint 35 (Vitrine│
-│                         │  │                         │  │       Dock & Spacing)   │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🔍 Sprint 39 : Historique (Badge BYOK/Free, Modèle NVIDIA Solo & Grand Affichage Détails)
+
+- [-] **`TASK-HISTORY-01` — Badge BYOK/Free, NVIDIA Modèle Gratuit Unique & Vue Détaillée Agrandie**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `prisma/schema.prisma`, `src/types/index.ts`, `src/app/history/page.tsx`, `src/hooks/use-search-history.ts`, `src/app/actions/db/history.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [ ] `TASK-HISTORY-01.01` : Retrait de tous les modèles gratuits non fonctionnels dans `src/lib/ai-models.ts`, ne conservant que NVIDIA (`nvidia/nemotron-3.5-lightning:free`) comme unique modèle gratuit par défaut.
+    - [ ] `TASK-HISTORY-01.02` : Persistance et propagation de l'indicateur clé (`isByok: boolean` ou `keyType: 'byok' | 'free'`) dans les modèles Prisma et types TypeScript d'historique.
+    - [ ] `TASK-HISTORY-01.03` : Affichage sur la page `/history` d'un badge distinctif et visible indiquant si chaque recherche a été effectuée en "BYOK" ou "Clé Gratuite / Free Key".
+    - [ ] `TASK-HISTORY-01.04` : Intégration d'un modal/dialogue grand format (`max-w-4xl` / `max-w-5xl`) pour afficher confortablement les détails complets de la recherche (offres, scores multi-axes, justifications, critères).
+    - [ ] `TASK-HISTORY-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🚀 Sprint 38 Achevée : Refonte Onboarding (Retrait Test Fictif) & Visibilité Admin des Raisons d'Inscription
+
+- [x] **`TASK-ONBOARD-01` — Streamlining Onboarding & Reporting Admin des Motifs d'Inscription**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/onboarding/page.tsx`, `src/app/actions/db/admin.ts`, `src/app/admin/page.tsx`, `src/app/api/profile/onboarding/route.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-ONBOARD-01.01` : Retrait de l'étape de test d'analyse fictive/lente (`FirstSearchStep`) de l'onboarding au profit d'un parcours fluide en 4 étapes claires (Bienvenue, Choix du Domaine & Objectifs, Configuration Clés/BYOK, Prêt à Démarrer).
+    - [x] `TASK-ONBOARD-01.02` : Persistance fiable du domaine/motif d'inscription (`useCase`) dans le profil MongoDB de l'utilisateur authentifié et en LocalStorage pour les sessions invité.
+    - [x] `TASK-ONBOARD-01.03` : Extension de la Server Action `getRecentUsers` et `getSystemStats` pour inclure les motifs d'inscription (`useCase`) réels issus de la base de données.
+    - [x] `TASK-ONBOARD-01.04` : Intégration dans le Dashboard Admin (`/admin`) d'un widget analytique visuel des causes d'inscription et affichage de la colonne "Domaine / Motif" dans la table des utilisateurs récents.
+    - [x] `TASK-ONBOARD-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
@@ -104,7 +131,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 110 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 132 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `pnpm exec tsc --noEmit` et `pnpm run lint` à 0 erreur.

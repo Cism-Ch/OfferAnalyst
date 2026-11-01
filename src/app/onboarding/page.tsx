@@ -29,10 +29,9 @@ import { ArrowLeft, ChevronLeft } from "lucide-react";
 import WelcomeStep from "@/components/onboarding/WelcomeStep";
 import UseCaseStep from "@/components/onboarding/UseCaseStep";
 import APIKeysStep from "@/components/onboarding/APIKeysStep";
-import FirstSearchStep from "@/components/onboarding/FirstSearchStep";
 import SupportStep from "@/components/onboarding/SupportStep";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -134,15 +133,6 @@ export default function OnboardingPage() {
           />
         );
       case 4:
-        return (
-          <FirstSearchStep
-            onComplete={() => {
-              updateData({ completedFirstSearch: true });
-              handleNext();
-            }}
-          />
-        );
-      case 5:
         return <SupportStep onComplete={completeOnboarding} onSkip={completeOnboarding} />;
       default:
         return null;
