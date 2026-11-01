@@ -13,11 +13,12 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 34) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 35) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochaine Évolution │  │ [ ] Chrome Store Publish│  │     - Sprint 33 (Offeran│
-│     SaaS & Analytics    │  │ [ ] Advanced Billing    │  │     - Sprint 32 (Navbar)│
-│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 31 (Tenant)│
+│ [ ] Prochaine Évolution │  │ [ ] Chrome Store Publish│  │     - Sprint 34 (Pnpm)  │
+│     SaaS & Analytics    │  │ [ ] Advanced Billing    │  │     - Sprint 33 (Offeran│
+│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 32 (Navbar)│
+│                         │  │                         │  │     - Sprint 31 (Tenant)│
 │                         │  │                         │  │     - Sprint 30 (Alerts)│
 │                         │  │                         │  │     - Sprint 29 (Capture│
 │                         │  │                         │  │     - Sprint 28 (Cache) │
@@ -26,6 +27,20 @@
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 34 Achevée : Migration Complète vers `pnpm` Natif pour la Validation & les Tests
+
+- [x] **`TASK-TOOL-01` — Migration Complète de la Suite de Validation et des Tests vers `pnpm` Natif**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `evals/run_fullstack_eval.py`, `.agents/skills/db_schema_validator.py`, `playwright.config.ts`, `AGENTS.md`, `Agent.md`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-TOOL-01.01` : Mise à jour du juge déterministe `evals/run_fullstack_eval.py` pour exécuter `pnpm exec tsc --noEmit`, `pnpm run lint` et `pnpm run build`.
+    - [x] `TASK-TOOL-01.02` : Mise à jour de `.agents/skills/db_schema_validator.py` pour utiliser `pnpm exec prisma validate`.
+    - [x] `TASK-TOOL-01.03` : Mise à jour de `playwright.config.ts` (`webServer.command`) pour utiliser `pnpm run start` / `pnpm run dev`.
+    - [x] `TASK-TOOL-01.04` : Harmonisation des règles inviolables dans `AGENTS.md` et `Agent.md` pour refléter la stack officielle `pnpm@12.15.0`.
+    - [x] `TASK-TOOL-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

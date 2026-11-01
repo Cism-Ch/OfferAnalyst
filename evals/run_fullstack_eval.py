@@ -2,10 +2,10 @@
 """
 Juge Déterministe Fullstack pour OfferAnalyst (Next.js 16 / React 19 / Prisma / TypeScript)
 Remplace le jugement subjectif du LLM par des vérifications binaires automatisées :
-1. Typecheck strict : `npx tsc --noEmit` (Poids : 30)
-2. Linting ESLint : `npm run lint` (Poids : 25)
+1. Typecheck strict : `pnpm exec tsc --noEmit` (Poids : 30)
+2. Linting ESLint : `pnpm run lint` (Poids : 25)
 3. Hygiène & Schéma Prisma MongoDB : `python .agents/skills/db_schema_validator.py` (Poids : 20)
-4. Build de production Next.js : `npm run build` (Poids : 25)
+4. Build de production Next.js : `pnpm run build` (Poids : 25)
 
 Option :
 --quick / -q : Exécute uniquement les vérifications rapides (types, lint, prisma) sans le build complet Next.js.
@@ -78,16 +78,16 @@ def main():
 
     checks = [
         # 1. Vérification du typage statique TypeScript strict
-        run_cmd("typecheck", "npx tsc --noEmit", weight=35 if args.quick else 30, timeout_sec=150),
+        run_cmd("typecheck", "pnpm exec tsc --noEmit", weight=35 if args.quick else 30, timeout_sec=150),
         # 2. Vérification ESLint React 19
-        run_cmd("lint", "npm run lint", weight=35 if args.quick else 25, timeout_sec=240),
+        run_cmd("lint", "pnpm run lint", weight=35 if args.quick else 25, timeout_sec=240),
         # 3. Validation Prisma MongoDB & Singletons
         run_cmd("prisma_hygiene", f'"{python_executable}" .agents/skills/db_schema_validator.py', weight=30 if args.quick else 20, timeout_sec=60),
     ]
 
     if not args.quick:
         # 4. Build de production complet Next.js
-        checks.append(run_cmd("prod_build", "npm run build", weight=25, timeout_sec=180))
+        checks.append(run_cmd("prod_build", "pnpm run build", weight=25, timeout_sec=180))
 
     total_score = sum(c["score"] for c in checks)
     max_possible = sum(c["max_score"] for c in checks)

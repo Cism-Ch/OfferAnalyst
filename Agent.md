@@ -65,7 +65,7 @@ Chaque agent IA opérant sur ce dépôt **DOIT RESPECTER SCRUPULEUSEMENT** ces d
 14. **Tailwind CSS Canonique :** Respectez l'ordre logique et canonique des classes Tailwind (Layout → Sizing/Spacing → Typography → Backgrounds/Borders → Effects → Transitions & States).
 15. **Audit des Fichiers d'Environnement :** Détectez et analysez la présence de tous les fichiers `.env`, `.env.example`, `.env.local` avant de modifier des configurations d'infrastructure.
 16. **Intégrité Absolue des `.env.*` :** Ne JAMAIS supprimer le contenu existant d'un fichier `.env.*`. Si une variable devient obsolète, commentez-la avec une note explicative (`# Deprecated: ...`). Préservez scrupuleusement les clés configurées.
-17. **Vérification Systématique Avant Validation :** Exécutez toujours `npx tsc --noEmit` et `npm run lint` pour vous assurer qu'aucune régression ou erreur de build n'est introduite.
+17. **Vérification Systématique Avant Validation :** Exécutez toujours `pnpm exec tsc --noEmit` et `pnpm run lint` pour vous assurer qu'aucune régression ou erreur de build n'est introduite.
 
 ---
 
@@ -360,7 +360,7 @@ Afin d'éliminer la dispersion documentaire et de garantir un suivi rigoureux, *
    - Consulter obligatoirement `docs/TASKS.md` pour récupérer l'identifiant normalisé de la tâche (ex: `TASK-INFRA-01`) et ses critères d'acceptation avant toute modification de code.
    - **Obligation de formalisation :** Si la tâche ou le sprint demandé n'est pas encore détaillé, l'agent a l'OBLIGATION de l'inscrire et de la décomposer dans `docs/TASKS.md` (avec ID `TASK-DOMAINE-XX`, priorité, fichiers cibles, description et critères cochables `[ ]`) **AVANT d'écrire la moindre ligne de code**. Il est formellement interdit de coder à l'aveugle sans tâche documentée.
 2. **Prise en charge active :** Dès le démarrage des travaux, marquer la tâche avec `[-]` (En cours) dans le tableau Kanban et dans la section active de `docs/TASKS.md`.
-3. **Validation & Clôture :** Une fois le code vérifié techniquement (`npx tsc --noEmit` et `npm run lint` avec 0 erreur tolérée), cocher chaque critère d'acceptation `[x]`, marquer la tâche `[x]`, puis la transférer dans le tableau `Historique des Tâches Terminées` avec la date et les fichiers livrés.
+3. **Validation & Clôture :** Une fois le code vérifié techniquement (`pnpm exec tsc --noEmit` et `pnpm run lint` avec 0 erreur tolérée), cocher chaque critère d'acceptation `[x]`, marquer la tâche `[x]`, puis la transférer dans le tableau `Historique des Tâches Terminées` avec la date et les fichiers livrés.
 4. **Journalisation Globale :** Pour les livraisons de fonctionnalités majeures ou corrections notables, consigner la synthèse dans [`CHANGELOG.md`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/CHANGELOG.md) suivant le format canonique *Keep a Changelog*.
 
 ---
@@ -403,10 +403,10 @@ OfferAnalyst/
 
 | Commande | Rôle |
 | :--- | :--- |
-| `npm run eval:fullstack` | Juge déterministe complet (Types + Lint + Prisma + Build) |
-| `npm run eval:quick` | Évaluation rapide (Types + Lint + Prisma) sans build Next.js |
-| `npm run rsi:orchestrate`| Exécution du cycle RSI avec enregistrement de trajectoire |
-| `npm run rsi:guardrail`  | Vérification stricte des contraintes (Playbook <= 150 lignes) |
+| `pnpm run eval:fullstack` | Juge déterministe complet (Types + Lint + Prisma + Build) |
+| `pnpm run eval:quick` | Évaluation rapide (Types + Lint + Prisma) sans build Next.js |
+| `pnpm run rsi:orchestrate`| Exécution du cycle RSI avec enregistrement de trajectoire |
+| `pnpm run rsi:guardrail`  | Vérification stricte des contraintes (Playbook <= 150 lignes) |
 ### 12.4 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
 Afin d'éviter le gonflement incontrôlé des fichiers de documentation qui épuise la fenêtre de contexte des agents IA :

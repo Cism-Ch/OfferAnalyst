@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.4-patch] - 2026-11-01
+## [1.3.5-patch] - 2026-11-01
+
+## [1.3.5-patch] - 2026-11-01
+
+### ⚡ Migration vers `pnpm` Natif pour Validation & Tests (Sprint 34)
+
+- **Juge Déterministe (`evals/run_fullstack_eval.py`)** :
+  - Remplacement de `npx tsc --noEmit` par `pnpm exec tsc --noEmit`.
+  - Remplacement de `npm run lint` et `npm run build` par `pnpm run lint` et `pnpm run build`.
+  - Élimination des bannières parasites `npm notice` et accélération de la résolution des binaires locaux.
+- **Validateur de Schéma Prisma (`.agents/skills/db_schema_validator.py`)** :
+  - Remplacement de `npx prisma validate` par `pnpm exec prisma validate`.
+- **Configuration Playwright E2E (`playwright.config.ts`)** :
+  - Migration de la commande de serveur web vers `pnpm run start` / `pnpm run dev`.
+- **Règles d'Ingénierie & SSOT (`AGENTS.md`, `Agent.md`, `fullstack_playbook.md`)** :
+  - Alignement exhaustif de toutes les directives de validation et de build sur la stack officielle déclarée `pnpm@12.15.0`.
+- **Validation & Qualité** :
+  - 100/100 au Juge Déterministe (`pnpm run eval:quick`), 0 erreur TypeScript strict, 0 warning ESLint.
 
 ## [1.3.4-patch] - 2026-11-01
 

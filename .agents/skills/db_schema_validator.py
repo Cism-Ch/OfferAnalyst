@@ -106,7 +106,7 @@ def check_prisma_singleton_usage() -> list[dict]:
 
 def run_prisma_cli_validate() -> dict:
     is_windows = os.name == "nt"
-    cmd = "npx prisma validate" if is_windows else ["npx", "prisma", "validate"]
+    cmd = "pnpm exec prisma validate" if is_windows else ["pnpm", "exec", "prisma", "validate"]
     try:
         res = subprocess.run(
             cmd,
@@ -137,7 +137,7 @@ def main():
     if not cli_validation["passed"]:
         all_issues.append({
             "severity": "ERROR",
-            "message": f"Échec de 'npx prisma validate': {cli_validation['stderr'] or cli_validation['stdout']}"
+            "message": f"Échec de 'pnpm exec prisma validate': {cli_validation['stderr'] or cli_validation['stdout']}"
         })
 
     has_errors = any(i["severity"] == "ERROR" for i in all_issues)
