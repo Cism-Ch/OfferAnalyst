@@ -71,9 +71,9 @@ BETTER_AUTH_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Administrator Credentials (Auto-provisioned)
-ADMIN_NAME="Admin OfferAnalyst"
-ADMIN_EMAIL="admin@offeranalyst.com"
-ADMIN_PASSWORD="YourSecureAdminPasswordHere"
+ADMIN_NAME="Admin"
+ADMIN_EMAIL=""
+ADMIN_PASSWORD=""
 
 # AI Inference Gateway
 OPENROUTER_API_KEY=sk-or-v1-your_key_here
@@ -170,7 +170,6 @@ pnpm run eval:fullstack         # Comprehensive fullstack evaluation suite
 
 # Database Operations
 pnpm run db:validate            # Validate schema.prisma without engine locks
-pnpm run db:seed-admin          # Provision or synchronize master admin account
 
 # Production Build
 pnpm run build                  # Production Next.js build
