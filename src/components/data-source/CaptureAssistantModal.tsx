@@ -25,8 +25,7 @@ import {
     Check,
     ShieldCheck,
     Sparkles,
-    MousePointerClick,
-    ExternalLink
+    MousePointerClick
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/toast';
