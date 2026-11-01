@@ -1,46 +1,38 @@
 <div align="center">
 
-# 🎯 OfferAnalyst (Next.js Edition)
+# OFFERAN (OfferAnalyst)
 
-**AI-Powered Contextual Recommendation Engine**
+**AI-Powered Contextual Recommendation & Multi-Axis Arbitrage Engine**
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![OpenRouter](https://img.shields.io/badge/OpenRouter-AI-4285F4?logo=openai&logoColor=white)](https://openrouter.ai/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4.3-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.3.1-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Better-Auth](https://img.shields.io/badge/Better--Auth-1.7.13-red)](https://better-auth.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.2.1-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![pnpm](https://img.shields.io/badge/pnpm-12.15.0-orange?logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-latest-000000?logo=shadcnui&logoColor=white)](https://ui.shadcn.com/)
 
-A modern SaaS platform for AI-powered offer analysis and recommendation.
+A modern B2B and Prosumer SaaS platform for AI-powered offer analysis, contextual ranking, and automated opportunity arbitrage.
 
 </div>
 
 ---
 
-> [!IMPORTANT]
-> **🔐 Security Update (January 2026)**: We've implemented a new secure API key management system with AES-256-GCM encryption.
-> 
-> **Action Required**: If you have existing API keys, please re-enter them after updating.
-> 
-> See [CHANGELOG.md](CHANGELOG.md) for full details and migration guide.
-
----
-
 ## 📖 Overview
 
-**OfferAnalyst** is a high-performance recommendation engine that intelligently ranks offers based on user context. Powered by **OpenRouter AI models** (including DeepSeek R1, GPT-4, Claude, and more), it uses a Server Action backbone to secure API keys and provide robust results.
+**OFFERAN** is an enterprise-grade contextual recommendation platform designed to analyze, score, and rank offers against complex explicit constraints and subjective user preferences. It leverages multi-model AI reasoning (DeepSeek R1, GPT-4, Claude 3.5 Sonnet, NVIDIA Nemotron) coupled with real-time web citations, multi-tenant team collaboration, and server-side encryption.
 
-### ✨ Key Features
+### ✨ Core Capabilities
 
-- 🧠 **AI Analysis**: Server-side analysis using multiple AI models via OpenRouter
-- 🔐 **Secure API Keys**: AES-256-GCM encrypted storage with BYOK support ([details](docs/API_KEY_SECURITY.md))
-- 🎨 **Modern UI**: Built with `shadcn/ui` and Tailwind CSS v4 in a clean dashboard style
-- ⚡ **Next.js App Router**: Optimized performance and server actions
-- 📊 **Visualizations**: Interactive charts using Recharts
-- 💾 **Data Persistence**: Save offers and search history with localStorage
-- 🔍 **Smart Search**: Track and restore previous searches
-- 📈 **Project Management**: Organize research into projects
-- 🔄 **Comparison View**: Side-by-side offer comparison
-- 📝 **Change Tracking**: See [CHANGELOG.md](CHANGELOG.md) for latest updates
+- **Multi-Axis Evaluation**: Real-time scoring across Match Relevance, Structural Quality, Market Salary/Living Standards, and Industry Trends.
+- **Evidence-Based Insights**: Transparent citations and verification links to eliminate AI hallucinations.
+- **Ingestion Hub (`/data-source`)**: Universal 1-Click Bookmarklet, Plain-Text LLM structuring, CSV/File parsing, and anti-SSRF URL imports.
+- **Post-Scoring Action Suite**: Instant generation of tailored application pitches and concrete salary negotiation arguments.
+- **B2B Multi-Tenancy (`/dashboard/workspace`)**: Role-based access control (OWNER, ADMIN, MEMBER, VIEWER) for collaborative hiring, procurement, and deal sourcing teams.
+- **High-Match Alerts & Webhooks**: HMAC SHA-256 signed webhooks (Slack, Discord, Zapier) dispatched via Upstash QStash async queues.
+- **Zero-Leak Security & BYOK**: AES-256-GCM encrypted guest/user API key storage and Better-Auth server-side identity protection.
 
 ---
 
@@ -48,231 +40,171 @@ A modern SaaS platform for AI-powered offer analysis and recommendation.
 
 ### Prerequisites
 
-- **Node.js** (v18+)
-- **npm** or **pnpm** (preferred)
-- **OpenRouter API Key** - Get it from [OpenRouter](https://openrouter.ai/)
+- **Node.js**: v20.x or higher
+- **Package Manager**: `pnpm` (v12.15+ strictly enforced)
+- **Database**: MongoDB (Atlas cluster or local replica set)
+- **AI Gateway**: OpenRouter API key ([openrouter.ai](https://openrouter.ai/))
 
-### Installation
+### 1. Clone & Install Dependencies
 
-1.  **Install dependencies**
-    ```bash
-    pnpm install
+```bash
+git clone https://github.com/Cism-Ch/OfferAnalyst.git
+cd OfferAnalyst
+pnpm install
+```
 
-    pnpm install
-    ```
+### 2. Configure Environment Variables
 
-2.  **Configure API Key**
-    Create a `.env.local` file in the root directory:
-    ```env
-    OPENROUTER_API_KEY=your_openrouter_api_key_here
-    ```
-    
-    You can also copy from the example:
-    ```bash
-    cp .env.example .env.local
-    ```
+Create your local `.env` file by copying the template:
 
-3.  **Start Dev Server**
-    ```bash
+```bash
+cp .env.example .env
+```
 
+Configure your core secrets in `.env`:
 
-    pnpm dev
-    ```
+```env
+# Database & Authentication
+DATABASE_URL=mongodb+srv://<user>:<password>@cluster.mongodb.net/offeranalyst?retryWrites=true&w=majority
+BETTER_AUTH_SECRET=your_32_chars_random_secret_here
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-    Open [http://localhost:3000](http://localhost:3000).
+# Administrator Credentials (Auto-provisioned)
+ADMIN_NAME="Admin OfferAnalyst"
+ADMIN_EMAIL="admin@offeranalyst.com"
+ADMIN_PASSWORD="YourSecureAdminPasswordHere"
+
+# AI Inference Gateway
+OPENROUTER_API_KEY=sk-or-v1-your_key_here
+```
+
+### 3. Provision Admin Account in MongoDB
+
+Run the idempotent database seeding script:
+
+```bash
+pnpm run db:seed-admin
+```
+
+This verifies or provisions your master administrator account with the `ADMIN` role and sets `emailVerified: true`.
+
+### 4. Start Development Server
+
+```bash
+pnpm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to access the application.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Technology | Purpose |
-|------------|---------|
-| **Next.js 16** | Framework (App Router) |
-| **Tailwind CSS v4** | Styling |
-| **shadcn/ui** | Component Library |
-| **OpenRouter** | AI Model Gateway |
-| **Recharts** | Data Visualization |
-| **Zod** | Runtime Validation |
+| Domain | Technology | Version | Purpose |
+|---|---|---|---|
+| **Framework** | Next.js (App Router) | 16.4.3 | RSC, Server Actions, Dynamic Routes |
+| **UI Library** | React | 19.3.1 | Core UI Components |
+| **Type Safety** | TypeScript | 5.9.3 | Strict end-to-end typing |
+| **Styling** | Tailwind CSS & shadcn/ui | v4.3.3 | Luxury "Neon" Theme, Responsive Layouts |
+| **Authentication** | Better-Auth | 1.7.13 | Native MongoDB ObjectIds, Sessions, RBAC |
+| **ORM / ODM** | Prisma Client | 6.2.1 | MongoDB Schema & Relationship Management |
+| **Async Queues** | Upstash QStash & Redis | Serverless | Webhook delivery & background caching |
+| **Package Manager** | pnpm | 12.15.0 | Deterministic monorepo-grade package lock |
 
 ---
 
-## 📂 Project Structure
+## 📂 Architecture & Directory Layout
 
 ```
-src/
-├── app/
-│   ├── actions/          # Server Actions (fetch.ts, analyze.ts, organize.ts)
-│   ├── compare/          # Offer Comparison Page
-│   ├── history/          # Search History Page
-│   ├── projects/         # Projects Management Page
-│   ├── saved/            # Saved Offers Page
-│   ├── page.tsx          # Main Dashboard Page
-│   ├── layout.tsx        # Root Layout
-│   └── globals.css       # Global Styles (Tailwind v4)
-├── components/
-│   ├── layout/           # Layout Components (Sidebar, Header)
-│   ├── offers/           # Offer-related Components
-│   └── ui/               # Shadcn UI Components
-├── hooks/                # Custom React Hooks
-├── lib/                  # Utilities & Configurations
-└── types/                # TypeScript Interfaces & Zod Schemas
+OfferAnalyst/
+├── docs/                 # Documentation SSOT, Architecture ADRs & Archives
+│   ├── TASKS.md          # Central Task SSOT (< 250 lines ceiling)
+│   ├── FEATURES.md       # Exhaustive functional specification
+│   ├── QUICKSTART.md     # Express deployment guide
+│   └── DEPLOYMENT.md     # Production deployment instructions
+├── evals/                # Deterministic Evaluation Judges & Telemetry
+│   ├── run_fullstack_eval.py # 100-point deterministic judge (tsc, lint, hygiene)
+│   └── version_manager.py    # Automated semver management
+├── prisma/               # Database Schema
+│   └── schema.prisma     # MongoDB models (User, Session, Account, Workspace, etc.)
+├── scripts/              # Automation & Seeding CLI Tools
+│   └── seed-admin.mjs    # Idempotent admin account provisioning script
+├── src/
+│   ├── app/              # Next.js App Router (RSC by default)
+│   │   ├── actions/      # Type-safe Server Actions with Zod validation
+│   │   ├── api/auth/     # Better-Auth catch-all route handler
+│   │   ├── auth/         # Authentication views (Login, Signup, Verify)
+│   │   ├── dashboard/    # Workspace management & Analytics
+│   │   ├── data-source/  # Multi-source ingestion page
+│   │   └── landing/      # SaaS Vitrine Showcase
+│   ├── components/       # Colocated UI Components
+│   │   ├── brand/        # OFFERAN Monogram & Logo System
+│   │   ├── data-source/  # Ingestion tabs (Bookmarklet, Text, CSV, URL)
+│   │   ├── landing/      # SaaSPresentationView & Floating Dock
+│   │   ├── layout/       # ModernHeader, ModernSidebar, AppShell
+│   │   ├── offers/       # OfferCard, Action Modals (Pitch, Tailored App)
+│   │   └── ui/           # Radix Primitives & shadcn UI components
+│   ├── contexts/         # React Contexts (Language FR/EN, Analysis, Theme)
+│   └── lib/              # Centralized Singletons (Prisma, Auth, AI Models, Cache)
+└── package.json          # Dependencies & Scripts (100% pnpm)
 ```
 
 ---
 
-## 📚 Features Guide
+## 🧰 Available Scripts & Tooling
 
-### 🏠 Dashboard
-The main interface where you configure your search criteria and analyze offers:
-- **Domain Configuration**: Specify the market domain (Jobs, Real Estate, Products, etc.)
-- **Explicit Criteria**: Define hard requirements (budget, location, salary range)
-- **Implicit Context**: Describe subjective preferences (work-life balance, company culture)
-- **Auto-Fetch**: Enable AI to automatically search the web for live offers
-- **Manual Input**: Paste JSON array of offers for analysis
-- **AI Model Selection**: Choose from various AI models (DeepSeek R1, GPT-4, Claude, Gemini)
-
-### 💾 Saved Offers
-Manage your collection of interesting offers:
-- **List View**: Browse all saved offers in a card grid
-- **Categories View**: AI-organized offers by category (requires Smart Organize)
-- **Timeline View**: Chronological organization of offers
-- **Comparison**: Select 2-3 offers for side-by-side comparison
-- **Smart Organize**: AI-powered categorization and timeline generation
-
-### 📜 Search History
-Track and restore previous analyses:
-- **Search Tracking**: Automatically saves all analysis sessions
-- **Pin Important Searches**: Keep frequently-used searches at the top
-- **Quick Restore**: One-click to restore previous search context
-- **Search Filter**: Find past searches by domain, criteria, or results
-- **Selective Cleanup**: Clear unpinned history while preserving important items
-
-### 📁 Projects
-Combine multiple research contexts into organized projects:
-- **Multi-Source Projects**: Combine insights from different searches
-- **Project Wizard**: 3-step setup (Define → Source → Review)
-- **Context Aggregation**: Query across combined data sources
-- **Status Tracking**: Track active and archived projects
-
-### 🔄 Comparison
-Detailed side-by-side comparison of offers:
-- **Score Breakdown**: View individual relevance, quality, and trend scores
-- **Visual Progress Bars**: Easy-to-understand score visualization
-- **AI Justification**: Understand why each offer was ranked
-- **Web Insights**: See market context and additional research
-
----
-
-## 🎯 Usage Example
-
-1. **Configure Your Search**:
-   - Domain: "Jobs"
-   - Explicit Criteria: "Salary > 100k, Remote"
-   - Implicit Context: "Seeking work-life balance, startup culture"
-
-2. **Choose Analysis Method**:
-   - Enable "Auto-Fetch" for AI to find offers, OR
-   - Paste your own JSON offer data
-
-3. **Start Analysis**:
-   - Click "Start Workflow"
-   - AI analyzes and ranks offers based on your context
-   - View results with scores, justifications, and market summary
-
-4. **Save Interesting Offers**:
-   - Click bookmark icon on top offers
-   - Access saved offers from the "Saved Offers" page
-
-5. **Compare Options**:
-   - Select 2-3 saved offers
-   - Click "Compare" for detailed side-by-side analysis
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `OPENROUTER_API_KEY` | Yes | Your OpenRouter API key for AI model access |
-
-### Available AI Models
-
-The application supports multiple AI models through OpenRouter:
-- **DeepSeek R1** (Recommended) - Advanced reasoning capabilities
-- **GPT-4 Turbo** - OpenAI's flagship model
-- **Claude 3.5 Sonnet** - Anthropic's advanced model
-- **Gemini 2.5 Flash** - Google's fast model
-
-Select your preferred model from the header dropdown.
-
----
-
-## 🚢 Deployment
-
-### Quick Deploy to Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Cism-Ch/OfferAnalyst)
-
-**Prerequisites:**
-1. MongoDB Atlas account and database cluster ([Setup Guide](./docs/MONGODB_SETUP.md))
-2. OpenRouter API key from [OpenRouter](https://openrouter.ai/)
-3. (Optional) OAuth credentials for Google/GitHub
-
-**Deployment Steps:**
-
-1. **Click "Deploy with Vercel" button above**
-
-2. **Add Required Environment Variables in Vercel Dashboard:**
-   - `DATABASE_URL` - Your MongoDB connection string (required in ALL environments)
-   - `BETTER_AUTH_SECRET` - Generate with `openssl rand -base64 32`
-   - `BETTER_AUTH_URL` - Your Vercel domain (update after first deploy)
-   - `NEXT_PUBLIC_APP_URL` - Same as BETTER_AUTH_URL
-   - `OPENROUTER_API_KEY` - Your OpenRouter API key
-   
-   **Note:** Add these in Vercel Project Settings → Environment Variables, not as CLI secrets.
-
-3. **Deploy and Update Domain**
-   - After first deployment, get your Vercel domain
-   - Update `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` with actual domain
-   - Redeploy
-
-4. **Configure OAuth (Optional):**
-   - Update OAuth redirect URIs with your Vercel domain
-   - Add OAuth credentials to Vercel environment variables
-
-📚 **Detailed Guides:**
-- [MongoDB Setup Guide](./docs/MONGODB_SETUP.md) - Step-by-step MongoDB Atlas configuration
-- [Deployment Guide](./docs/DEPLOYMENT.md) - Complete Vercel deployment walkthrough
-
-### Local Production Build
+All operations strictly utilize `pnpm`:
 
 ```bash
-# Generate Prisma Client
-npx prisma generate
+# Development server
+pnpm run dev
 
-# Build for production
-npm run build
+# Code hygiene & Static Analysis
+pnpm exec tsc --noEmit           # Strict TypeScript check (0 errors tolerated)
+pnpm run lint                   # ESLint check with caching
 
-# Start production server
-npm start
+# Deterministic Quality Gates
+pnpm run eval:quick             # Quick validation: Typecheck + Lint + Prisma Hygiene
+pnpm run eval:fullstack         # Comprehensive fullstack evaluation suite
+
+# Database Operations
+pnpm run db:validate            # Validate schema.prisma without engine locks
+pnpm run db:seed-admin          # Provision or synchronize master admin account
+
+# Production Build
+pnpm run build                  # Production Next.js build
+pnpm run start                  # Start production build server
 ```
 
 ---
 
-## 🤝 Contributing
+## 🚢 Production Deployment (Vercel + MongoDB Atlas)
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. **Database Setup**: Create an M0 or dedicated cluster on MongoDB Atlas and obtain your `DATABASE_URL`.
+2. **Environment Configuration**: Set all required variables in Vercel Project Settings:
+   - `DATABASE_URL` (Required at build time and runtime)
+   - `BETTER_AUTH_SECRET` (Generated via `openssl rand -base64 32`)
+   - `BETTER_AUTH_URL` & `NEXT_PUBLIC_APP_URL` (Your production domain)
+   - `OPENROUTER_API_KEY`
+   - `ADMIN_EMAIL` & `ADMIN_PASSWORD`
+3. **Database Seeding**: Run `pnpm run db:seed-admin` locally or as a post-deploy step to initialize the admin identity.
+4. **Deploy**: Build and deploy with zero downtime.
+
+For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/QUICKSTART.md](docs/QUICKSTART.md).
 
 ---
 
-## 📝 License
+## 🤝 Contributing & Engineering Rules
 
-This project is open source and available under the MIT License.
+This repository enforces strict engineering rules:
+- **Task-Driven Development**: No code without formal registration in [`docs/TASKS.md`](docs/TASKS.md).
+- **RSC Default**: Server Components by default; colocate client components.
+- **Zero Secrets in Git**: Sensitive credentials belong solely in `.env`.
+- **Zero Native Emojis in Code**: Pure Lucide SVG icons only.
 
 ---
 
 <div align="center">
-Made with ❤️ using Next.js & OpenRouter AI
+Developed with Next.js 16, React 19, Prisma & OpenRouter AI.
 </div>

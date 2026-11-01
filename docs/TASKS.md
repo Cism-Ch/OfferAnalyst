@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 01 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 36 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
+**Statut Global :** Sprints 1 à 37 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
 
 ---
 
@@ -13,16 +13,29 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 37) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 38) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] TASK-E2E-01         │  │ [ ] Chrome Store Publish│  │     - Sprint 36 (Auth & │
-│     (E2E Playwright     │  │ [ ] Advanced Billing    │  │       Admin Seed DB)    │
-│      Auth & Workflows)  │  │                         │  │     - Sprint 35 (Vitrine│
+│ [ ] TASK-E2E-01         │  │ [ ] Chrome Store Publish│  │     - Sprint 37 (Doc &  │
+│     (E2E Playwright     │  │ [ ] Advanced Billing    │  │       Readme Modern)    │
+│      Auth & Workflows)  │  │                         │  │     - Sprint 36 (Auth & │
+│                         │  │                         │  │       Admin Seed DB)    │
+│                         │  │                         │  │     - Sprint 35 (Vitrine│
 │                         │  │                         │  │       Dock & Spacing)   │
-│                         │  │                         │  │     - Sprint 34 (Pnpm)  │
-│                         │  │                         │  │     - Sprints 25-33 Arch│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 📖 Sprint 37 Achevée : Actualisation Complète du README & de la Documentation Technique
+
+- [x] **`TASK-DOC-01` — Mise à Jour Exhaustive du README et des Guides Techniques (OFFERAN, Stack pnpm, Admin & Features)**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** `README.md`, `docs/FEATURES.md`, `docs/QUICKSTART.md`, `docs/DEPLOYMENT.md`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-DOC-01.01` : Mise à jour du `README.md` principal : refonte de l'en-tête (monogramme OFFERAN, version 1.3.7-patch, Next.js 16.4.3 / React 19 / Better-Auth 1.7.13 / Prisma 6.2.1), commandes 100% `pnpm` (`pnpm install`, `pnpm run dev`, `pnpm run build`, `pnpm run db:seed-admin`).
+    - [x] `TASK-DOC-01.02` : Documentation exhaustive des fonctionnalités modernes dans `README.md` et `docs/FEATURES.md` : Page Vitrine SaaS avec Dock Flottant, Navbar 2 lignes, Hub d'Ingestion Multi-Sources (`/data-source`) avec Bookmarklet 1-Clic, Multi-Tenancy B2B (`/dashboard/workspace`), Alertes & Webhooks HMAC, et Provisioning Admin MongoDB.
+    - [x] `TASK-DOC-01.03` : Mise à jour de `docs/QUICKSTART.md` et `docs/DEPLOYMENT.md` pour inclure la configuration des identifiants admin (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) et l'exécution du script `pnpm run db:seed-admin`.
+    - [x] `TASK-DOC-01.04` : Vérification déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
@@ -91,7 +104,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 96 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 110 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `pnpm exec tsc --noEmit` et `pnpm run lint` à 0 erreur.

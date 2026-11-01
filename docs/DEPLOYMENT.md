@@ -18,16 +18,16 @@ Before deploying, ensure your app builds successfully locally:
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Generate Prisma Client
-npx prisma generate
+pnpm exec prisma generate
 
 # Build the application
-npm run build
+pnpm run build
 
 # Test production build locally
-npm start
+pnpm run start
 ```
 
 If you encounter any build errors, fix them before proceeding to deployment.
@@ -40,6 +40,9 @@ Make sure you have all required environment variables ready:
 - `DATABASE_URL` - MongoDB connection string
 - `BETTER_AUTH_SECRET` - Authentication secret (32+ characters)
 - `OPENROUTER_API_KEY` - Your OpenRouter API key
+- `ADMIN_NAME` - Master administrator display name
+- `ADMIN_EMAIL` - Master administrator email
+- `ADMIN_PASSWORD` - Master administrator password
 
 **Optional (for OAuth):**
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`
@@ -59,8 +62,8 @@ Make sure you have all required environment variables ready:
 4. **Configure Project:**
    - **Framework Preset:** Next.js (should be auto-detected)
    - **Root Directory:** `./` (leave as default)
-   - **Build Command:** `npx prisma generate && next build` (auto from vercel.json)
-   - **Install Command:** `npm install` (auto from vercel.json)
+   - **Build Command:** `pnpm exec prisma generate && next build` (auto from vercel.json)
+   - **Install Command:** `pnpm install` (auto from vercel.json)
 
 5. **Add Environment Variables:**
    Click "Environment Variables" and add all required variables:
@@ -115,7 +118,7 @@ Make sure you have all required environment variables ready:
 
 1. **Install Vercel CLI:**
    ```bash
-   npm install -g vercel
+   pnpm add -g vercel
    ```
 
 2. **Login to Vercel:**
@@ -206,7 +209,7 @@ Monitor database usage:
 ## Troubleshooting
 
 ### Build Fails: "Prisma Client not generated"
-**Solution:** Vercel should run `npx prisma generate` via the custom build command in `vercel.json`. Verify this is set correctly.
+**Solution:** Vercel should run `pnpm exec prisma generate` via the custom build command in `vercel.json`. Verify this is set correctly.
 
 ### Runtime Error: "Cannot connect to database"
 **Solutions:**

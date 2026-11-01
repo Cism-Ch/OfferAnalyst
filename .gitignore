@@ -58,3 +58,6 @@ next-env.d.ts
 .agents/skills/*
 !.agents/skills/db_schema_validator.py
 /src/generated/prisma
+
+# local file
+/scripts/seed-admin.mjs
