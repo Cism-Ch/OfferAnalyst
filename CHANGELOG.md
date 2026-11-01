@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.4-patch] - 2026-11-01
+
+## [1.3.4-patch] - 2026-11-01
+
+### 🎨 Perfectionnement UI/UX — Marque OFFERAN, Navbar 2 Lignes, Drawer PC & Simplification Capture (Sprint 33)
+
+- **Identité de Marque `OFFERAN` (`src/components/brand/OffanBrand.tsx`)** :
+  - Remplacement de la mention abrégée `OFFAN` par la marque définitive `OFFERAN` avec typographie vectorielle haute lisibilité et exports compatibles `OfferanLogo` / `OfferanIcon`.
+- **Navbar Mobile Shadcn 2 Lignes & Boutons Scalés Compacts (`src/components/layout/ModernHeader.tsx`)** :
+  - Restructuration sur mobile (< 640px) en deux lignes dédiées pour un confort maximal d'interaction :
+    - Ligne 1 : Déclencheur drawer + badge de navigation fil d'Ariane + bouton quota compact & lien vitrine SaaS.
+    - Ligne 2 : Barre d'outils d'action complète et fluide (sélecteur IA, clé BYOK, bascule de langue et thème jewel) avec boutons compacts scalés sans chevauchement ni troncature.
+- **Drawer / Sidebar Desktop sans Scrollbar & Ancrage Solide (`ModernSidebar.tsx`, `AppShell.tsx`, `globals.css`)** :
+  - Élimination de la barre de défilement native visible sur PC grâce aux utilitaires `@utility scrollbar-none` et `no-scrollbar` (`scrollbar-width: none`, `-ms-overflow-style: none`, `::-webkit-scrollbar: hidden`).
+  - Architecture layout desktop `md:h-dvh md:max-h-dvh md:overflow-hidden` avec sidebar `h-full` et section inférieure (quota + profil utilisateur) ancrée à la racine avec `mt-auto`, comblant tout vide résiduel lors du défilement.
+- **Simplification de la Capture d'Offres (`CaptureAssistantModal.tsx`, `UrlImportTab.tsx`, `LanguageContext.tsx`)** :
+  - Retrait des sections et procédures complexes liées à l'extension Chrome (mode développeur, téléchargement zip) au profit exclusif du **Bookmarklet 1-Clic Universel**, 100% navigateur, sans installation ni blocage Cloudflare.
+  - Élimination intégrale des emojis résiduels dans les dictionnaires bilingues conformément à la règle stricte *Zero Emoji*.
+- **Validation & Qualité** :
+  - 100/100 au Juge Déterministe (`eval:quick`), 0 erreur TypeScript strict, 0 warning ESLint.
+
 ## [1.3.3-patch] - 2026-10-31
 
 ### 🎨 Audit & Remédiation UI/UX Navbar & Drawer SaaS Luxury (Sprint 32)

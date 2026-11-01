@@ -13,11 +13,12 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 33) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 34) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochaine Évolution │  │ [ ] Chrome Store Publish│  │     - Sprint 32 (Navbar)│
-│     SaaS & Analytics    │  │ [ ] Advanced Billing    │  │     - Sprint 31 (Tenant)│
-│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 30 (Alerts)│
+│ [ ] Prochaine Évolution │  │ [ ] Chrome Store Publish│  │     - Sprint 33 (Offeran│
+│     SaaS & Analytics    │  │ [ ] Advanced Billing    │  │     - Sprint 32 (Navbar)│
+│                         │  │ [ ] Automated Cron Sync │  │     - Sprint 31 (Tenant)│
+│                         │  │                         │  │     - Sprint 30 (Alerts)│
 │                         │  │                         │  │     - Sprint 29 (Capture│
 │                         │  │                         │  │     - Sprint 28 (Cache) │
 │                         │  │                         │  │     - Sprint 27 (Action)│
@@ -25,6 +26,20 @@
 │                         │  │                         │  │     - Sprint 25 (Vitrine│
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🎨 Sprint 33 Achevée : Perfectionnement UI/UX — Marque OFFERAN, Navbar Mobile 2 Lignes, Drawer PC & Simplification Capture
+
+- [x] **`TASK-UI-04` — Marque OFFERAN, Navbar 2 Lignes Compacte, Drawer PC sans Scrollbar & Retrait Extension**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/brand/OffanBrand.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/components/layout/AppShell.tsx`, `src/components/data-source/CaptureAssistantModal.tsx`, `src/components/data-source/UrlImportTab.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-04.01` : Remplacement de la mention `OFFAN` par `OFFERAN` dans le monogramme et logo de marque (`OffanBrand.tsx`).
+    - [x] `TASK-UI-04.02` : Navbar mobile organisée en 2 lignes distinctes avec boutons shadcn scalés compacts (`size-8` / `h-8 text-xs`), espacements calibrés et zéro chevauchement.
+    - [x] `TASK-UI-04.03` : Drawer / Sidebar desktop : Élimination de la barre de défilement apparente (`scrollbar-none`) et ancrage responsive fluide du bas (`mt-auto`, comblement du vide).
+    - [x] `TASK-UI-04.04` : Retrait des sections complexes de l'extension Chrome (archive zip, mode développeur) au profit du seul Bookmarklet 1-Clic ultra-simple et direct.
+    - [x] `TASK-UI-04.05` : Validation déterministe avec `npm run eval:quick` (100/100 PASS, 0 erreur TS, 0 ESLint warning).
 
 ---
 

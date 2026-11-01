@@ -4,10 +4,11 @@
  * Modern Premium Header Component (Unified AppHeader)
  * 
  * Features:
- * - Breadcrumb navigation (compact single crumb on mobile, full trail on desktop)
- * - Compact mobile header: height strictly <= 56px, mobile title & description scroll with page
- * - Action buttons on right (Quick Search on lg, Daily Quota Zap badge, Language, Theme, AI Model)
- * - Safe 44x44px mobile touch targets (WCAG 2.5.5)
+ * - Mobile (< sm): High-efficiency 2-row layout maximizing screen estate
+ *   - Line 1: Mobile route badge + Daily quota badge & showcase link
+ *   - Line 2: Scaled compact shadcn toolbar (AI Model, BYOK Key, Language toggle, Theme selector)
+ * - Desktop (sm+): Full breadcrumb trail, quick search, title, description, and status controls
+ * - Strict adherence to zero-emoji policy and WCAG 44x44px touch targets
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -70,42 +71,114 @@ export function ModernHeader({
 
     return (
         <>
-            {/* Sticky Header Bar - Height strictly <= 56px on mobile */}
+            {/* Sticky Header Bar */}
             <motion.header
                 className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-header"
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.2 }}
             >
-                <div className="h-14 sm:h-auto px-2 sm:px-6 py-1.5 sm:py-4 pl-14 sm:pl-16 md:pl-6 flex flex-col justify-center">
+                {/* 1. Mobile 2-Row Header (< sm) */}
+                <div className="sm:hidden flex flex-col">
+                    {/* Mobile Line 1: Route Breadcrumb + Quota Pill & Quick Actions */}
+                    <div className="h-12 pl-14 pr-2.5 flex items-center justify-between gap-2">
+                        {/* Route Crumb Badge */}
+                        <div className="flex items-center min-w-0">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[170px] min-[400px]:max-w-[210px] shadow-2xs">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                <span className="truncate">{routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}</span>
+                            </span>
+                        </div>
+
+                        {/* Top-Right Quota & Showcase */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            {quota && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setGuestKeyDialogOpen(true)}
+                                    className={cn(
+                                        "h-8 px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation flex items-center shrink-0 shadow-2xs",
+                                        quota.isByok
+                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                            : quota.remaining === 0
+                                            ? "bg-destructive/10 text-destructive border-destructive/30"
+                                            : "bg-muted/60 text-foreground border-border hover:bg-muted"
+                                    )}
+                                    title={quota.isByok ? (language === 'fr' ? "BYOK Actif (Recherches illimitées)" : "BYOK Active (Unlimited searches)") : `Quota: ${quota.remaining}/${quota.total} ${language === 'fr' ? 'recherches' : 'searches'}`}
+                                >
+                                    <Zap className={cn("h-3.5 w-3.5", quota.isByok ? "text-emerald-500 fill-emerald-500/30" : "text-amber-500 fill-amber-500/20")} />
+                                    <span className="font-semibold text-[11px]">
+                                        {quota.isByok ? "BYOK" : `${quota.remaining}/${quota.total}`}
+                                    </span>
+                                </Button>
+                            )}
+
+                            <Link href="/landing">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all touch-manipulation"
+                                    title={t.nav.saasShowcase}
+                                    aria-label={t.nav.saasShowcase}
+                                >
+                                    <Sparkles className="h-4 w-4 text-primary" />
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Mobile Line 2: Scaled Compact Action Toolbar (Full Width) */}
+                    <div className="h-10 px-2.5 py-1 border-t border-border/40 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-1.5">
+                        {/* Left Group: AI Model Selector + BYOK Key Trigger */}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            {showModelSelector && (
+                                <AIModelSelector
+                                    selectedModel={selectedModel}
+                                    onModelChange={onModelChange}
+                                    compact
+                                />
+                            )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setGuestKeyDialogOpen(true)}
+                                className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 active:scale-95 transition-all touch-manipulation shrink-0"
+                                title={language === 'fr' ? "Configurer clé API (BYOK)" : "Configure API Key (BYOK)"}
+                                aria-label="API Key Dialog"
+                            >
+                                <KeyRound className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        {/* Right Group: Language & Theme Controls */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <LanguageToggle />
+                            <PremiumThemeSelector />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. Desktop & Tablet Header (sm+) */}
+                <div className="hidden sm:flex flex-col px-6 py-4 pl-16 md:pl-6">
                     {/* Top Row - Breadcrumbs and Actions */}
-                    <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-                        {/* Breadcrumbs */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground min-w-0">
-                            {/* Mobile Single Crumb — Premium Pill Badge */}
-                            <div className="sm:hidden flex items-center min-w-0">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-muted/80 backdrop-blur-md border border-border/70 text-foreground/90 truncate max-w-[110px] min-[360px]:max-w-[130px] min-[400px]:max-w-[160px] shadow-2xs">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/80 shrink-0" />
-                                    <span className="truncate">{routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}</span>
-                                </span>
-                            </div>
-                            {/* Desktop Full Breadcrumb Trail */}
-                            <div className="hidden sm:flex items-center gap-2">
-                                {routeInfo.breadcrumbs.map((crumb, index) => (
-                                    <React.Fragment key={crumb}>
-                                        {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />}
-                                        <span className={cn(
-                                            index === routeInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
-                                        )}>
-                                            {crumb}
-                                        </span>
-                                    </React.Fragment>
-                                ))}
-                            </div>
+                    <div className="flex items-center justify-between gap-2">
+                        {/* Breadcrumbs Trail */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
+                            {routeInfo.breadcrumbs.map((crumb, index) => (
+                                <React.Fragment key={crumb}>
+                                    {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 opacity-60" />}
+                                    <span className={cn(
+                                        index === routeInfo.breadcrumbs.length - 1 && 'text-foreground font-medium'
+                                    )}>
+                                        {crumb}
+                                    </span>
+                                </React.Fragment>
+                            ))}
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 ml-auto">
+                        <div className="flex items-center gap-2.5 shrink-0 ml-auto">
                             {/* Desktop Quick Search */}
                             <motion.div
                                 className="relative hidden xl:block"
@@ -121,7 +194,7 @@ export function ModernHeader({
                                 />
                             </motion.div>
 
-                            {/* Model Switcher with tactile margins */}
+                            {/* Model Switcher */}
                             {showModelSelector && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -4 }}
@@ -150,7 +223,7 @@ export function ModernHeader({
                                         size="sm"
                                         onClick={() => setGuestKeyDialogOpen(true)}
                                         className={cn(
-                                             "min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-11 md:h-8 p-0 sm:px-2.5 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation flex items-center justify-center shrink-0",
+                                            "h-9 px-3 text-xs font-medium rounded-full border transition-all gap-1.5 touch-manipulation flex items-center justify-center shrink-0 shadow-2xs",
                                             quota.isByok
                                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
                                                 : quota.remaining === 0
@@ -172,7 +245,7 @@ export function ModernHeader({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setGuestKeyDialogOpen(true)}
-                                    className="hidden xl:inline-flex min-h-[44px] min-w-[44px] size-11 md:size-8 md:min-h-0 md:min-w-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent touch-manipulation"
+                                    className="hidden xl:inline-flex h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent touch-manipulation"
                                     title={language === 'fr' ? "Configurer clé API (BYOK)" : "Configure API Key (BYOK)"}
                                     aria-label="API Key Dialog"
                                 >
@@ -192,8 +265,8 @@ export function ModernHeader({
                                 </Link>
                             </motion.div>
 
-                            {/* Right-Snapped Controls: Language & Theme grouped together */}
-                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 sm:pl-1.5 sm:border-l sm:border-border/50">
+                            {/* Controls: Language & Theme */}
+                            <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/50">
                                 <motion.div
                                     initial={{ opacity: 0, y: -4 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -213,8 +286,8 @@ export function ModernHeader({
                         </div>
                     </div>
 
-                    {/* Desktop/Tablet Bottom Row - Page Title and Description (hidden < sm to preserve vertical height) */}
-                    <div className="hidden sm:block mt-2">
+                    {/* Desktop/Tablet Bottom Row - Page Title and Description */}
+                    <div className="mt-2">
                         <motion.h1
                             className="text-xl sm:text-2xl font-bold tracking-tight"
                             {...fadeInUpProps}

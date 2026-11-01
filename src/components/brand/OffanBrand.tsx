@@ -35,7 +35,7 @@ export function OffanIcon({
             className={`shrink-0 transition-[filter,transform] duration-200 ${
                 glow ? 'filter drop-shadow-[0_0_6px_var(--primary)]' : ''
             } ${className}`}
-            aria-label="Offan Logo Icon"
+            aria-label="Offeran Logo Icon"
             {...props}
         >
             <defs>
@@ -142,7 +142,7 @@ export function OffanLogo({
             <div className="flex flex-col justify-center">
                 <div className="flex items-center">
                     <span className={`font-extrabold tracking-[0.16em] uppercase text-foreground leading-tight ${textSizes[size]}`}>
-                        Off<span className="text-primary font-black ml-[1px]">an</span>
+                        Offer<span className="text-primary font-black ml-[1px]">an</span>
                     </span>
                     <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                 </div>
@@ -155,3 +155,7 @@ export function OffanLogo({
         </div>
     );
 }
+
+
+export { OffanLogo as OfferanLogo, OffanIcon as OfferanIcon };
+export type { OffanLogoProps as OfferanLogoProps, OffanIconProps as OfferanIconProps };

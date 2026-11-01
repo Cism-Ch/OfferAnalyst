@@ -192,7 +192,7 @@ function SidebarUserProfile({
     };
 
     return (
-        <div className="border-t border-border/70 p-3">
+        <div className="p-3">
             <div className={cn('flex items-center gap-1.5', isCollapsed && 'justify-center')}>
                 <Link
                     href={href}
@@ -313,7 +313,7 @@ function SidebarDailyQuotaWidget({
     const pct = quota.isByok ? 100 : Math.round((quota.remaining / quota.total) * 100);
 
     return (
-        <div className="px-3 py-2.5 border-t border-border/70">
+        <div className="px-3 pt-2 pb-1">
             <div className="p-3 rounded-2xl bg-muted/40 border border-border/70 space-y-2">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
@@ -452,7 +452,7 @@ function SidebarBody({
             )}
 
             {/* Navigation */}
-            <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+            <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-2 opacity-60" />
                 {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
@@ -466,15 +466,15 @@ function SidebarBody({
                 )}
             </nav>
 
-            {/* Daily Quota Widget */}
-            <SidebarDailyQuotaWidget
-                isCollapsed={isCollapsed}
-                onOpenKeyDialog={onOpenKeyDialog}
-                isFr={isFr}
-            />
-
-            {/* User Profile */}
-            <SidebarUserProfile isCollapsed={isCollapsed} t={t} setMobileOpen={setMobileOpen} />
+            {/* Pinned Bottom Section: Quota & User Profile */}
+            <div className="mt-auto shrink-0 w-full flex flex-col border-t border-border/70 bg-background/50">
+                <SidebarDailyQuotaWidget
+                    isCollapsed={isCollapsed}
+                    onOpenKeyDialog={onOpenKeyDialog}
+                    isFr={isFr}
+                />
+                <SidebarUserProfile isCollapsed={isCollapsed} t={t} setMobileOpen={setMobileOpen} />
+            </div>
 
             {/* Collapse Toggle - Desktop */}
             {onToggle && (
@@ -543,7 +543,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                         <SheetTitle>{t.nav.openMenu}</SheetTitle>
                         <SheetDescription>Menu de navigation principal</SheetDescription>
                     </SheetHeader>
-                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+                    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                         <SidebarBody
                             isCollapsed={false}
                             onToggle={undefined}
@@ -569,7 +569,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                 animate={{ width: isCollapsed ? 80 : 256 }}
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                 className={cn(
-                    "hidden md:flex flex-col relative border-r bg-background h-app sticky top-0 shrink-0 z-sidebar",
+                    "hidden md:flex flex-col relative border-r bg-background h-full shrink-0 z-sidebar",
                     isCollapsed ? "w-20" : "w-64"
                 )}
             >

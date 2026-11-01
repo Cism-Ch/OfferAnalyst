@@ -8,6 +8,7 @@ Veuillez consulter l'intégralité du manuel et des règles d'ingénierie dans l
 ---
 
 ### Résumé Rapide des Règles Inviolables
+
 1. **RSC par défaut** et colocalisation des composants.
 2. **Prisma Singleton** (`@/lib/prisma`) + validation Zod systématique.
 3. **Better-Auth côté serveur** (`src/lib/auth.ts`) avec zéro fuite de secret.
@@ -33,8 +34,6 @@ Veuillez consulter l'intégralité du manuel et des règles d'ingénierie dans l
     - **Ventilation des Audits & Diagnostics :** Tout audit ou traque de failles découvrant plusieurs vulnérabilités doit impérativement ventiler des sous-identifiants unitaires (`TASK-DOM-XX.01` à `.NN`) et produire un rapport exhaustif dédié dans `docs/archive/reports/`.
     - **Équivalence d'Autonomie `/goal` & `/rsi-feature` :** Toute commande d'autonomie lancée via `/goal` ou `/rsi-feature` doit exécuter sans exception la boucle en 4 phases (Cadrage -> Évaluation Déterministe -> Méta-Optimisation Proactive -> Archivage SSOT).
 
-
-
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
@@ -46,8 +45,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <!-- END:nextjs-agent-rules -->
 
 <!-- .env .env.local .env.example -->
+
 Les Clé doivent être stockées de manière sécurisée et ne doivent jamais être partagées.
 Elles doivent être stockées dans un fichier `.env` et ne doivent jamais être partagées.
 
 <!-- Emoji -->
+
 Ne pas utiliser d'emoji dans le code.
+
+<!-- Shadcn -->
+
+Utiliser les skills Shadcn UI pour construire les composant et coder l'UI/UX.
+Ne pas inventer des d'implémentation de shadcn ui, utiliser les skills et régles Shadcn.

@@ -207,8 +207,8 @@ export function UrlImportTab({ domain, onOffersExtracted, onOpenCaptureAssistant
                 <div className="space-y-2 flex-1">
                     <p className="leading-relaxed">
                         {isFr 
-                            ? "Note de robustesse : Certaines plateformes fermées (LinkedIn, Indeed) bloquent l'accès direct des serveurs cloud via Cloudflare. En cas de blocage d'un lien, utilisez notre Bookmarklet 1-Clic ou notre extension Chrome pour capturer l'offre en 1 seconde sans aucun blocage."
-                            : "Reliability notice: Some closed platforms (LinkedIn, Indeed) restrict direct cloud bot access via Cloudflare. If a link is protected, use our 1-Click Bookmarklet or Chrome extension to capture the offer in 1 second."}
+                            ? "Note de robustesse : Certaines plateformes fermées (LinkedIn, Indeed) bloquent l'accès direct des serveurs cloud via Cloudflare. En cas de blocage d'un lien, utilisez notre Bookmarklet 1-Clic pour capturer l'offre en 1 seconde sans aucun blocage."
+                            : "Reliability notice: Some closed platforms (LinkedIn, Indeed) restrict direct cloud bot access via Cloudflare. If a link is protected, use our 1-Click Bookmarklet to capture the offer in 1 second."}
                     </p>
                     {onOpenCaptureAssistant && (
                         <Button
@@ -219,7 +219,7 @@ export function UrlImportTab({ domain, onOffersExtracted, onOpenCaptureAssistant
                             className="text-xs h-7 px-2.5 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 touch-manipulation gap-1.5"
                         >
                             <Zap className="h-3 w-3 fill-primary" />
-                            <span>{isFr ? "Ouvrir l'Assistant de Capture (Bookmarklet & Extension)" : "Open Capture Assistant (Bookmarklet & Extension)"}</span>
+                            <span>{isFr ? "Ouvrir le Bookmarklet 1-Clic" : "Open 1-Click Bookmarklet"}</span>
                         </Button>
                     )}
                 </div>

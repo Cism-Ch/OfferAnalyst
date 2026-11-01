@@ -5,6 +5,8 @@
  * 
  * Features:
  * - Central architecture shell federating ModernSidebar, ModernHeader (AppHeader), and fluid <main>
+ * - Desktop (md+): Fixed viewport h-dvh layout with smooth independent main scroll (sidebar permanently anchored)
+ * - Mobile (< md): Natural document flow with native momentum scrolling
  * - Responsive tablet icon rail mode (auto-collapse to 80px on 768px-1023px, full 256px on 1024px+)
  * - Full backward compatibility wrapper for ModernLayout and SimpleLayout
  * - Zero horizontal overflow at 320px
@@ -55,7 +57,7 @@ export function AppShell({
     }, []);
 
     return (
-        <div className="flex min-h-app bg-background">
+        <div className="flex min-h-app md:h-dvh md:max-h-dvh md:overflow-hidden bg-background">
             {/* Sidebar */}
             <ModernSidebar
                 isCollapsed={sidebarCollapsed}
@@ -63,7 +65,7 @@ export function AppShell({
             />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 md:h-full md:overflow-hidden">
                 {/* Header */}
                 <ModernHeader
                     selectedModel={selectedModel}
@@ -74,7 +76,7 @@ export function AppShell({
                 />
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-auto md:overflow-y-auto min-h-0 scrollbar-none">
                     <PageContainer size={maxWidth} className={className}>
                         {children}
                     </PageContainer>

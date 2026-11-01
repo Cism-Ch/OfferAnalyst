@@ -458,7 +458,7 @@ export default function DataSourcePage() {
                 </div>
             </div>
 
-            {/* 1-Click Capture Assistant Modal (Bookmarklet & Extension) */}
+            {/* 1-Click Capture Assistant Modal (Bookmarklet) */}
             <CaptureAssistantModal
                 open={captureModalOpen}
                 onOpenChange={setCaptureModalOpen}
