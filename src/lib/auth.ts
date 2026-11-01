@@ -67,10 +67,7 @@ export const auth = betterAuth({
     cookiePrefix: "offeranalyst",
     database: {
       validateSchema: false,
-    },
-    generateId: () => {
-      // Use default ID generation
-      return undefined;
+      generateId: false,
     },
   },
 });

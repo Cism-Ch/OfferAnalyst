@@ -71,3 +71,4 @@
 
 - [x] **`TASK-PROD-01` — Présentation SaaS Premium, Démo 1 Clic & Système Anti-Bounce par Cookies**
   - **Critères validés :** Cookie de navigation offeranalyst_app_mode, InteractiveDemoWidget 1-clic, SaaSPresentationView B2B/Prosumer, bilinguisme FR/EN.
+

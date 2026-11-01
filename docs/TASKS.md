@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 01 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 35 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
+**Statut Global :** Sprints 1 à 36 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
 
 ---
 
@@ -13,29 +13,30 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 36) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 37) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [-] TASK-AUTH-02        │  │ [ ] Chrome Store Publish│  │     - Sprint 35 (Vitrine│
-│     (Inscription, Login │  │ [ ] Advanced Billing    │  │       Dock & Spacing)   │
-│      & Admin Seed DB)   │  │ [ ] E2E Playwright Auth │  │     - Sprint 34 (Pnpm)  │
+│ [ ] TASK-E2E-01         │  │ [ ] Chrome Store Publish│  │     - Sprint 36 (Auth & │
+│     (E2E Playwright     │  │ [ ] Advanced Billing    │  │       Admin Seed DB)    │
+│      Auth & Workflows)  │  │                         │  │     - Sprint 35 (Vitrine│
+│                         │  │                         │  │       Dock & Spacing)   │
+│                         │  │                         │  │     - Sprint 34 (Pnpm)  │
 │                         │  │                         │  │     - Sprints 25-33 Arch│
-│                         │  │                         │  │     - Sprints 1-24 Arch │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## 🔐 Sprint 36 : Diagnostic Inscription / Connexion & Initialisation Identifiants Admin DB
+## 🔐 Sprint 36 Achevée : Diagnostic Inscription / Connexion & Initialisation Identifiants Admin DB
 
-- [-] **`TASK-AUTH-02` — Résolution des Échecs d'Inscription/Connexion & Provisioning Admin Sécurisé**
+- [x] **`TASK-AUTH-02` — Résolution des Échecs d'Inscription/Connexion & Provisioning Admin Sécurisé**
   - **Priorité :** 🔴 CRITIQUE
-  - **Fichiers cibles :** `src/lib/auth.ts`, `prisma/schema.prisma`, `.env`, `scripts/seed-admin.ts`, `src/app/actions/db/auth-admin.ts`, `docs/TASKS.md`
+  - **Fichiers cibles :** `src/lib/auth.ts`, `prisma/schema.prisma`, `.env.example`, `scripts/seed-admin.mjs`, `package.json`, `docs/TASKS.md`
   - **Critères d'acceptation :**
-    - [ ] `TASK-AUTH-02.01` : Audit et identification de la cause racine de l'échec d'inscription / connexion via Better-Auth (validation schéma MongoDB, hashing, endpoints).
-    - [ ] `TASK-AUTH-02.02` : Configuration et documentation des variables d'environnement admin dans `.env` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, etc.) sans jamais écraser ni faire fuiter de secrets.
-    - [ ] `TASK-AUTH-02.03` : Script idempotent de seed / provisioning administrateur (`pnpm run db:seed-admin`) pour garantir l'existence du compte admin avec rôle `ADMIN` dans MongoDB.
-    - [ ] `TASK-AUTH-02.04` : Test et validation fonctionnelle du flux complet d'inscription (`signUp.email`) et connexion (`signIn.email`).
-    - [ ] `TASK-AUTH-02.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+    - [x] `TASK-AUTH-02.01` : Audit et identification de la cause racine de l'échec d'inscription / connexion via Better-Auth (fix `advanced.database.generateId: false` et retrait de l'index unique duplicate `sessions_sessionToken_key`).
+    - [x] `TASK-AUTH-02.02` : Configuration et documentation des variables d'environnement admin dans `.env` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, etc.) sans jamais écraser ni faire fuiter de secrets.
+    - [x] `TASK-AUTH-02.03` : Script idempotent de seed / provisioning administrateur (`pnpm run db:seed-admin`) pour garantir l'existence du compte admin avec rôle `ADMIN` dans MongoDB.
+    - [x] `TASK-AUTH-02.04` : Test et validation fonctionnelle du flux complet d'inscription (`signUp.email`, status 200) et connexion (`signIn.email`, session active avec rôle ADMIN).
+    - [x] `TASK-AUTH-02.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
@@ -90,7 +91,7 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 108 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement 96 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Traçabilité des Audits :** Tout diagnostic découvrant des points d'amélioration consigne ses constats dans `docs/archive/reports/`.
 4. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans `pnpm exec tsc --noEmit` et `pnpm run lint` à 0 erreur.
