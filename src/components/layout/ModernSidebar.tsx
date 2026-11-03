@@ -389,7 +389,7 @@ function SidebarBody({
     const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
 
     const mainNavItems: NavItem[] = [
-        { label: t.nav.dashboard, href: '/', icon: Home },
+        { label: t.nav.home, href: '/', icon: Home },
         { label: t.nav.searchContext, href: '/search-context', icon: Search },
         { label: t.nav.dataSource, href: '/data-source', icon: Database },
         { label: t.nav.analysis, href: '/analysis', icon: LineChart },
@@ -468,7 +468,7 @@ function SidebarBody({
 
             {/* Navigation */}
             <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {renderNavItems(mainNavItems, undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
+                {renderNavItems(mainNavItems, !isCollapsed ? t.nav.sectionMain : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-2 opacity-60" />
                 {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-2 opacity-60" />

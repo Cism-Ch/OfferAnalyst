@@ -8,6 +8,7 @@ export const translations = {
   fr: {
     // Navigation & Shell
     nav: {
+      home: "Accueil",
       dashboard: "Tableau de bord",
       searchContext: "Contexte de Recherche",
       dataSource: "Sources de Données",
@@ -28,9 +29,9 @@ export const translations = {
       french: "Français",
       english: "English",
       toggleLang: "Basculer la langue (FR / EN)",
-      sectionMain: "Parcours Principal",
+      sectionMain: "Recherche",
       sectionMore: "Navigation",
-      sectionDashboard: "Tableau de Bord",
+      sectionDashboard: "Gestion & Paramètres",
       sectionAdmin: "Administration",
       adminConsole: "Console d'administration",
       activeSession: "Session active",
@@ -578,6 +579,7 @@ export const translations = {
   en: {
     // Navigation & Shell
     nav: {
+      home: "Home",
       dashboard: "Dashboard",
       searchContext: "Search Context",
       dataSource: "Data Source",
@@ -598,9 +600,9 @@ export const translations = {
       french: "Français",
       english: "English",
       toggleLang: "Switch language (FR / EN)",
-      sectionMain: "Main Flow",
+      sectionMain: "Search",
       sectionMore: "Navigation",
-      sectionDashboard: "Dashboard",
+      sectionDashboard: "Management & Settings",
       sectionAdmin: "Administration",
       adminConsole: "Admin Console",
       activeSession: "Active Session",

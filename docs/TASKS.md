@@ -13,14 +13,27 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 45) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 46) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 44 (UI     │
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       Sélecteur IA Fix) │
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 43 (Quota) │
-│                         │  │                         │  │     - Sprints 1 à 42    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 45 (Sidebar│
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       Titres & Menus)   │
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 44 (UI)    │
+│                         │  │                         │  │     - Sprints 1 à 43    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🧭 Sprint 45 Achevée : Harmonisation des Titres & Menus de la Barre Latérale (Dédoublonnage Dashboard & Titre Groupe 1)
+
+- [x] **`TASK-NAV-01` — Harmonisation des Titres & Menus de la Barre Latérale (ModernSidebar)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/ModernSidebar.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-NAV-01.01` : Ajout de la clé `t.nav.home` (« Accueil » / « Home ») et mise à jour de `t.nav.sectionMain` (« Recherche » / « Search ») dans `LanguageContext.tsx`.
+    - [x] `TASK-NAV-01.02` : Renommage du titre du troisième groupe `t.nav.sectionDashboard` en « Gestion & Paramètres » / « Management & Settings » sans altérer les items internes.
+    - [x] `TASK-NAV-01.03` : Application du titre de groupe sur `mainNavItems` (`t.nav.sectionMain`) et remplacement du premier lien `/` par `t.nav.home` dans `ModernSidebar.tsx`.
+    - [x] `TASK-NAV-01.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
