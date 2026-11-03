@@ -13,14 +13,25 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 46) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 47) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 45 (Sidebar│
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       Titres & Menus)   │
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 44 (UI)    │
-│                         │  │                         │  │     - Sprints 1 à 43    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 46 (Sidebar│
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       Espace de travail)│
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 45 (Nav)   │
+│                         │  │                         │  │     - Sprints 1 à 44    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🧭 Sprint 46 Achevée : Renommage du Titre du 2ème Groupe Sidebar (« Espace de travail »)
+
+- [x] **`TASK-NAV-02` — Renommage du Titre du 2ème Groupe de la Sidebar en « Espace de travail »**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-NAV-02.01` : Mise à jour de `t.nav.sectionMore` en « Espace de travail » (FR) et « Workspace » (EN) dans `LanguageContext.tsx`.
+    - [x] `TASK-NAV-02.02` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
