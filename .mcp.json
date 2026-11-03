@@ -19,6 +19,14 @@
     "upstash": {
       "type": "http",
       "url": "https://mcp.upstash.com/mcp"
+    },
+    "tigris": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@tigrisdata/tigris-mcp-server",
+        "run"
+      ]
     }
   }
 }
