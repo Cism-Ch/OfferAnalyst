@@ -41,8 +41,13 @@ Veuillez consulter l'intégralité du manuel et des règles d'ingénierie dans l
     - **Hiérarchie Z-Index & Isolation Tactile (Sheet vs Dialog) :** Ne jamais ouvrir un `Dialog` par-dessus un `Sheet` ouvert (fermer le tiroir avec un micro-délai de 100-150ms). Tout `SelectContent` ou `DropdownMenu` apparaissant dans un `Dialog` doit porter `z-[70]`.
     - **Échelle Canonique Spacing / Typo :** Paddings de cartes : `p-3.5 sm:p-5 lg:p-6` ; Gaps : `gap-2.5 sm:gap-4 lg:gap-6` ; Conteneurs : `px-3 sm:px-6 lg:px-8`.
 14. **Réutilisation Stricte des Composants UI shadcn/ui & Radix (Zéro Réinvention de la Roue) :**
-    - **Catalogue Existante Prioritaire :** Toujours vérifier et utiliser en priorité les composants déjà intégrés dans `@/components/ui` (`Button`, `Card`, `Dialog`, `Sheet`, `Select`, `DropdownMenu`, `Badge`, `Tabs`, `Switch`, `ResponsiveTable`, `Skeleton`, `Toast`, etc.).
-    - **Interdiction de Réinventer l'UI :** Ne jamais recoder manuellement de modal (`<div>` en fixed), de tooltip, de dropdown ou de menu tiroir personnalisé avec des `useState` isolés. Toujours composer à partir des primitives shadcn/Radix existantes.
+    - **Catalogue Complet à Disposition (40 Composants) :** Le dossier `@/components/ui` intègre l'ensemble officiel des primitives shadcn/Radix. Toujours vérifier et utiliser en priorité ces composants déjà stylisés et testés :
+      - *Surfaces & Layout :* `Card`, `PremiumCard`, `Sheet`, `Dialog`, `Drawer` (tactile swipe-down), `ScrollArea`, `Separator`, `Resizable`, `AspectRatio`.
+      - *Actions & Navigation :* `Button`, `PremiumButton`, `Badge`, `Tabs`, `Breadcrumb`, `Pagination`, `Menubar`, `Toggle`, `ToggleGroup`.
+      - *Formulaires & Saisie :* `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `Slider`, `Select`, `Label`.
+      - *Overlays & Feedback :* `Tooltip`, `Popover`, `HoverCard`, `ContextMenu`, `DropdownMenu`, `AlertDialog`, `Toast`, `Skeleton`, `SkeletonPremium`, `Progress`, `Command` (palette `cmdk`).
+      - *Données & Tables :* `ResponsiveTable` (table desktop et cartes mobiles auto).
+    - **Interdiction de Réinventer l'UI :** Ne jamais recoder manuellement de modal (`<div>` en fixed), de tooltip avec `title` HTML ou état local, de menu tiroir ou de dropdown artisanal avec des `useState` isolés. Toujours composer à partir des primitives `@/components/ui`.
     - **Nouveaux Composants via CLI shadcn :** Si un composant UI standard est absent du dossier `@/components/ui`, utiliser le CLI ou le skill shadcn (`npx shadcn@latest add <component>`) plutôt que de bricoler une implémentation artisanale sans accessibilité ARIA.
 
 <!-- BEGIN:nextjs-agent-rules -->
