@@ -58,7 +58,12 @@ def run_cmd(name: str, cmd_str: str, weight: int, timeout_sec: int = 180) -> dic
             errors="replace"
         )
         passed = res.returncode == 0
-        error_output = "" if passed else f"STDERR:\n{res.stderr[-1500:]}\nSTDOUT:\n{res.stdout[-1500:]}"
+        error_output = ""
+        if not passed:
+            # Capture tronquée et propre pour éviter de saturer la fenêtre de contexte
+            raw_err = (res.stderr.strip() or res.stdout.strip())
+            lines = [l for l in raw_err.split("\n") if l.strip()]
+            error_output = "\n".join(lines[-10:]) if len(lines) > 10 else "\n".join(lines)
         return {
             "step": name,
             "passed": passed,

@@ -13,14 +13,27 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 49) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 50) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 48 (RSI v2 │
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       Modulaire & MCP)  │
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 47 (Badge) │
-│                         │  │                         │  │     - Sprints 1 à 46    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 49 (Artef.   │
+│     à définir           │  │ [ ] Chrome Store Publish│  │       & Tests compacts) │
+│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 48 (RSI v2)│
+│                         │  │                         │  │     - Sprints 1 à 47    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 49 Achevée : Intégration Mémoire Artefacts IDE & Cadence des Tests Anti-Saturation
+
+- [x] **`TASK-RSI-03` — Intégration du Suivi par Artefacts IDE & Cadence Déterministe des Tests Anti-Saturation**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `.agents/workflows/rsi-feature.md`, `.agents/rules/system_core.md`, `evals/run_fullstack_eval.py`, `evals/rsi_orchestrator.py`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-RSI-03.01` : Formalisation de la séparation Mémoire Épisodique (Artefacts IDE hors contexte conversationnel) vs Mémoire Procédurale (`.agents/rules/modules/`) dans le workflow `/rsi-feature`.
+    - [x] `TASK-RSI-03.02` : Formalisation de la cadence de tests à 3 niveaux (Local/Micro-édition sans exécution globale -> Jalon/Composant avec `eval:quick` compacté -> Clôture avec `eval:fullstack`) dans `.agents/rules/system_core.md`.
+    - [x] `TASK-RSI-03.03` : Ajout du filtrage de sortie d'erreur tronqué dans `evals/run_fullstack_eval.py` (max 10 lignes signifiantes) pour garantir qu'aucune stack trace volumineuse ne pollue le contexte lors d'un échec.
+    - [x] `TASK-RSI-03.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

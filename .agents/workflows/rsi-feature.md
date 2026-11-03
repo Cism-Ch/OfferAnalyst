@@ -11,10 +11,11 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
 
 ## 🚀 PHASE 1 : Préparation & Exécution Fullstack Initiale
 
-1. **Vérification SSOT Tâche (`docs/TASKS.md`) :**
+1. **Vérification SSOT Tâche (`docs/TASKS.md`) & Artefact IDE :**
    - Assure-toi que la tâche existe dans `docs/TASKS.md` sous la forme `TASK-DOMAINE-XX`.
    - Si elle n'existe pas, formalise-la immédiatement avec ID, priorité, description et critères cochables `[ ]`.
    - Passe son statut à `[-]` (En cours) dans le Kanban et la section active.
+   - **Mémoire Épisodique (Artefact IDE) :** Si la tâche nécessite une planification multi-étapes ou un suivi étendu, initialise un Artefact Antigravity Markdown (`plan.md` ou `task_tracking.md`) dans le dossier Brain. L'artefact sert de tableau de bord visuel hors contexte conversationnel. Ne jamais recopier l'intégralité d'un artefact dans les messages de chat pour préserver les tokens de contexte.
 
 2. **Audit de Stack & Outillage Officiel (Skills & MCP) :**
    - Exécute `python evals/stack_inspector.py` (ou `pnpm run rsi:inspect`).
@@ -24,7 +25,8 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
    - Exécute `python evals/memory_engine.py --inject [fichiers_cibles]` pour charger exactement les sous-playbooks atomiques concernés (`.agents/rules/modules/`) sans saturer la fenêtre de contexte.
    - Lis `.agents/rules/system_core.md` pour les règles absolues.
 
-4. **Implémentation de Bout en Bout :**
+4. **Implémentation de Bout en Bout avec Cadence Anti-Saturation :**
+   - **Micro-éditions locales :** Lors de l'écriture ou de l'ajustement de composants/fonctions, n'exécute pas de test global (`tsc`/`lint`). Laisser le flux d'édition se dérouler librement.
    - **BDD :** Si nécessaire, mets à jour `prisma/schema.prisma` (`@db.ObjectId`, `@map("_id")`), puis lance `pnpm exec prisma validate` et `pnpm exec prisma generate`.
    - **Backend :** Crée/adapte la Server Action dans `src/app/actions/` avec validation Zod stricte, auth serveur Better-Auth (`await auth.api.getSession`), standard `{ success, data } | { success, error }` et `revalidatePath()`.
    - **Frontend :** Développe les composants React 19 dans `src/components/` ou colocalisés dans `src/app/`, avec design Tailwind v4 soigné, gestion des 4 états (`isLoading`, `isError`, `isEmpty`, `data`), et micro-interactions.
@@ -34,11 +36,18 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
 
 ## 🧪 PHASE 2 : Évaluation Déterministe & Boucle Réflexive (Max 3 Tentatives)
 
-1. **Exécution du Juge Déterministe :**
-   ```bash
-   python evals/run_fullstack_eval.py
-   # ou pnpm run eval:fullstack
-   ```
+1. **Exécution du Juge Déterministe (Cadence Jalon vs Clôture) :**
+   - **En cours de tâche / Jalon :** Exécute toujours le mode rapide compact :
+     ```bash
+     python evals/run_fullstack_eval.py --quick
+     # ou pnpm run eval:quick
+     ```
+     La sortie JSON compacte (`failed_steps` tronqués à 10 lignes) évite de saturer la fenêtre de contexte de l'agent.
+   - **Avant Clôture finale uniquement :** Exécute le test complet :
+     ```bash
+     python evals/run_fullstack_eval.py
+     # ou pnpm run eval:fullstack
+     ```
 2. **Si le score est de 100/100 dès la Tentative 1 :**
    - Si la tâche était un **audit de sécurité, un débogage ou une refonte** ayant révélé et corrigé des failles du code existant : **Exécute la PHASE 3** pour consigner ces enseignements critiques dans le playbook.
    - S'il s'agissait d'une création de feature standard sans découverte d'anti-pattern : Passe directement à la **PHASE 4**.
