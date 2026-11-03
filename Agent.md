@@ -305,6 +305,20 @@ Organisez toujours les classes selon l'ordre :
 5. **Effets & Ombres :** `shadow-sm`, `shadow-emerald-500/10`, `backdrop-blur-md`
 6. **Transitions & Pseudo-classes :** `transition-colors`, `hover:bg-accent`, `focus:ring-2`, `disabled:opacity-50`
 
+### 8.3 Directives Impératives : Responsive & Mobile-First Design
+1. **Approche Mobile-First Strict (Min-Width) :**
+   * Écrire toujours les styles de base sans préfixe pour mobile (`w-full flex-col p-3.5`), puis faire évoluer vers tablette/desktop avec `sm:`, `md:`, `lg:`.
+   * Proscription formelle des largeurs rigides en pixels (`w-[450px]`). Utiliser `w-full max-w-xl` ou `w-full min-w-0`.
+2. **Hygiène du Spacing, Flex & Text Truncate :**
+   * Poser obligatoirement `min-w-0` sur les éléments enfants d'un conteneur flexbox ou grid pour empêcher les textes tronqués (`truncate`) de forcer un scroll horizontal indésirable.
+   * Grille de paddings adaptative : Cartes (`p-3.5 sm:p-5 lg:p-6`), Gaps (`gap-2.5 sm:gap-4 lg:gap-6`), Conteneurs de page (`px-3 sm:px-6 lg:px-8`).
+3. **Ergonomie Tactile & Safe Areas :**
+   * Cibles tactiles minimales : Tout élément cliquable sur mobile doit garantir `min-h-[44px] min-w-[44px]` (normes WCAG / Apple HIG).
+   * Safe Area Insets : Tout élément fixé au bas de l'écran (`fixed bottom-0`, dock, floating navbar) doit comporter `pb-[env(safe-area-inset-bottom)]`.
+4. **Gestion des Portals, Drawers & Superpositions (Sheet vs Dialog) :**
+   * Ne jamais ouvrir un modal (`Dialog`) par-dessus un tiroir mobile ouvert (`Sheet`) : fermer le Sheet avec un micro-délai de 100-150ms pour libérer le focus trap tactile.
+   * Échelle Z-Index : Tout menu déroulant (`SelectContent`, `DropdownMenuContent`) apparaissant au sein d'un Dialog doit porter `z-[70]`.
+
 ---
 
 ## 9. 🛡️ Sécurité des Fichiers d'Environnement (.env)

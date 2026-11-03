@@ -33,6 +33,13 @@ Veuillez consulter l'intégralité du manuel et des règles d'ingénierie dans l
     - **Plafond strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes**. Dès dépassement, transférer les sprints archivés vers `docs/archive/tasks/` et maintenir des liens markdown relatifs directs.
     - **Ventilation des Audits & Diagnostics :** Tout audit ou traque de failles découvrant plusieurs vulnérabilités doit impérativement ventiler des sous-identifiants unitaires (`TASK-DOM-XX.01` à `.NN`) et produire un rapport exhaustif dédié dans `docs/archive/reports/`.
     - **Équivalence d'Autonomie `/goal` & `/rsi-feature` :** Toute commande d'autonomie lancée via `/goal` ou `/rsi-feature` doit exécuter sans exception la boucle en 4 phases (Cadrage -> Évaluation Déterministe -> Méta-Optimisation Proactive -> Archivage SSOT).
+13. **Directives Fondamentales Responsive & Mobile-First Design :**
+    - **Mobile-First Strict (Min-Width) :** Écrire systématiquement les classes Tailwind de base pour le mobile sans préfixe (ex. `flex-col w-full p-3.5 text-sm`), puis élargir avec `sm:`, `md:`, `lg:`.
+    - **Zéro Largeur Fixe Débordante :** Proscription stricte des largeurs en pixels fixes (`w-[450px]`). Préférer `w-full max-w-xl` et poser obligatoirement `min-w-0` sur les enfants de conteneurs flex/grid pour éviter les cassures de texte tronqué et les barres de défilement horizontal parasites.
+    - **Cibles Tactiles Minimales (Touch Targets) :** Tout élément interactif (boutons, icônes déclencheuses, inputs) doit mesurer au minimum `44x44px` (`min-h-[44px] min-w-[44px]` ou padding adéquat).
+    - **Zones Sécurisées (Safe Areas) :** Tout composant fixé en bas d'écran (`fixed bottom-0`) ou barre de navigation mobile doit impérativement intégrer `pb-[env(safe-area-inset-bottom)]`.
+    - **Hiérarchie Z-Index & Isolation Tactile (Sheet vs Dialog) :** Ne jamais ouvrir un `Dialog` par-dessus un `Sheet` ouvert (fermer le tiroir avec un micro-délai de 100-150ms). Tout `SelectContent` ou `DropdownMenu` apparaissant dans un `Dialog` doit porter `z-[70]`.
+    - **Échelle Canonique Spacing / Typo :** Paddings de cartes : `p-3.5 sm:p-5 lg:p-6` ; Gaps : `gap-2.5 sm:gap-4 lg:gap-6` ; Conteneurs : `px-3 sm:px-6 lg:px-8`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
