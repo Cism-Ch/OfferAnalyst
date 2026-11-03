@@ -10,11 +10,12 @@
  */
 
 import { cookies, headers } from 'next/headers';
+import { redis } from '@/lib/redis';
 
 const GUEST_ID_COOKIE_NAME = 'offeranalyst.guest_id';
 const DAILY_QUOTA_LIMIT = 10;
 
-// Persistent in-memory quota store across Next.js HMR reloads
+// Persistent in-memory quota store fallback across Next.js HMR reloads
 const globalQuota = globalThis as unknown as {
     __offeranalyst_daily_quota_store?: Map<string, number>;
 };
@@ -29,9 +30,10 @@ export interface DailyQuotaResult {
 }
 
 /**
- * Return current UTC date string (YYYY-MM-DD) and ISO timestamp for next midnight UTC.
+ * Return current UTC date string (YYYY-MM-DD), ISO timestamp for next midnight UTC,
+ * and seconds remaining until midnight UTC (used for Redis key TTL).
  */
-function getUtcDayInfo(): { dateUtc: string; resetAt: string } {
+function getUtcDayInfo(): { dateUtc: string; resetAt: string; ttlSeconds: number } {
     const now = new Date();
     const dateUtc = now.toISOString().split('T')[0];
     const tomorrowUtc = new Date(Date.UTC(
@@ -40,10 +42,54 @@ function getUtcDayInfo(): { dateUtc: string; resetAt: string } {
         now.getUTCDate() + 1,
         0, 0, 0, 0
     ));
+    const ttlSeconds = Math.max(60, Math.ceil((tomorrowUtc.getTime() - now.getTime()) / 1000));
     return {
         dateUtc,
-        resetAt: tomorrowUtc.toISOString()
+        resetAt: tomorrowUtc.toISOString(),
+        ttlSeconds
     };
+}
+
+/**
+ * Read current usage from Redis or in-memory fallback.
+ */
+async function getStoredQuotaUsage(key: string): Promise<number> {
+    if (redis) {
+        try {
+            const val = await redis.get<number | string>(key);
+            if (val !== null && val !== undefined) {
+                const parsed = typeof val === 'number' ? val : parseInt(String(val), 10);
+                if (!Number.isNaN(parsed)) return parsed;
+            }
+        } catch (err) {
+            console.warn('[quota-limiter] Redis get failed, using in-memory store:', err);
+        }
+    }
+    return quotaStore.get(key) || 0;
+}
+
+/**
+ * Increment usage in Redis or in-memory fallback.
+ */
+async function incrementStoredQuotaUsage(key: string, ttlSeconds: number): Promise<number> {
+    // Increment in-memory fallback
+    const memCurrent = quotaStore.get(key) || 0;
+    const memNext = memCurrent + 1;
+    quotaStore.set(key, memNext);
+
+    if (redis) {
+        try {
+            const nextVal = await redis.incr(key);
+            if (nextVal === 1) {
+                await redis.expire(key, ttlSeconds);
+            }
+            return nextVal;
+        } catch (err) {
+            console.warn('[quota-limiter] Redis incr failed, using in-memory store:', err);
+        }
+    }
+
+    return memNext;
 }
 
 /**
@@ -159,8 +205,9 @@ export async function hasActiveByokKey(): Promise<boolean> {
 /**
  * Server Action: Get the daily quota status for the current client.
  * Returns used, total (10), remaining, resetAt, and isByok flag.
+ * Supports optional clientHasByok hint for client-side stored API keys (localStorage).
  */
-export async function getDailyQuotaAction(): Promise<{
+export async function getDailyQuotaAction(clientHasByok?: boolean): Promise<{
     success: boolean;
     data: DailyQuotaResult;
     used: number;
@@ -169,11 +216,11 @@ export async function getDailyQuotaAction(): Promise<{
     resetAt: string;
     isByok: boolean;
 }> {
-    const isByok = await hasActiveByokKey();
+    const isByok = clientHasByok || (await hasActiveByokKey());
     const { identifier } = await resolveClientQuotaIdentifier();
     const { dateUtc, resetAt } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
-    const used = quotaStore.get(key) || 0;
+    const used = await getStoredQuotaUsage(key);
     const total = DAILY_QUOTA_LIMIT;
     const remaining = isByok ? 999999 : Math.max(0, total - used);
 
@@ -207,7 +254,7 @@ export async function checkDailyQuota(hasByokOverride?: boolean): Promise<{
     const { identifier } = await resolveClientQuotaIdentifier();
     const { dateUtc, resetAt } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
-    const used = quotaStore.get(key) || 0;
+    const used = await getStoredQuotaUsage(key);
     const total = DAILY_QUOTA_LIMIT;
 
     if (isByok) {
@@ -241,11 +288,9 @@ export async function incrementDailyQuota(hasByokOverride?: boolean): Promise<{
 }> {
     const isByok = hasByokOverride !== undefined ? hasByokOverride : await hasActiveByokKey();
     const { identifier } = await resolveClientQuotaIdentifier();
-    const { dateUtc } = getUtcDayInfo();
+    const { dateUtc, ttlSeconds } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
-    const current = quotaStore.get(key) || 0;
-    const next = current + 1;
-    quotaStore.set(key, next);
+    const next = await incrementStoredQuotaUsage(key, ttlSeconds);
 
     return {
         used: next,
@@ -257,6 +302,24 @@ export async function incrementDailyQuota(hasByokOverride?: boolean): Promise<{
  * Testing utility: Reset quota for a specific identifier or clear all.
  */
 export async function _resetQuotaForTest(keyPattern?: string): Promise<void> {
+    if (redis) {
+        try {
+            if (keyPattern) {
+                const keys = await redis.keys(`quota:daily:*${keyPattern}*`);
+                if (keys.length > 0) {
+                    await redis.del(...keys);
+                }
+            } else {
+                const keys = await redis.keys('quota:daily:*');
+                if (keys.length > 0) {
+                    await redis.del(...keys);
+                }
+            }
+        } catch (err) {
+            console.warn('[quota-limiter] Redis reset failed:', err);
+        }
+    }
+
     if (keyPattern) {
         for (const k of quotaStore.keys()) {
             if (k.includes(keyPattern)) {

@@ -154,6 +154,9 @@ export function GuestApiKeyDialog({
             setApiKey('');
             setIsEditing(false);
             await refreshStatus();
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('offeranalyst:quota_updated'));
+            }
             onKeyUpdated?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : (isFr ? 'Erreur inattendue' : 'Unexpected error'));
@@ -171,6 +174,9 @@ export function GuestApiKeyDialog({
             setStatus({ hasKey: false, isExpired: false });
             setIsEditing(true);
             setSuccessMessage(isFr ? 'Clé API supprimée avec succès.' : 'API key cleared successfully.');
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('offeranalyst:quota_updated'));
+            }
             onKeyUpdated?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : (isFr ? 'Erreur lors de la suppression' : 'Failed to clear key'));

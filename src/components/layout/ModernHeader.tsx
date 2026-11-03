@@ -26,6 +26,7 @@ import { AIModelSelector } from './AIModelSelector';
 import { LanguageToggle } from './LanguageToggle';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
+import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 
 export interface ModernHeaderProps {
     selectedModel?: string;
@@ -44,25 +45,40 @@ export function ModernHeader({
 }: ModernHeaderProps) {
     const pathname = usePathname();
     const { t, language } = useLanguage();
+    const tempKeys = useTemporaryApiKeys();
     const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
     const [quota, setQuota] = useState<{ remaining: number; total: number; isByok: boolean } | null>(null);
 
+    const hasLocalByok = tempKeys.keys.length > 0;
+
     const fetchQuota = useCallback(async () => {
         try {
-            const res = await getDailyQuotaAction();
+            const res = await getDailyQuotaAction(hasLocalByok);
             if (res.success && res.data) {
                 setQuota(res.data);
             }
         } catch {
             // Background fetch fallback
         }
-    }, []);
+    }, [hasLocalByok]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchQuota();
         }, 0);
-        return () => clearTimeout(timer);
+
+        // Listen for real-time quota updates across tabs and actions
+        const handleQuotaUpdated = () => {
+            fetchQuota();
+        };
+        window.addEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
+        window.addEventListener('storage', handleQuotaUpdated);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
+            window.removeEventListener('storage', handleQuotaUpdated);
+        };
     }, [fetchQuota]);
 
     const routeInfo = (t.routes as Record<string, { title: string; description: string; breadcrumbs: string[] }>)[pathname] || t.routes['/'];

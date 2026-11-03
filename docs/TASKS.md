@@ -13,15 +13,41 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 43) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 45) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 42 (DDoS   │
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       5 req/m, Telemetry)│
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 41 (Modèles│
-│                         │  │                         │  │       2/struct, Offline)│
-│                         │  │                         │  │     - Sprints 1 à 40    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 44 (UI     │
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       Sélecteur IA Fix) │
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 43 (Quota) │
+│                         │  │                         │  │     - Sprints 1 à 42    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🎨 Sprint 44 Achevée : Calibrage Géométrique Modal & Footer Sélecteur d'IA (Zéro Débordement & Hauteur Optimisée)
+
+- [x] **`TASK-UI-MODEL-01` — Calibrage Spatial du Sélecteur d'IA & Footer Sans Débordement**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/AIModelSelector.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-MODEL-01.01` : Retrait des marges négatives cassantes (`-mb-4`, `-mb-6`) sur le footer pour éliminer tout débordement de texte hors du conteneur modal.
+    - [x] `TASK-UI-MODEL-01.02` : Fixation explicite du footer avec `shrink-0`, `sticky bottom-0`, fond opaque avec bordure supérieure nette et padding interne sécurisé.
+    - [x] `TASK-UI-MODEL-01.03` : Ajustement de la hauteur du dialogue (`h-[92dvh] sm:h-[86dvh] max-h-[850px]`) avec conteneur de liste `flex-1 min-h-0 overflow-y-auto` pour garantir une surface généreuse de défilement.
+    - [x] `TASK-UI-MODEL-01.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## ⚡ Sprint 43 Achevée : Fiabilisation Compteur de Quota Journalier (Redis, LocalStorage Sync & Event Bus) & Lisibilité Footer Sélecteur d'IA
+
+- [x] **`TASK-QUOTA-01` — Fiabilisation Compteur de Quota (Redis + In-Memory Fallback, LocalStorage BYOK Sync, Event Bus) & Restructuration Footer Sélecteur IA**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/actions/shared/quota-limiter.ts`, `src/contexts/AnalysisContext.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/app/data-source/page.tsx`, `src/components/layout/AIModelSelector.tsx`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-QUOTA-01.01` : Stockage persistant du compteur journalier dans Upstash Redis (`quota:daily:YYYY-MM-DD:identifier`) avec TTL automatique à minuit UTC, avec fallback transparent sur la Map en mémoire si Redis est indisponible.
+    - [x] `TASK-QUOTA-01.02` : Détection BYOK multi-sources : vérification Better-Auth session, cookie 24h chiffré, et support du paramètre `clientHasByok` pour les clés configurées dans `useTemporaryApiKeys` (localStorage).
+    - [x] `TASK-QUOTA-01.03` : Bus d'événements client (`offeranalyst:quota_updated` et `storage`) émis lors de la fin d'une recherche (`AnalysisContext`), de l'ajout/suppression d'une clé API (`GuestApiKeyDialog`), et réécouté en direct par `ModernHeader`, `ModernSidebar` et `DataSourcePage`.
+    - [x] `TASK-QUOTA-01.04` : Refonte ergonomique du footer du sélecteur d'IA (`AIModelSelector`) : texte plus grand (`text-xs sm:text-sm`), icône bien dimensionnée, contraste fort pour une lisibilité optimale, disposition équilibrée et bouton d'accès direct vers `/dashboard/api-keys`.
+    - [x] `TASK-QUOTA-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

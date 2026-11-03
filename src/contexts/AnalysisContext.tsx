@@ -355,6 +355,11 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
           isByokUsed
         );
 
+        // Notify app components of updated quota
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('offeranalyst:quota_updated'));
+        }
+
         toast.success(
           'Analyse terminée !',
           `${analysisResult.data.topOffers.length} offres classées avec succès par ${modelMeta.label}.`

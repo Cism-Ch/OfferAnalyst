@@ -124,8 +124,8 @@ export function AIModelSelector({
                 </Button>
             </DialogTrigger>
 
-            <DialogContent variant="bottom-sheet" className="sm:max-w-3xl max-h-[calc(100dvh-1rem)] sm:max-h-[88dvh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-t-2xl sm:rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
-                <DialogHeader className="pb-3 border-b border-border/60">
+            <DialogContent variant="bottom-sheet" className="sm:max-w-3xl h-[92dvh] sm:h-[86dvh] max-h-[850px] overflow-hidden flex flex-col p-0 rounded-t-2xl sm:rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
+                <DialogHeader className="p-4 sm:p-6 pb-3 border-b border-border/60 shrink-0">
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <DialogTitle className="text-lg font-bold flex items-center gap-2">
@@ -182,8 +182,8 @@ export function AIModelSelector({
                     </div>
                 </DialogHeader>
 
-                {/* Models List with Enhanced Horizontal Margins */}
-                <div className="flex-1 overflow-y-auto px-1 sm:px-2 py-3.5 space-y-3">
+                {/* Models List with Dedicated Scrollport & Breathing Space */}
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 py-3.5 space-y-3">
                     {filteredModels.map((option, index) => {
                         const isActive = option.id === activeModelId;
                         const statusInfo = healthReport[option.id];
@@ -321,24 +321,27 @@ export function AIModelSelector({
                     })}
                 </div>
 
-                {/* Footer with Corrected Spacing & Padding */}
-                <div className="mt-3 pt-3.5 pb-2 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs bg-muted/30 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 px-4 py-3 sm:px-6 sm:py-3.5">
-                    <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-xs text-muted-foreground">
-                            Une clé OpenRouter débloque tous les modèles Pro en une seule configuration.
+                {/* Fixed Footer with Solid Backing, Zero Bleed & Safe Bottom Inset */}
+                <div className="shrink-0 border-t border-border/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-muted/40 dark:bg-muted/30 px-4 py-3.5 sm:px-6 sm:py-4 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-8 w-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                            <Key className="h-4 w-4" />
+                        </div>
+                        <span className="text-xs sm:text-sm font-medium text-foreground/90 leading-snug">
+                            Une clé <strong className="text-foreground font-semibold">OpenRouter</strong> débloque l&apos;ensemble des modèles Pro en une seule configuration.
                         </span>
                     </div>
                     <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
-                        className="text-xs font-semibold text-primary p-0 h-auto hover:bg-transparent hover:underline shrink-0"
+                        className="text-xs sm:text-sm font-semibold h-9 px-3.5 rounded-lg border border-border/60 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 w-full sm:w-auto"
                         onClick={() => {
                             setDialogOpen(false);
                             router.push('/dashboard/api-keys');
                         }}
                     >
-                        Gérer mes clés API →
+                        Gérer mes clés API
+                        <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                     </Button>
                 </div>
             </DialogContent>

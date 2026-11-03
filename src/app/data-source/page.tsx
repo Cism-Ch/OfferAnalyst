@@ -45,6 +45,7 @@ import { useRouter } from 'next/navigation';
 import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
 import { getDailyQuotaAction, type DailyQuotaResult } from '@/app/actions/shared/quota-limiter';
+import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RawTextTab } from '@/components/data-source/RawTextTab';
@@ -58,6 +59,8 @@ import { cn } from '@/lib/utils';
 export default function DataSourcePage() {
     const dashboardState = useAnalysis();
     const router = useRouter();
+    const tempKeys = useTemporaryApiKeys();
+    const hasLocalByok = tempKeys.keys.length > 0;
     const { t, language } = useLanguage();
     const isFr = language === 'fr';
     const ds = t.dataSourcePage;
@@ -112,20 +115,32 @@ export default function DataSourcePage() {
 
     const fetchQuota = useCallback(async () => {
         try {
-            const res = await getDailyQuotaAction();
+            const res = await getDailyQuotaAction(hasLocalByok);
             if (res.success && res.data) {
                 setQuota(res.data);
             }
         } catch {
             // Background fetch fallback
         }
-    }, []);
+    }, [hasLocalByok]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchQuota();
         }, 0);
-        return () => clearTimeout(timer);
+
+        // Listen for real-time quota updates
+        const handleQuotaUpdated = () => {
+            fetchQuota();
+        };
+        window.addEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
+        window.addEventListener('storage', handleQuotaUpdated);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
+            window.removeEventListener('storage', handleQuotaUpdated);
+        };
     }, [fetchQuota]);
 
     // Parse current offers to show ready counter
