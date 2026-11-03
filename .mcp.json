@@ -15,6 +15,10 @@
     "motion-plus": {
       "type": "http",
       "url": "https://mcp.motion.dev/plus"
+    },
+    "upstash": {
+      "type": "http",
+      "url": "https://mcp.upstash.com/mcp"
     }
   }
 }
