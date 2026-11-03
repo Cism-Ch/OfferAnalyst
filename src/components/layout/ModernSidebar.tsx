@@ -60,6 +60,7 @@ import { FluidAuthModal } from '@/components/auth/FluidAuthModal';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
+import { WorkspaceActiveBadge } from '@/components/workspace/WorkspaceActiveBadge';
 
 const PROTECTED_NAV_ROUTES = [
     '/saved',
@@ -468,6 +469,11 @@ function SidebarBody({
 
             {/* Navigation */}
             <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {!isCollapsed && (
+                    <div className="px-1 mb-2">
+                        <WorkspaceActiveBadge variant="sidebar" onClick={() => setMobileOpen?.(false)} />
+                    </div>
+                )}
                 {renderNavItems(mainNavItems, !isCollapsed ? t.nav.sectionMain : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}
                 <Separator className="my-2 opacity-60" />
                 {renderNavItems(secondaryNavItems, !isCollapsed ? t.nav.sectionMore : undefined, isCollapsed, isActive, setMobileOpen, isGuest, onProtectedClick, t)}

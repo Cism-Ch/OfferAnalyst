@@ -13,14 +13,28 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 47) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 48) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 46 (Sidebar│
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       Espace de travail)│
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 45 (Nav)   │
-│                         │  │                         │  │     - Sprints 1 à 44    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 47 (Badge  │
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       Workspace & Chg)  │
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 46 (Sidebar│
+│                         │  │                         │  │       Espace travail)   │
+│                         │  │                         │  │     - Sprints 1 à 45    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🏢 Sprint 47 Achevée : Badge Workspace Actif (Header & Sidebar) & Modernisation Complète du Changelog (v1.4.5)
+
+- [x] **`TASK-WORKSPACE-01` — Badge Workspace Actif Partout (Header & Sidebar) & Modernisation du Changelog (v1.4.5)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/workspace/WorkspaceActiveBadge.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/app/changelog/page.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-WORKSPACE-01.01` : Création du composant réutilisable `WorkspaceActiveBadge` récupérant le workspace actif via `getWorkspaceAction()` avec affichage du nom, badge de rôle (Owner/Admin/Member/Invité), icône d'immeuble/équipe et lien direct vers `/dashboard/workspace`.
+    - [x] `TASK-WORKSPACE-01.02` : Intégration du badge workspace dans `ModernHeader` (ligne desktop et ligne mobile) et en haut de la `ModernSidebar` (au-dessus des menus).
+    - [x] `TASK-WORKSPACE-01.03` : Refonte moderne de la page `src/app/changelog/page.tsx` avec les versions récentes v1.4.5, v1.4.2, v1.4.0, v1.3.5, design timeline shadcn soigné et sans emoji.
+    - [x] `TASK-WORKSPACE-01.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

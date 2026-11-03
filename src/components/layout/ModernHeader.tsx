@@ -27,6 +27,7 @@ import { LanguageToggle } from './LanguageToggle';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
+import { WorkspaceActiveBadge } from '@/components/workspace/WorkspaceActiveBadge';
 
 export interface ModernHeaderProps {
     selectedModel?: string;
@@ -98,12 +99,13 @@ export function ModernHeader({
                 <div className="sm:hidden flex flex-col w-full">
                     {/* Mobile Line 1: Route Breadcrumb + Quota Pill & Quick Actions */}
                     <div className="min-h-[50px] py-2 px-3 pl-14 flex items-center justify-between gap-2 w-full">
-                        {/* Route Crumb Badge */}
-                        <div className="flex items-center min-w-0">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[170px] min-[400px]:max-w-[210px] shadow-2xs">
+                        {/* Route Crumb Badge & Workspace Indicator */}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[130px] min-[400px]:max-w-[160px] shadow-2xs">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                                 <span className="truncate">{routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}</span>
                             </span>
+                            <WorkspaceActiveBadge className="h-7 text-[11px] px-2" />
                         </div>
 
                         {/* Top-Right Quota & Showcase */}
@@ -195,6 +197,9 @@ export function ModernHeader({
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                            {/* Active Workspace Badge */}
+                            <WorkspaceActiveBadge />
+
                             {/* Desktop Quick Search */}
                             <motion.div
                                 className="relative hidden xl:block"
