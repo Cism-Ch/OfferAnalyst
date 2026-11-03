@@ -16,11 +16,15 @@ Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
    - Si elle n'existe pas, formalise-la immédiatement avec ID, priorité, description et critères cochables `[ ]`.
    - Passe son statut à `[-]` (En cours) dans le Kanban et la section active.
 
-2. **Lecture des Directives Fondamentales :**
-   - Lis intégralement `.agent/rules/system_core.md` (règles immuables OfferAnalyst).
-   - Lis intégralement `.agent/rules/fullstack_playbook.md` (mémoire évolutive des erreurs évitées).
+2. **Audit de Stack & Outillage Officiel (Skills & MCP) :**
+   - Exécute `python evals/stack_inspector.py` (ou `pnpm run rsi:inspect`).
+   - Vérifie qu'aucun outillage officiel (serveurs MCP Upstash/Tigris, skills Shadcn/Prisma) n'est manquant pour éviter de coder à l'aveugle.
 
-3. **Implémentation de Bout en Bout :**
+3. **Résolution Dynamique de la Mémoire Contextuelle :**
+   - Exécute `python evals/memory_engine.py --inject [fichiers_cibles]` pour charger exactement les sous-playbooks atomiques concernés (`.agents/rules/modules/`) sans saturer la fenêtre de contexte.
+   - Lis `.agents/rules/system_core.md` pour les règles absolues.
+
+4. **Implémentation de Bout en Bout :**
    - **BDD :** Si nécessaire, mets à jour `prisma/schema.prisma` (`@db.ObjectId`, `@map("_id")`), puis lance `pnpm exec prisma validate` et `pnpm exec prisma generate`.
    - **Backend :** Crée/adapte la Server Action dans `src/app/actions/` avec validation Zod stricte, auth serveur Better-Auth (`await auth.api.getSession`), standard `{ success, data } | { success, error }` et `revalidatePath()`.
    - **Frontend :** Développe les composants React 19 dans `src/components/` ou colocalisés dans `src/app/`, avec design Tailwind v4 soigné, gestion des 4 états (`isLoading`, `isError`, `isEmpty`, `data`), et micro-interactions.
@@ -57,8 +61,8 @@ Cette phase s'exécute dès qu'un échec a été réparé (> 1 tentative) OU qu'
 1. Adopte le rôle défini dans `.agent/prompts/meta_optimizer.md`.
 2. Identifie la couche défaillante (DB, Server Action, UI, Types, Sécurité).
 3. Formule une règle générale préventive d'une à deux lignes (ex: `[R-API-XX] Toujours...`).
-4. **Anti-Bloat :** Vérifie que `.agent/rules/fullstack_playbook.md` ne dépasse pas 140 lignes. Si c'est le cas, fusionne les règles sémantiquement proches avant d'ajouter la nouvelle règle. Le playbook ne doit JAMAIS dépasser 150 lignes.
-5. Édite `.agent/rules/fullstack_playbook.md` (ou ajoute un script d'audit dans `.agent/skills/` si l'erreur est automatisable).
+4. **Anti-Bloat & Modularité :** Vérifie que le sous-module cible dans `.agents/rules/modules/` ne dépasse pas 80 lignes. Si c'est le cas, fusionne les règles sémantiquement proches avant d'ajouter la nouvelle règle. Si le domaine est nouveau, crée un nouveau fichier modulaire `[domaine].md`.
+5. Édite le sous-module ciblé dans `.agents/rules/modules/` et mets à jour `.agents/rules/fullstack_playbook.md` (ou ajoute un script d'audit dans `.agents/skills/` si l'erreur est automatisable).
 
 ---
 

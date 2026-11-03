@@ -13,15 +13,28 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 48) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 49) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 47 (Badge  │
-│     à définir par       │  │ [ ] Chrome Store Publish│  │       Workspace & Chg)  │
-│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 46 (Sidebar│
-│                         │  │                         │  │       Espace travail)   │
-│                         │  │                         │  │     - Sprints 1 à 45    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 48 (RSI v2 │
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       Modulaire & MCP)  │
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 47 (Badge) │
+│                         │  │                         │  │     - Sprints 1 à 46    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🧠 Sprint 48 Achevée : Protocole RSI v2 (Mémoire Modulaire Dynamique, Juge Adaptatif & Auditeur MCP/Skills)
+
+- [x] **`TASK-RSI-02` — Refonte du Protocole RSI v2 (Mémoire Modulaire, Juge Adaptatif & Auditeur MCP/Skills)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `evals/stack_inspector.py`, `evals/memory_engine.py`, `evals/run_fullstack_eval.py`, `evals/rsi_orchestrator.py`, `.agents/rules/modules/`, `.agents/rules/fullstack_playbook.md`, `package.json`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-RSI-02.01` : Création de l'Auditeur de Stack & Écosystème (`evals/stack_inspector.py`) analysant `package.json`, `.env.example`, `.mcp.json` et suggérant les MCP / Skills officiels correspondants.
+    - [x] `TASK-RSI-02.02` : Création du Moteur de Mémoire Modulaire Dynamique (`evals/memory_engine.py`) et découpage des règles en sous-modules (`db.md`, `api_backend.md`, `ui_frontend.md`, `security_auth.md`, `integration_ai.md`) avec indexation et chargement contextuel ciblé.
+    - [x] `TASK-RSI-02.03` : Refonte du Juge Déterministe (`evals/run_fullstack_eval.py`) pour le rendre agnostique et adaptatif (auto-détection package manager, typecheck, linter et ORM sans crash si Prisma est absent).
+    - [x] `TASK-RSI-02.04` : Mise à jour de l'orchestrateur RSI (`evals/rsi_orchestrator.py`), scripts `package.json` (`pnpm run rsi:inspect`, `pnpm run rsi:memory`) et workflow `.agents/workflows/rsi-feature.md`.
+    - [x] `TASK-RSI-02.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

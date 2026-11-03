@@ -40,7 +40,7 @@ def check_guardrails() -> dict:
     if not SYSTEM_CORE_PATH.exists():
         issues.append(f"Fichier critique manquant : {SYSTEM_CORE_PATH}")
 
-    # 2. Vérifier existence et taille de fullstack_playbook.md
+    # 2. Vérifier existence et taille de fullstack_playbook.md & modules
     if not PLAYBOOK_PATH.exists():
         issues.append(f"Playbook manquant : {PLAYBOOK_PATH}")
     else:
@@ -50,6 +50,14 @@ def check_guardrails() -> dict:
             issues.append(
                 f"Contrainte de taille violée : fullstack_playbook.md fait {line_count} lignes (maximum autorisé : {MAX_PLAYBOOK_LINES}). Compaction requise !"
             )
+
+    # 3. Vérifier la conformité de la mémoire modulaire dynamique
+    modules_dir = ROOT_DIR / ".agents" / "rules" / "modules"
+    if modules_dir.exists():
+        for mod in modules_dir.glob("*.md"):
+            mod_lines = len(mod.read_text(encoding="utf-8").splitlines())
+            if mod_lines > 80:
+                issues.append(f"Sous-module RSI {mod.name} dépasse le plafond ({mod_lines}/80 lignes). Découpage requis !")
 
     return {
         "passed": len(issues) == 0,
