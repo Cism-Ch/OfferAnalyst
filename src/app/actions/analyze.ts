@@ -4,7 +4,9 @@ import { OpenRouter } from "@openrouter/sdk";
 import { Offer, UserProfile, AnalysisResponse, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError } from "./shared/agent-utils";
 import { z } from 'zod';
+import { headers } from 'next/headers';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+import { evaluateDdosProtection } from '@/lib/ddos-defense';
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -86,6 +88,27 @@ export async function analyzeOffersAction(
                 'analyze offers'
             )
         };
+    }
+
+    // 1. DDoS & Adaptive Rate Limiting Enforcement (Max 5 requests/min per IP)
+    try {
+        const headerList = await headers();
+        const clientIp = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                         headerList.get('x-real-ip') || 
+                         '127.0.0.1';
+
+        const ddosCheck = await evaluateDdosProtection(clientIp, 'search_analysis');
+        if (!ddosCheck.allowed) {
+            return {
+                success: false,
+                error: {
+                    code: 'RATE_LIMIT_EXCEEDED',
+                    message: ddosCheck.reason || 'Seuil d\'analyse dépassé (5 requêtes/min max). Protection anti-DDoS active.'
+                }
+            };
+        }
+    } catch {
+        // Silently pass if headers() called outside request context (e.g. tests)
     }
 
     // Quota Enforcement: Check 10 searches/day limit for free tier

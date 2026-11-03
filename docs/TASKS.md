@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 03 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 41 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
+**Statut Global :** Sprints 1 à 42 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
 
 ---
 
@@ -13,15 +13,30 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS             │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 43) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Tous Sprints Validés│  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 41 (Modèles│
-│     Prêt pour nouveau   │  │ [ ] Chrome Store Publish│  │       2/struct, Offline)│
-│     jalon / sprint      │  │ [ ] Export PDF / CSV    │  │     - Sprint 40 (Safe   │
-│                         │  │                         │  │       1-Click Bookmarklet│
-│                         │  │                         │  │     - Sprints 1 à 39    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 42 (DDoS   │
+│     à définir par       │  │ [ ] Chrome Store Publish│  │       5 req/m, Telemetry)│
+│     l'utilisateur       │  │ [ ] Export PDF / CSV    │  │     - Sprint 41 (Modèles│
+│                         │  │                         │  │       2/struct, Offline)│
+│                         │  │                         │  │     - Sprints 1 à 40    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🛡️ Sprint 42 Achevée : Suppression Feature Flags Obsolètes, Télémétrie des Services & Rate Limiting DDoS Auto-Adaptatif (5 req/min Upstash Redis)
+
+- [x] **`TASK-SEC-01` — Purge des Feature Flags, Télémétrie des Services & Rate Limiting DDoS Auto-Adaptatif**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts`, `src/lib/redis.ts`, `src/lib/ddos-defense.ts`, `src/app/actions/db/service-health.ts`, `src/app/admin/page.tsx`, `src/app/actions/analyze.ts`, `.env.example`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-SEC-01.01` : Suppression complète du code mort des anciens Feature Flags (`src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts` et du composant d'affichage dans `src/app/admin/page.tsx`).
+    - [x] `TASK-SEC-01.02` : Client singleton Upstash Redis (`src/lib/redis.ts`) avec fallback mémoire résilient et variables d'environnement documentées dans `.env.example`.
+    - [x] `TASK-SEC-01.03` : Moteur de détection DDoS & Rate Limiting adaptatif (`src/lib/ddos-defense.ts`) calibré à 5 req/min max sur les recherches / analyses, avec système d'isolation automatique (Jail IP temporaire 15 min) et whitelist admin.
+    - [x] `TASK-SEC-01.04` : Sonde de télémétrie multi-services (`src/app/actions/db/service-health.ts`) mesurant la latence et disponibilité en direct de MongoDB Atlas, Upstash Redis, Upstash QStash, OpenRouter et Better-Auth.
+    - [x] `TASK-SEC-01.05` : Nouveau Centre de Contrôle Sécurité & Infrastructure sur `src/app/admin/page.tsx` avec statut des services, métriques DDoS, liste des IPs isolées avec déblocage en 1 clic.
+    - [x] `TASK-SEC-01.06` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 
@@ -63,7 +78,7 @@
     - [x] `TASK-HISTORY-01.01` : Retrait de tous les modèles gratuits non fonctionnels dans `src/lib/ai-models.ts`, ne conservant que NVIDIA (`nvidia/nemotron-3.5-lightning:free`) comme unique modèle gratuit par défaut.
     - [x] `TASK-HISTORY-01.02` : Persistance et propagation de l'indicateur clé (`isByok: boolean`, `keyType: 'byok' | 'free'`) dans les modèles Prisma, types TypeScript et actions MongoDB Atlas.
     - [x] `TASK-HISTORY-01.03` : Affichage sur chaque carte `/history` d'un badge distinctif et visible indiquant si la recherche a été effectuée en "BYOK" ou "Free Key".
-    - [x] `TASK-HISTORY-01.04` : Intégration d'un modal/dialogue grand format (`max-w-4xl max-h-[85vh]`) pour afficher confortablement les détails complets de la recherche (critères, contexte, synthèse marché, offres, scores multi-axes, justifications).
+    - [x] `TASK-HISTORY-01.04` : Intégration d'un modal/dialogue grand format (`max-w-4xl max-h-[85vh]`) pour afficher confortablement les détails complets de la recherche.
     - [x] `TASK-HISTORY-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
@@ -82,24 +97,11 @@
 
 ---
 
-## 📖 Sprint 37 Achevée : Actualisation Complète du README & de la Documentation Technique
-
-- [x] **`TASK-DOC-01` — Mise à Jour Exhaustive du README et des Guides Techniques (OFFERAN, Stack pnpm, Admin & Features)**
-  - **Priorité :** 🟡 MOYENNE
-  - **Fichiers cibles :** `README.md`, `docs/FEATURES.md`, `docs/QUICKSTART.md`, `docs/DEPLOYMENT.md`, `docs/TASKS.md`
-  - **Critères d'acceptation :**
-    - [x] `TASK-DOC-01.01` : Refonte README (monogramme OFFERAN, v1.4.0, Next.js 16.4.3 / React 19 / Better-Auth 1.7.13 / Prisma 6.2.1, commandes 100% `pnpm`).
-    - [x] `TASK-DOC-01.02` : Documentation exhaustive des fonctionnalités modernes : Dock Flottant, Navbar 2L, Hub `/data-source` Bookmarklet 1-Clic, Multi-Tenancy B2B, Alertes & Webhooks.
-    - [x] `TASK-DOC-01.03` : Mise à jour de `docs/QUICKSTART.md` et `docs/DEPLOYMENT.md` pour inclure la configuration admin et `pnpm run db:seed-admin`.
-    - [x] `TASK-DOC-01.04` : Vérification déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
-
----
-
 ## 📚 Archives & Historique Détaillé
 
 Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**), les tâches achevées sont archivées :
-- 👉 **[Consulter l'Archive des Sprints 34 à 36 (TASKS_HISTORY_S34_S36_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S34_S36_COMPLETED.md)** — Sprints 34 (`pnpm`), 35 (Vitrine & Spacing Navbar), 36 (Auth MongoDB & Seed Admin).
-- 👉 **[Consulter l'Archive des Sprints 25 à 33 (TASKS_HISTORY_S25_S33_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S25_S33_COMPLETED.md)** — Sprints 25 à 33.
+- 👉 **[Consulter l'Archive des Sprints 34 à 37 (TASKS_HISTORY_S34_S36_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S34_S36_COMPLETED.md)**
+- 👉 **[Consulter l'Archive des Sprints 25 à 33 (TASKS_HISTORY_S25_S33_COMPLETED.md)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S25_S33_COMPLETED.md)**
 - 👉 **[Consulter l'Archive des Sprints 1 à 24 (TASKS_HISTORY_S10_COMPLETED.md & suivants)](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/archive/tasks/TASKS_HISTORY_S10_COMPLETED.md)**
 
 ---
