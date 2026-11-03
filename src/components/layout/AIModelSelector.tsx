@@ -6,15 +6,20 @@
  * Reusable, reactive AI model switcher button and dialog.
  * Works seamlessly across all layouts (ModernLayout, SimpleLayout, Header)
  * by syncing directly with global AnalysisContext.
+ * Features:
+ * - Live model online/offline availability monitoring via OpenRouter
+ * - Calibrated spacious card geometry and responsive paddings
+ * - Polished footer with dedicated BYOK shortcut and status summary
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Brain, Check, Key, ExternalLink, Cpu } from 'lucide-react';
+import { Brain, Check, Key, ExternalLink, Cpu, AlertTriangle, RefreshCw } from 'lucide-react';
 import { AI_MODEL_OPTIONS, getModelOption } from '@/lib/ai-models';
+import { checkModelsAvailabilityAction, type ModelsHealthReport } from '@/app/actions/models';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useAnalysis } from '@/contexts/AnalysisContext';
@@ -34,6 +39,24 @@ export function AIModelSelector({
     const analysis = useAnalysis();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [modelCategory, setModelCategory] = useState<'all' | 'free' | 'reasoning' | 'fast' | 'pro'>('all');
+    const [healthReport, setHealthReport] = useState<ModelsHealthReport>({});
+    const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+
+    // Fetch availability report
+    const refreshHealth = useCallback(async (force = false) => {
+        setIsCheckingHealth(true);
+        try {
+            const res = await checkModelsAvailabilityAction(force);
+            if (res.success) {
+                setHealthReport(res.data.report);
+            }
+        } catch (err) {
+            console.error('[AIModelSelector] Failed to check model health:', err);
+        } finally {
+            setIsCheckingHealth(false);
+        }
+    }, []);
+
 
     // Use props if explicitly passed, otherwise fallback to global AnalysisContext
     const activeModelId = propSelectedModel || analysis.model;
@@ -47,7 +70,7 @@ export function AIModelSelector({
 
     const activeModel = getModelOption(activeModelId);
 
-    const filteredModels = React.useMemo(() => {
+    const filteredModels = useMemo(() => {
         if (modelCategory === 'free') return AI_MODEL_OPTIONS.filter((m) => m.tier === 'free');
         if (modelCategory === 'pro') return AI_MODEL_OPTIONS.filter((m) => m.tier === 'pro');
         if (modelCategory === 'reasoning') return AI_MODEL_OPTIONS.filter((m) => m.latency === 'reasoning');
@@ -56,7 +79,7 @@ export function AIModelSelector({
     }, [modelCategory]);
 
     return (
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (open) void refreshHealth(false); }}>
             <DialogTrigger asChild>
                 <Button
                     variant="outline"
@@ -101,7 +124,7 @@ export function AIModelSelector({
                 </Button>
             </DialogTrigger>
 
-            <DialogContent variant="bottom-sheet" className="sm:max-w-3xl max-h-[calc(100dvh-1rem)] sm:max-h-[85dvh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-t-2xl sm:rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
+            <DialogContent variant="bottom-sheet" className="sm:max-w-3xl max-h-[calc(100dvh-1rem)] sm:max-h-[88dvh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-t-2xl sm:rounded-2xl border-border/60 bg-popover/95 backdrop-blur-xl shadow-2xl">
                 <DialogHeader className="pb-3 border-b border-border/60">
                     <div className="flex items-center justify-between gap-3">
                         <div>
@@ -110,12 +133,24 @@ export function AIModelSelector({
                                 Sélection du Moteur d&apos;IA
                             </DialogTitle>
                             <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                                Choisissez le modèle d&apos;inférence adapté à la complexité de votre recherche
+                                Choisissez le modèle d&apos;inférence adapté à votre recherche (2 modèles par structure)
                             </DialogDescription>
                         </div>
-                        <Badge variant="outline" className="hidden sm:inline-flex text-xs px-2.5 py-0.5 rounded-full border-primary/30 text-primary font-medium">
-                            {filteredModels.length} modèles
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                onClick={() => refreshHealth(true)}
+                                disabled={isCheckingHealth}
+                                title="Vérifier la disponibilité en direct"
+                            >
+                                <RefreshCw className={cn("h-3.5 w-3.5", isCheckingHealth && "animate-spin text-primary")} />
+                            </Button>
+                            <Badge variant="outline" className="hidden sm:inline-flex text-xs px-2.5 py-0.5 rounded-full border-primary/30 text-primary font-medium">
+                                {filteredModels.length} modèles
+                            </Badge>
+                        </div>
                     </div>
 
                     {/* Category Filter Pills */}
@@ -147,10 +182,13 @@ export function AIModelSelector({
                     </div>
                 </DialogHeader>
 
-                {/* Models List */}
-                <div className="flex-1 overflow-y-auto pr-1 py-3 space-y-2.5">
+                {/* Models List with Enhanced Horizontal Margins */}
+                <div className="flex-1 overflow-y-auto px-1 sm:px-2 py-3.5 space-y-3">
                     {filteredModels.map((option, index) => {
                         const isActive = option.id === activeModelId;
+                        const statusInfo = healthReport[option.id];
+                        const isOffline = statusInfo && !statusInfo.isAvailable;
+
                         return (
                             <motion.button
                                 type="button"
@@ -165,8 +203,8 @@ export function AIModelSelector({
                                             ? 'openai'
                                             : option.provider.toLowerCase().includes('deepseek')
                                             ? 'deepseek'
-                                            : option.provider.toLowerCase().includes('moonshot') || option.id.includes('kimi')
-                                            ? 'moonshot'
+                                            : option.provider.toLowerCase().includes('google')
+                                            ? 'google'
                                             : option.provider.toLowerCase().includes('mistral')
                                             ? 'mistral'
                                             : 'openrouter';
@@ -176,19 +214,20 @@ export function AIModelSelector({
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.02 }}
-                                whileHover={{ scale: 1.006 }}
-                                whileTap={{ scale: 0.995 }}
+                                whileHover={{ scale: 1.004 }}
+                                whileTap={{ scale: 0.996 }}
                                 className={cn(
-                                    'w-full text-left rounded-xl p-3.5 sm:p-4 transition-all duration-200 border relative group touch-manipulation cursor-pointer',
+                                    'w-full text-left rounded-xl px-4 py-3.5 sm:px-5 sm:py-4 transition-all duration-200 border relative group touch-manipulation cursor-pointer',
                                     isActive
                                         ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary/40'
-                                        : 'border-border/60 bg-card/60 hover:border-primary/40 hover:bg-accent/40'
+                                        : 'border-border/60 bg-card/60 hover:border-primary/40 hover:bg-accent/40',
+                                    isOffline && 'border-rose-500/40 bg-rose-500/5'
                                 )}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                         {/* Title & Badges */}
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                             <h4 className="text-sm sm:text-base font-bold text-foreground truncate">
                                                 {option.label}
                                             </h4>
@@ -208,6 +247,19 @@ export function AIModelSelector({
                                             <span className="text-[11px] text-muted-foreground font-mono">
                                                 {option.provider}
                                             </span>
+
+                                            {/* Offline / Online Status Indicator */}
+                                            {isOffline ? (
+                                                <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 gap-1 font-semibold">
+                                                    <AlertTriangle className="h-2.5 w-2.5" />
+                                                    Hors Ligne
+                                                </Badge>
+                                            ) : statusInfo?.isAvailable ? (
+                                                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    En ligne
+                                                </span>
+                                            ) : null}
                                         </div>
 
                                         {/* Description */}
@@ -269,8 +321,8 @@ export function AIModelSelector({
                     })}
                 </div>
 
-                {/* Footer BYOK Callout */}
-                <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-muted/20 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 p-3 sm:px-6">
+                {/* Footer with Corrected Spacing & Padding */}
+                <div className="mt-3 pt-3.5 pb-2 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs bg-muted/30 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 px-4 py-3 sm:px-6 sm:py-3.5">
                     <div className="flex items-center gap-2">
                         <Key className="h-4 w-4 text-primary shrink-0" />
                         <span className="text-xs text-muted-foreground">
@@ -280,7 +332,7 @@ export function AIModelSelector({
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="text-xs font-semibold text-primary p-0 h-auto hover:bg-transparent hover:underline"
+                        className="text-xs font-semibold text-primary p-0 h-auto hover:bg-transparent hover:underline shrink-0"
                         onClick={() => {
                             setDialogOpen(false);
                             router.push('/dashboard/api-keys');

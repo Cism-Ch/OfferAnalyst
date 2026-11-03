@@ -3,9 +3,9 @@
 > **Source Unique de Vérité (SSOT)** pour le pilotage et le suivi de toutes les tâches techniques et fonctionnelles du projet **OfferAnalyst**.  
 > **Règle absolue pour tout Agent IA :** Ce document DOIT être consulté avant toute tâche et mis à jour immédiatement après chaque réalisation ou découverte de nouvelle sous-tâche. Plafond strict : **250 lignes**.
 
-**Dernière mise à jour :** 01 Novembre 2026  
+**Dernière mise à jour :** 03 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 40 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
+**Statut Global :** Sprints 1 à 41 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning)
 
 ---
 
@@ -15,14 +15,28 @@
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
 │ 🚀 EN COURS             │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Tous Sprints Validés│  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 40 (Safe   │
-│     Prêt pour nouveau   │  │ [ ] Chrome Store Publish│  │       1-Click Bookmarklet│
-│     jalon / sprint      │  │ [ ] Export PDF / CSV    │  │     - Sprint 39 (History│
-│                         │  │                         │  │       BYOK/Free & Modal)│
-│                         │  │                         │  │     - Sprint 38 (Onboard│
-│                         │  │                         │  │     - Sprints 1 à 37    │
+│ [ ] Tous Sprints Validés│  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 41 (Modèles│
+│     Prêt pour nouveau   │  │ [ ] Chrome Store Publish│  │       2/struct, Offline)│
+│     jalon / sprint      │  │ [ ] Export PDF / CSV    │  │     - Sprint 40 (Safe   │
+│                         │  │                         │  │       1-Click Bookmarklet│
+│                         │  │                         │  │     - Sprints 1 à 39    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## 🤖 Sprint 41 Achevée : Modèles IA Modernisés (2 par Structure), Détection Hors-Ligne Admin/Sélecteur, Espacements UI & Modèle sur Recherche
+
+- [x] **`TASK-MODEL-02` — Modernisation Modèles IA (2/Structure, GPT-6.1/o3/4o, Nemotron), Détection Offline, Calibrage UI & Affichage Modèle Utilisé**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `src/app/actions/models.ts`, `src/app/actions/analyze.ts`, `src/components/layout/AIModelSelector.tsx`, `src/app/admin/page.tsx`, `src/components/offers/ResultsSection.tsx`, `src/app/history/page.tsx`, `src/types/index.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-MODEL-02.01` : Structuration stricte des modèles IA dans `src/lib/ai-models.ts` : 2 modèles par provider (NVIDIA : Nemotron 3.5 Lightning & Nemotron 3 Ultra 550B, pas de Gemma ; OpenAI : GPT-6.1 Terra, o3, GPT-4o ; Anthropic : Claude 5.5 Sonnet & Haiku ; DeepSeek : V3 & R1-0528 ; Google : Gemini 3.8 Flash & 2.5 Pro ; Mistral : Large & Small).
+    - [x] `TASK-MODEL-02.02` : Service de détection en temps réel de disponibilité / statut hors-ligne des modèles via l'API OpenRouter avec cache résilient (`src/app/actions/models.ts`).
+    - [x] `TASK-MODEL-02.03` : Signalisation visuelle des modèles hors-ligne / indisponibles dans l'interface de sélection (`AIModelSelector`) et dans le tableau de bord Admin (`/admin`).
+    - [x] `TASK-MODEL-02.04` : Correction des espacements du footer de `AIModelSelector` et augmentation des marges horizontales des cartes de sélection (`px-4 sm:px-5 sm:py-4`).
+    - [x] `TASK-MODEL-02.05` : Affichage proéminent et systématique du modèle d'IA utilisé sur les résultats de recherche (`ResultsSection`) et sur l'historique (`/history`).
+    - [x] `TASK-MODEL-02.06` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
 
 ---
 

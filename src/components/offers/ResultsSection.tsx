@@ -17,7 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-    BarChart3, 
+    BarChart3,
+    Brain, 
     CheckCircle2, 
     Globe, 
     ExternalLink, 
@@ -215,11 +216,17 @@ export function ResultsSection({
 
             {/* Section Header with Actions & View Toggle */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 px-4 rounded-xl bg-card border border-border/80 shadow-2xs">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
                     <h3 className="font-bold text-lg text-foreground tracking-tight">{t.results.title}</h3>
                     <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-semibold">
                         {results.topOffers.length} {t.config.top}
                     </Badge>
+                    {(results.modelUsed || model) && (
+                        <Badge variant="outline" className="text-xs font-mono bg-primary/5 border-primary/30 text-primary gap-1.5 py-0.5 px-2.5 font-medium">
+                            <Brain className="h-3.5 w-3.5" />
+                            <span>Modèle : {results.modelUsed || model}</span>
+                        </Badge>
+                    )}
                 </div>
 
                 {/* Right toolbar: Export & Share Actions + View Mode Switcher */}

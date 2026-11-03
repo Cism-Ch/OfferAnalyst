@@ -33,13 +33,17 @@ import {
     Zap,
     DollarSign,
     RefreshCw,
-    Cpu
+    Cpu,
+    Target,
+    Compass,
+    AlertTriangle
 } from 'lucide-react';
+import { AI_MODEL_OPTIONS } from '@/lib/ai-models';
+import { checkModelsAvailabilityAction, type ModelsHealthReport } from '@/app/actions/models';
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
 import { getAdminTelemetryStats, type AdminTelemetryStats } from '@/app/actions/db/api-key-analytics';
 import { getRecentUsers, getOnboardingUseCasesSummary, type UserData, type UseCaseStat } from '@/app/actions/db/admin';
-import { Target, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function AdminPage() {
@@ -58,6 +62,8 @@ export default function AdminPage() {
     const [usersList, setUsersList] = useState<UserData[]>([]);
     const [useCasesSummary, setUseCasesSummary] = useState<UseCaseStat[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+    const [modelsHealth, setModelsHealth] = useState<ModelsHealthReport>({});
+    const [isLoadingModelsHealth, setIsLoadingModelsHealth] = useState(true);
 
     type TelemetryLogItem = NonNullable<AdminTelemetryStats['recentLogs']>[number];
 
@@ -201,51 +207,36 @@ export default function AdminPage() {
         }
     ];
 
-    const loadTelemetry = useCallback(async () => {
+    const loadTelemetry = useCallback(async (force = false) => {
         try {
-            const [stats, users, useCases] = await Promise.all([
+            const [stats, users, useCases, healthRes] = await Promise.all([
                 getAdminTelemetryStats(),
                 getRecentUsers(25),
-                getOnboardingUseCasesSummary()
+                getOnboardingUseCasesSummary(),
+                checkModelsAvailabilityAction(force)
             ]);
             setTelemetry(stats);
             setUsersList(users);
             setUseCasesSummary(useCases);
+            if (healthRes.success) {
+                setModelsHealth(healthRes.data.report);
+            }
         } catch (err) {
             console.error('Failed to load admin data:', err);
         } finally {
             setIsLoadingTelemetry(false);
             setIsLoadingUsers(false);
+            setIsLoadingModelsHealth(false);
             setIsRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
         let isMounted = true;
-        
-        Promise.all([
-            getAdminTelemetryStats(),
-            getRecentUsers(25),
-            getOnboardingUseCasesSummary()
-        ])
-            .then(([stats, users, useCases]) => {
-                if (isMounted) {
-                    setTelemetry(stats);
-                    setUsersList(users);
-                    setUseCasesSummary(useCases);
-                    setIsLoadingTelemetry(false);
-                    setIsLoadingUsers(false);
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load admin data:', err);
-                if (isMounted) {
-                    setIsLoadingTelemetry(false);
-                    setIsLoadingUsers(false);
-                }
-            });
 
         const timer = setTimeout(async () => {
+            void loadTelemetry(false);
+
             try {
                 const res = await fetch('/api/admin/feature-flags');
                 if (res.ok) {
@@ -263,11 +254,11 @@ export default function AdminPage() {
             isMounted = false;
             clearTimeout(timer);
         };
-    }, []);
+    }, [loadTelemetry]);
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
-        await loadTelemetry();
+        await loadTelemetry(true);
     };
 
     const toggleFeature = async (feature: keyof typeof featureFlags) => {
@@ -560,6 +551,80 @@ export default function AdminPage() {
                                             )}
                                         />
                                     )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        {/* Live Models Health & Availability Monitor */}
+                        <motion.div {...staggerItemProps}>
+                            <Card className="border-border/80">
+                                <CardHeader>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Cpu className="w-5 h-5 text-primary" />
+                                                <span>Disponibilité & Statut des Modèles IA en Direct (OpenRouter)</span>
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Surveillance en temps réel des modèles IA configurés (2 par structure). Détecte automatiquement les modèles hors ligne.
+                                            </CardDescription>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => loadTelemetry(true)}
+                                            disabled={isRefreshing || isLoadingModelsHealth}
+                                            className="gap-2 self-start sm:self-auto h-8 text-xs shrink-0"
+                                        >
+                                            <RefreshCw className={cn("w-3.5 h-3.5", (isRefreshing || isLoadingModelsHealth) && "animate-spin text-primary")} />
+                                            <span>Tester la disponibilité</span>
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        {AI_MODEL_OPTIONS.map((model) => {
+                                            const health = modelsHealth[model.id];
+                                            const isOnline = health ? health.isAvailable : true;
+                                            return (
+                                                <div
+                                                    key={model.id}
+                                                    className={cn(
+                                                        "rounded-lg border p-3.5 flex flex-col justify-between gap-2.5 transition-colors",
+                                                        isOnline
+                                                            ? "bg-card/70 border-border/70 hover:border-border"
+                                                            : "bg-rose-500/5 border-rose-500/30"
+                                                    )}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="min-w-0">
+                                                            <div className="font-semibold text-xs text-foreground truncate" title={model.label}>
+                                                                {model.label}
+                                                            </div>
+                                                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                                                {model.provider} • {model.tier === 'free' ? 'GRATUIT' : 'BYOK PRO'}
+                                                            </div>
+                                                        </div>
+                                                        {isOnline ? (
+                                                            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shrink-0 font-medium gap-1">
+                                                                <CheckCircle2 className="w-2.5 h-2.5" />
+                                                                En Ligne
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 shrink-0 font-semibold gap-1">
+                                                                <AlertTriangle className="w-2.5 h-2.5" />
+                                                                Hors Ligne
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/40 font-mono">
+                                                        <span>{model.contextWindow}</span>
+                                                        <span>{model.price}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </motion.div>

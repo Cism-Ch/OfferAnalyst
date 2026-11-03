@@ -227,7 +227,8 @@ export async function analyzeOffersAction(
         return {
             topOffers: mergedTopOffers,
             marketSummary: validatedResponse.marketSummary,
-            searchSources
+            searchSources,
+            modelUsed: modelName
         };
     };
     try {
@@ -263,7 +264,10 @@ export async function analyzeOffersAction(
 
         return {
             success: true,
-            data,
+            data: {
+                ...data,
+                modelUsed: modelName
+            },
             meta: {
                 model: modelName,
                 latencyMs,
