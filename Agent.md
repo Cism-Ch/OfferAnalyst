@@ -319,6 +319,11 @@ Organisez toujours les classes selon l'ordre :
    * Ne jamais ouvrir un modal (`Dialog`) par-dessus un tiroir mobile ouvert (`Sheet`) : fermer le Sheet avec un micro-délai de 100-150ms pour libérer le focus trap tactile.
    * Échelle Z-Index : Tout menu déroulant (`SelectContent`, `DropdownMenuContent`) apparaissant au sein d'un Dialog doit porter `z-[70]`.
 
+### 8.4 Réutilisation Stricte des Composants UI shadcn/ui & Radix (Zéro Réinvention de la Roue)
+1. **Catalogue Existante Prioritaire :** Toujours vérifier et utiliser en priorité les composants déjà intégrés dans `@/components/ui` (`Button`, `Card`, `Dialog`, `Sheet`, `Select`, `DropdownMenu`, `Badge`, `Tabs`, `Switch`, `ResponsiveTable`, `Skeleton`, `Toast`, etc.).
+2. **Interdiction de Réinventer l'UI :** Ne jamais recoder manuellement de modal (`<div>` en fixed), de tooltip, de dropdown ou de menu tiroir personnalisé avec des `useState` isolés. Toujours composer à partir des primitives shadcn/Radix existantes.
+3. **Nouveaux Composants via CLI shadcn :** Si un composant UI standard est absent du dossier `@/components/ui`, utiliser le CLI ou le skill shadcn (`npx shadcn@latest add <component>`) plutôt que de bricoler une implémentation artisanale sans accessibilité ARIA.
+
 ---
 
 ## 9. 🛡️ Sécurité des Fichiers d'Environnement (.env)

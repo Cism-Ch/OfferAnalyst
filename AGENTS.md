@@ -40,6 +40,10 @@ Veuillez consulter l'intégralité du manuel et des règles d'ingénierie dans l
     - **Zones Sécurisées (Safe Areas) :** Tout composant fixé en bas d'écran (`fixed bottom-0`) ou barre de navigation mobile doit impérativement intégrer `pb-[env(safe-area-inset-bottom)]`.
     - **Hiérarchie Z-Index & Isolation Tactile (Sheet vs Dialog) :** Ne jamais ouvrir un `Dialog` par-dessus un `Sheet` ouvert (fermer le tiroir avec un micro-délai de 100-150ms). Tout `SelectContent` ou `DropdownMenu` apparaissant dans un `Dialog` doit porter `z-[70]`.
     - **Échelle Canonique Spacing / Typo :** Paddings de cartes : `p-3.5 sm:p-5 lg:p-6` ; Gaps : `gap-2.5 sm:gap-4 lg:gap-6` ; Conteneurs : `px-3 sm:px-6 lg:px-8`.
+14. **Réutilisation Stricte des Composants UI shadcn/ui & Radix (Zéro Réinvention de la Roue) :**
+    - **Catalogue Existante Prioritaire :** Toujours vérifier et utiliser en priorité les composants déjà intégrés dans `@/components/ui` (`Button`, `Card`, `Dialog`, `Sheet`, `Select`, `DropdownMenu`, `Badge`, `Tabs`, `Switch`, `ResponsiveTable`, `Skeleton`, `Toast`, etc.).
+    - **Interdiction de Réinventer l'UI :** Ne jamais recoder manuellement de modal (`<div>` en fixed), de tooltip, de dropdown ou de menu tiroir personnalisé avec des `useState` isolés. Toujours composer à partir des primitives shadcn/Radix existantes.
+    - **Nouveaux Composants via CLI shadcn :** Si un composant UI standard est absent du dossier `@/components/ui`, utiliser le CLI ou le skill shadcn (`npx shadcn@latest add <component>`) plutôt que de bricoler une implémentation artisanale sans accessibilité ARIA.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
