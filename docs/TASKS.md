@@ -13,14 +13,35 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 50) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 51) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 49 (Artef.   │
-│     à définir           │  │ [ ] Chrome Store Publish│  │       & Tests compacts) │
-│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 48 (RSI v2)│
-│                         │  │                         │  │     - Sprints 1 à 47    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 50 (Dédup  │
+│     à définir           │  │ [ ] Chrome Store Publish│  │       API, Verrou, UI)  │
+│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 49 (Artef.)│
+│                         │  │                         │  │     - Sprints 1 à 48    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 50 Achevée : Déduplication API Quota, Verrou Anti-Concurrence IA & Badge Workspace Responsive
+
+- [x] **`TASK-PERF-01` — Déduplication des Requêtes Quota & Verrou Anti-Concurrence Analyse IA**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/hooks/use-daily-quota.ts`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/app/data-source/page.tsx`, `src/contexts/AnalysisContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-PERF-01.01` : Création du hook singleton `useDailyQuota` avec déduplication de promesse en vol, cache partagé et écouteur unique de l'événement `offeranalyst:quota_updated`.
+    - [x] `TASK-PERF-01.02` : Remplacement des `useEffect` redondants dans `ModernHeader.tsx`, `ModernSidebar.tsx` et `src/app/data-source/page.tsx` pour éliminer les 2-3 requêtes parallèles.
+    - [x] `TASK-PERF-01.03` : Verrouillage strict anti-concurrence dans `AnalysisContext.tsx` (`executeAnalysis`) pour interdire toute double exécution accidentelle d'analyse IA.
+
+- [x] **`TASK-UI-WORKSPACE-02` — Badge Workspace Responsive : Mobile 2e ligne avec Wrap & Masquage sur Grand Écran (`lg:hidden`)**
+  - **Priorité :** 🟡 MOYENNE
+  - **Fichiers cibles :** `src/components/workspace/WorkspaceActiveBadge.tsx`, `src/components/layout/ModernHeader.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-WORKSPACE-02.01` : Sécurisation du cycle de vie de `WorkspaceActiveBadge` (protection contre les fuites au démontage `isMounted`, intégration du Skeleton officiel shadcn).
+    - [x] `TASK-UI-WORKSPACE-02.02` : Rendre le badge flexible avec support du text wrap et contraintes de largeur adaptatives sans débordement horizontal.
+    - [x] `TASK-UI-WORKSPACE-02.03` : Sur mobile (< sm), déplacer le badge workspace dans la deuxième ligne de la navbar pour aérer la ligne 1 (fil d'Ariane et quota).
+    - [x] `TASK-UI-WORKSPACE-02.04` : Sur grand écran (`lg:`), masquer le badge de workspace dans la navbar (`lg:hidden`) car déjà visible dans la sidebar latérale.
 
 ---
 

@@ -58,7 +58,7 @@ import { cn } from '@/lib/utils';
 import { OffanIcon, OffanLogo } from '@/components/brand/OffanBrand';
 import { FluidAuthModal } from '@/components/auth/FluidAuthModal';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
-import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
+import { useDailyQuota } from '@/hooks/use-daily-quota';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { WorkspaceActiveBadge } from '@/components/workspace/WorkspaceActiveBadge';
 
@@ -278,37 +278,7 @@ function SidebarDailyQuotaWidget({
 }) {
     const tempKeys = useTemporaryApiKeys();
     const hasLocalByok = tempKeys.keys.length > 0;
-    const [quota, setQuota] = React.useState<{ remaining: number; total: number; isByok: boolean } | null>(null);
-
-    const loadQuota = React.useCallback(async () => {
-        try {
-            const res = await getDailyQuotaAction(hasLocalByok);
-            if (res.success && res.data) {
-                setQuota(res.data);
-            }
-        } catch {
-            // Ignore in background
-        }
-    }, [hasLocalByok]);
-
-    React.useEffect(() => {
-        const timer = setTimeout(() => {
-            loadQuota();
-        }, 0);
-
-        // Listen for real-time quota updates
-        const handleQuotaUpdated = () => {
-            loadQuota();
-        };
-        window.addEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-        window.addEventListener('storage', handleQuotaUpdated);
-
-        return () => {
-            clearTimeout(timer);
-            window.removeEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-            window.removeEventListener('storage', handleQuotaUpdated);
-        };
-    }, [loadQuota]);
+    const { quota } = useDailyQuota(hasLocalByok);
 
     if (!quota) return null;
 

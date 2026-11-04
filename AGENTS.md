@@ -72,4 +72,4 @@ Ne pas utiliser d'emoji dans le code.
 <!-- Shadcn -->
 
 Utiliser les skills Shadcn UI pour construire les composant et coder l'UI/UX.
-Ne pas inventer des d'implémentation de shadcn ui, utiliser les skills et régles Shadcn.
+Ne pas inventer des d'implémentation de shadcn ui, utiliser les skills et régles Shadcn. ajouter toujours des skelton de chargement web au composant d'UI des qu'ils n'en n'ont pas.

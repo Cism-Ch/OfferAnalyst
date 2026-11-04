@@ -25,7 +25,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { AIModelSelector } from './AIModelSelector';
 import { LanguageToggle } from './LanguageToggle';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
-import { getDailyQuotaAction } from '@/app/actions/shared/quota-limiter';
+import { useDailyQuota } from '@/hooks/use-daily-quota';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { WorkspaceActiveBadge } from '@/components/workspace/WorkspaceActiveBadge';
 
@@ -48,39 +48,9 @@ export function ModernHeader({
     const { t, language } = useLanguage();
     const tempKeys = useTemporaryApiKeys();
     const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
-    const [quota, setQuota] = useState<{ remaining: number; total: number; isByok: boolean } | null>(null);
 
     const hasLocalByok = tempKeys.keys.length > 0;
-
-    const fetchQuota = useCallback(async () => {
-        try {
-            const res = await getDailyQuotaAction(hasLocalByok);
-            if (res.success && res.data) {
-                setQuota(res.data);
-            }
-        } catch {
-            // Background fetch fallback
-        }
-    }, [hasLocalByok]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchQuota();
-        }, 0);
-
-        // Listen for real-time quota updates across tabs and actions
-        const handleQuotaUpdated = () => {
-            fetchQuota();
-        };
-        window.addEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-        window.addEventListener('storage', handleQuotaUpdated);
-
-        return () => {
-            clearTimeout(timer);
-            window.removeEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-            window.removeEventListener('storage', handleQuotaUpdated);
-        };
-    }, [fetchQuota]);
+    const { quota, refreshQuota } = useDailyQuota(hasLocalByok);
 
     const routeInfo = (t.routes as Record<string, { title: string; description: string; breadcrumbs: string[] }>)[pathname] || t.routes['/'];
     const pageTitle = title || routeInfo.title;
@@ -99,13 +69,12 @@ export function ModernHeader({
                 <div className="sm:hidden flex flex-col w-full">
                     {/* Mobile Line 1: Route Breadcrumb + Quota Pill & Quick Actions */}
                     <div className="min-h-[50px] py-2 px-3 pl-14 flex items-center justify-between gap-2 w-full">
-                        {/* Route Crumb Badge & Workspace Indicator */}
+                        {/* Route Crumb Badge */}
                         <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[130px] min-[400px]:max-w-[160px] shadow-2xs">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted/80 backdrop-blur-md border border-border/70 text-foreground truncate max-w-[170px] min-[400px]:max-w-[210px] shadow-2xs">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                                 <span className="truncate">{routeInfo.breadcrumbs[routeInfo.breadcrumbs.length - 1]}</span>
                             </span>
-                            <WorkspaceActiveBadge className="h-7 text-[11px] px-2" />
                         </div>
 
                         {/* Top-Right Quota & Showcase */}
@@ -146,10 +115,11 @@ export function ModernHeader({
                         </div>
                     </div>
 
-                    {/* Mobile Line 2: Scaled Compact Action Toolbar (Full Width with Proper Breathing Space) */}
-                    <div className="min-h-[46px] py-1.5 px-3 border-t border-border/40 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-2 w-full">
-                        {/* Left Group: AI Model Selector + BYOK Key Trigger */}
-                        <div className="flex items-center gap-1.5 min-w-0">
+                    {/* Mobile Line 2: Scaled Action Toolbar with Workspace Badge & Controls */}
+                    <div className="min-h-[46px] py-1.5 px-3 border-t border-border/40 bg-muted/20 backdrop-blur-md flex flex-wrap items-center justify-between gap-1.5 w-full">
+                        {/* Left Group: Workspace Active Badge + AI Model Selector + BYOK Key Trigger */}
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
+                            <WorkspaceActiveBadge className="h-7 text-[11px] px-2 shrink-0 max-w-full" />
                             {showModelSelector && (
                                 <AIModelSelector
                                     selectedModel={selectedModel}
@@ -170,7 +140,7 @@ export function ModernHeader({
                         </div>
 
                         {/* Right Group: Language & Theme Controls (Compact Mode) */}
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                             <LanguageToggle variant="compact" />
                             <PremiumThemeSelector compact />
                         </div>
@@ -197,8 +167,8 @@ export function ModernHeader({
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2.5 shrink-0 ml-auto">
-                            {/* Active Workspace Badge */}
-                            <WorkspaceActiveBadge />
+                            {/* Active Workspace Badge (Hidden on lg+ because already displayed in Sidebar) */}
+                            <WorkspaceActiveBadge className="hidden sm:inline-flex lg:hidden" />
 
                             {/* Desktop Quick Search */}
                             <motion.div
@@ -345,7 +315,7 @@ export function ModernHeader({
             <GuestApiKeyDialog
                 open={guestKeyDialogOpen}
                 onOpenChange={setGuestKeyDialogOpen}
-                onKeyUpdated={fetchQuota}
+                onKeyUpdated={refreshQuota}
             />
         </>
     );

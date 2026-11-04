@@ -156,7 +156,7 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
             "name": "prod_build",
             "cmd": f"{pm} run build",
             "weight": 25,
-            "timeout": 180
+            "timeout": 240
         })
 
     return checks

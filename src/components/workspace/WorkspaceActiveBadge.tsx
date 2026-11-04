@@ -8,10 +8,11 @@
  * Clicking directs to the workspace management view (/dashboard/workspace).
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Building2, ChevronRight, Users, Shield, Sparkles } from 'lucide-react';
+import { Building2, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getWorkspaceAction, type WorkspaceDTO } from '@/app/actions/db/workspaces';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,30 +32,50 @@ export function WorkspaceActiveBadge({
     const isFr = language === 'fr';
     const [workspace, setWorkspace] = useState<WorkspaceDTO | null>(null);
     const [loading, setLoading] = useState(true);
+    const isMountedRef = useRef(true);
 
     const loadWorkspace = useCallback(async () => {
         try {
             const res = await getWorkspaceAction();
-            if (res.success && res.data) {
+            if (isMountedRef.current && res.success && res.data) {
                 setWorkspace(res.data);
             }
         } catch {
             // Background fallback
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
+        isMountedRef.current = true;
         const timer = setTimeout(() => {
             loadWorkspace();
         }, 0);
-        return () => clearTimeout(timer);
+
+        return () => {
+            isMountedRef.current = false;
+            clearTimeout(timer);
+        };
     }, [loadWorkspace]);
 
     if (loading) {
+        if (variant === 'sidebar') {
+            return (
+                <div className={cn("p-2.5 rounded-xl border border-border/60 bg-card/40 flex items-center gap-2.5", className)}>
+                    <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                        <Skeleton className="h-2.5 w-16" />
+                        <Skeleton className="h-3.5 w-24" />
+                    </div>
+                </div>
+            );
+        }
+
         return (
-            <div className={cn("animate-pulse h-8 rounded-lg bg-muted/50", variant === 'sidebar' ? "w-full" : "w-28", className)} />
+            <Skeleton className={cn("h-7 w-28 rounded-lg", className)} />
         );
     }
 
@@ -110,27 +131,26 @@ export function WorkspaceActiveBadge({
             href="/dashboard/workspace"
             onClick={onClick}
             className={cn(
-                "group inline-flex items-center gap-2 px-2.5 py-1 min-h-[32px] rounded-lg border border-border/60 bg-background/80 hover:bg-accent/50 hover:border-primary/40 active:scale-95 transition-all touch-manipulation shadow-2xs",
+                "group inline-flex items-center gap-1.5 px-2 py-1 min-h-[30px] rounded-lg border border-border/60 bg-background/80 hover:bg-accent/50 hover:border-primary/40 active:scale-95 transition-all touch-manipulation shadow-2xs max-w-full",
                 className
             )}
             title={isFr ? `Espace actif : ${displayName} (${roleLabel})` : `Active workspace: ${displayName} (${roleLabel})`}
         >
-            <div className="h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+            <div className="h-4.5 w-4.5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                 <Building2 className="h-3 w-3" />
             </div>
-            <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-semibold text-foreground/90 truncate max-w-[100px] sm:max-w-[140px]">
+            <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                <span className="text-xs font-semibold text-foreground/90 truncate max-w-[110px] min-[380px]:max-w-[150px] sm:max-w-[180px]">
                     {displayName}
                 </span>
                 <Badge 
                     variant="secondary" 
-                    className="text-[9px] h-3.5 px-1 font-semibold rounded-xs hidden sm:inline-flex bg-muted text-muted-foreground group-hover:text-foreground"
+                    className="text-[9px] h-3.5 px-1 font-semibold rounded-xs hidden min-[360px]:inline-flex bg-muted text-muted-foreground group-hover:text-foreground shrink-0"
                 >
                     {roleLabel}
                 </Badge>
             </div>
-            <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors hidden min-[480px]:inline-block" />
+            <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors hidden sm:inline-block shrink-0" />
         </Link>
     );
 }
-

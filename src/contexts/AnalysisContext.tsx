@@ -95,6 +95,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
   // Timer reference for elapsed seconds
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<boolean>(false);
+  const isExecutingRef = useRef<boolean>(false);
 
   // Load persisted inputs from localStorage once on mount
   useEffect(() => {
@@ -191,6 +192,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
 
   const cancelAnalysis = useCallback(() => {
     abortRef.current = true;
+    isExecutingRef.current = false;
     setStatus('idle');
     setStepMessage('Opération annulée.');
     setElapsedSeconds(0);
@@ -200,6 +202,13 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
   // Main orchestration function
   const executeAnalysis = useCallback(
     async (targetModel: string): Promise<boolean> => {
+      // Strict anti-concurrency guard against double-clicks and race conditions
+      if (isExecutingRef.current) {
+        console.warn('[AnalysisContext] Analysis execution already in progress, dropping duplicate request');
+        return false;
+      }
+
+      isExecutingRef.current = true;
       abortRef.current = false;
       setElapsedSeconds(0);
       setProviderError(null);
@@ -384,6 +393,8 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         setStepMessage(`Erreur : ${msg}`);
         toast.error('Erreur inattendue', msg);
         return false;
+      } finally {
+        isExecutingRef.current = false;
       }
     },
     [autoFetch, domain, explicitCriteria, implicitContext, limit, offersInput, tempKeys, addToHistory, toast]

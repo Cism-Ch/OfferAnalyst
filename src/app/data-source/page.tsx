@@ -44,7 +44,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { LiveAIStatusIndicator } from '@/components/offers/LiveAIStatusIndicator';
 import { ProviderErrorPanel } from '@/components/offers/ProviderErrorPanel';
-import { getDailyQuotaAction, type DailyQuotaResult } from '@/app/actions/shared/quota-limiter';
+import { useDailyQuota } from '@/hooks/use-daily-quota';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { GuestApiKeyDialog } from '@/components/api-keys/GuestApiKeyDialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -66,7 +66,7 @@ export default function DataSourcePage() {
     const ds = t.dataSourcePage;
 
     const [guestKeyDialogOpen, setGuestKeyDialogOpen] = useState(false);
-    const [quota, setQuota] = useState<DailyQuotaResult | null>(null);
+    const { quota, refreshQuota, isQuotaExhausted } = useDailyQuota(hasLocalByok);
     const [activeTab, setActiveTab] = useState<string>('raw');
     const [captureModalOpen, setCaptureModalOpen] = useState<boolean>(false);
     const [capturedText, setCapturedText] = useState<string>('');
@@ -113,36 +113,6 @@ export default function DataSourcePage() {
         }
     }, [dashboardState]);
 
-    const fetchQuota = useCallback(async () => {
-        try {
-            const res = await getDailyQuotaAction(hasLocalByok);
-            if (res.success && res.data) {
-                setQuota(res.data);
-            }
-        } catch {
-            // Background fetch fallback
-        }
-    }, [hasLocalByok]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchQuota();
-        }, 0);
-
-        // Listen for real-time quota updates
-        const handleQuotaUpdated = () => {
-            fetchQuota();
-        };
-        window.addEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-        window.addEventListener('storage', handleQuotaUpdated);
-
-        return () => {
-            clearTimeout(timer);
-            window.removeEventListener('offeranalyst:quota_updated', handleQuotaUpdated);
-            window.removeEventListener('storage', handleQuotaUpdated);
-        };
-    }, [fetchQuota]);
-
     // Parse current offers to show ready counter
     const currentOffersCount = useMemo(() => {
         if (!dashboardState.offersInput) return 0;
@@ -153,8 +123,6 @@ export default function DataSourcePage() {
             return 0;
         }
     }, [dashboardState.offersInput]);
-
-    const isQuotaExhausted = Boolean(quota && !quota.isByok && quota.remaining <= 0);
 
     const onAnalyze = () => {
         if (isQuotaExhausted) return;
@@ -483,7 +451,7 @@ export default function DataSourcePage() {
             <GuestApiKeyDialog
                 open={guestKeyDialogOpen}
                 onOpenChange={setGuestKeyDialogOpen}
-                onKeyUpdated={() => fetchQuota()}
+                onKeyUpdated={refreshQuota}
             />
         </SimpleLayout>
     );
