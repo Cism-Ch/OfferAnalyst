@@ -12,7 +12,9 @@ import prisma from "./prisma";
 
 export const auth = betterAuth({
   plugins: [
-    dash(),
+    dash({
+      apiKey: process.env.BETTER_AUTH_API_KEY || process.env.BETTER_AUTH_SECRET,
+    }),
   ],
   database: prismaAdapter(prisma, {
     provider: "mongodb",
