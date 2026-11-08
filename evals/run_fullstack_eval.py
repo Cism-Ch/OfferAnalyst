@@ -99,7 +99,7 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
         checks.append({
             "name": "typecheck",
             "cmd": tc_cmd,
-            "weight": 30 if quick else 25,
+            "weight": 25 if quick else 20,
             "timeout": 150
         })
 
@@ -117,7 +117,7 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
         checks.append({
             "name": "lint",
             "cmd": f"{pm} run lint",
-            "weight": 30 if quick else 25,
+            "weight": 25 if quick else 20,
             "timeout": 240
         })
 
@@ -146,11 +146,21 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
         checks.append({
             "name": "rsi_memory_hygiene",
             "cmd": f'"{py}" "{memory_engine}" --audit',
+            "weight": 10 if quick else 10,
+            "timeout": 30
+        })
+
+    # 5. Zero-Leak Secret Guard
+    secret_guard = ROOT_DIR / "evals" / "secret_guard.py"
+    if secret_guard.exists():
+        checks.append({
+            "name": "secret_leak_guard",
+            "cmd": f'"{py}" "{secret_guard}"',
             "weight": 15 if quick else 10,
             "timeout": 30
         })
 
-    # 5. Production Build (Full mode only)
+    # 6. Production Build (Full mode only)
     if not quick and has_lint_script:
         checks.append({
             "name": "prod_build",

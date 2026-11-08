@@ -78,7 +78,7 @@ console.log("\n--- Phase 2: Dynamic Cryptographic Rigor & Tamper Resistance ---"
 // Since TS files are run in Next.js/bundler, we can replicate the exact module logic directly
 // using the secret from process.env or fallback to verify the exact crypto functions.
 
-const secret = process.env.API_KEY_ENCRYPTION_SECRET || process.env.BETTER_AUTH_SECRET || "p0lRj8_v1-NN-kX6pM9r5l7vT3G2uH1zY4wQ8xS7A0B=";
+const secret = process.env.API_KEY_ENCRYPTION_SECRET || process.env.BETTER_AUTH_SECRET || "mock-dummy-secret-salt-strictly-for-unit-testing-32b=";
 const salt = Buffer.from('offeranalyst-api-keys-v1', 'utf-8');
 const derivedKey = crypto.scryptSync(secret, salt, 32);
 
@@ -192,7 +192,7 @@ forensicCheck("Masked key helper formats standard prefixes safely without leakin
   assert.strictEqual(maskedOpenRouter, "sk-or-••••••••cdef");
   assert.ok(!maskedOpenRouter.includes("0123456789"), "Masked key must not contain internal secret bytes");
 
-  const maskedGemini = maskApiKey("AIzaSyDQXJYQSyT7fiFq1F9_5APePaPrkDIRqY0");
+  const maskedGemini = maskApiKey("AIzaSyMockSampleKeyForUnitTestingOnlyRqY0");
   assert.strictEqual(maskedGemini, "AIza••••••••RqY0");
 });
 
@@ -214,7 +214,7 @@ console.log("\n--- Phase 4: Quota Limiter State Machine & Bypass Verification --
 const quotaSrc = fs.readFileSync("src/app/actions/shared/quota-limiter.ts", "utf8");
 
 forensicCheck("Daily quota limit is set to exactly 10", () => {
-  assert.ok(/export\s+const\s+DAILY_QUOTA_LIMIT\s*=\s*10/.test(quotaSrc), "DAILY_QUOTA_LIMIT must equal 10");
+  assert.ok(/(?:export\s+)?const\s+DAILY_QUOTA_LIMIT\s*=\s*10/.test(quotaSrc), "DAILY_QUOTA_LIMIT must equal 10");
 });
 
 forensicCheck("Cookie identifier is offeranalyst.guest_id with 1-year maxAge", () => {

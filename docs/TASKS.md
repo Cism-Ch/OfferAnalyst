@@ -13,14 +13,34 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 51) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SPRINT 52) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 50 (Dédup  │
-│     à définir           │  │ [ ] Chrome Store Publish│  │       API, Verrou, UI)  │
-│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 49 (Artef.)│
-│                         │  │                         │  │     - Sprints 1 à 48    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 51 (Anti-  │
+│     à définir           │  │ [ ] Chrome Store Publish│  │       Leak & BA Dash)   │
+│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 50 (Dédup) │
+│                         │  │                         │  │     - Sprints 1 à 49    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 51 Achevée : Neutralisation Définitive des Fuites de Clés & Intégration Better-Auth Dash
+
+- [x] **`TASK-SEC-02` — Élimination Intégrale des Fuites de Clés & Bouclier Déterministe Anti-Leak**
+  - **Priorité :** 🔴 CRITIQUE
+  - **Fichiers cibles :** `tests/adversarial_m3_stress.mjs`, `tests/forensic_auditor_m3_integrity.mjs`, `evals/secret_guard.py`, `evals/run_fullstack_eval.py`, `.agents/rules/modules/security_auth.md`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-SEC-02.01` : Remplacement des clés réelles résiduelles dans `tests/adversarial_m3_stress.mjs` et `tests/forensic_auditor_m3_integrity.mjs` par des mocks synthétiques factices (`AIzaSyMock...RqY0` et dummy secret).
+    - [x] `TASK-SEC-02.02` : Intégration dans le juge déterministe (`evals/run_fullstack_eval.py`) d'un check automatique `secret_leak_guard` bloquant (score 0) si un secret présent dans `.env` apparaît dans les fichiers suivis par Git.
+    - [x] `TASK-SEC-02.03` : Mise à jour de la règle de sécurité dans `.agents/rules/modules/security_auth.md` interdisant formellement l'usage de clés d'environnement réelles dans les suites de tests.
+
+- [x] **`TASK-AUTH-03` — Intégration du Plugin Better-Auth Dash (`@better-auth/infra`) pour Vérification d'Ownership**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `package.json`, `src/lib/auth.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-AUTH-03.01` : Installation du paquet officiel `@better-auth/infra`.
+    - [x] `TASK-AUTH-03.02` : Configuration du plugin `dash()` dans le tableau `plugins` de `betterAuth({ ... })` dans `src/lib/auth.ts` pour activer les endpoints de validation d'ownership (`getDashValidate`).
+    - [x] `TASK-AUTH-03.03` : Validation déterministe avec `pnpm run eval:fullstack` (100/100 PASS, 0 TS error, 0 ESLint warning, 34/34 pages buildées).
 
 ---
 

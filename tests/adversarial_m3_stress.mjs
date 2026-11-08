@@ -42,7 +42,7 @@ function recordTest(suite, name, passed, reason = "") {
 }
 
 // Ensure BETTER_AUTH_SECRET is present for scrypt key derivation
-const SECRET = process.env.BETTER_AUTH_SECRET || "p0lRj8_v1-NN-kX6pM9r5l7vT3G2uH1zY4wQ8xS7A0B=";
+const SECRET = process.env.BETTER_AUTH_SECRET || "mock-dummy-secret-salt-strictly-for-unit-testing-32b=";
 assert.ok(SECRET.length >= 32, "BETTER_AUTH_SECRET must be at least 32 characters long");
 
 // =========================================================================
@@ -86,7 +86,7 @@ try {
   const sampleKeys = [
     "sk-or-v1-mock-sample-key-entropy-6ec1",
     "sk-ant-api03-abcdef1234567890-ghijklmnopqrstuvwxyz",
-    "AIzaSyDQXJYQSyT7fiFq1F9_5APePaPrkDIRqY0",
+    "AIzaSyMockSampleKeyForUnitTestingOnlyRqY0",
     "custom-special-chars-~!@#$%^&*()_+`-={}|[]\\:\";'<>?,./"
   ];
   for (const rawKey of sampleKeys) {
@@ -265,7 +265,7 @@ try {
   assert.strictEqual(maskApiKey(oaiKey), "sk-••••••••7890");
 
   // Test 3.5: Google Gemini
-  const gemKey = "AIzaSyDQXJYQSyT7fiFq1F9_5APePaPrkDIRqY0";
+  const gemKey = "AIzaSyMockSampleKeyForUnitTestingOnlyRqY0";
   assert.strictEqual(maskApiKey(gemKey), `AIza••••••••${gemKey.slice(-4)}`);
   assert.strictEqual(maskApiKey(gemKey), "AIza••••••••RqY0");
 
@@ -354,7 +354,7 @@ try {
   const validInputs = [
     { provider: "openrouter", apiKey: "sk-or-v1-valid-key-12345678" },
     { provider: "OPENROUTER", apiKey: "sk-or-v1-valid-key-uppercase" },
-    { provider: "Google", apiKey: "AIzaSyDQXJYQSyT7fiFq1F9_5APePaPrkDIRqY0" },
+    { provider: "Google", apiKey: "AIzaSyMockSampleKeyForUnitTestingOnlyRqY0" },
     { provider: "anthropic", apiKey: "sk-ant-api03-abcdef1234567890" },
     { provider: "deepseek", apiKey: "sk-deepseek-token-1234567890" }
   ];

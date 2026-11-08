@@ -7,9 +7,13 @@
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { dash } from "@better-auth/infra";
 import prisma from "./prisma";
 
 export const auth = betterAuth({
+  plugins: [
+    dash(),
+  ],
   database: prismaAdapter(prisma, {
     provider: "mongodb",
   }),
