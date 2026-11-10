@@ -1,0 +1,126 @@
+# 📋 Archive des Tâches — Sprints 38 à 46 Achevées
+
+> Archive historique des sprints 38 à 46 transférée depuis [`docs/TASKS.md`](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/docs/TASKS.md) pour respecter le plafond strict de **250 lignes** du SSOT.
+
+---
+
+## 🧭 Sprint 46 Achevée : Renommage du Titre du 2ème Groupe Sidebar (« Espace de travail »)
+
+- [x] **`TASK-NAV-02` — Renommage du Titre du 2ème Groupe de la Sidebar en « Espace de travail »**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-NAV-02.01` : Mise à jour de `t.nav.sectionMore` en « Espace de travail » (FR) et « Workspace » (EN) dans `LanguageContext.tsx`.
+    - [x] `TASK-NAV-02.02` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🧭 Sprint 45 Achevée : Harmonisation des Titres & Menus de la Barre Latérale (Dédoublonnage Dashboard & Titre Groupe 1)
+
+- [x] **`TASK-NAV-01` — Harmonisation des Titres & Menus de la Barre Latérale (ModernSidebar)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/ModernSidebar.tsx`, `src/contexts/LanguageContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-NAV-01.01` : Ajout de la clé `t.nav.home` (« Accueil » / « Home ») et mise à jour de `t.nav.sectionMain` (« Recherche » / « Search ») dans `LanguageContext.tsx`.
+    - [x] `TASK-NAV-01.02` : Renommage du titre du troisième groupe `t.nav.sectionDashboard` en « Gestion & Paramètres » / « Management & Settings » sans altérer les items internes.
+    - [x] `TASK-NAV-01.03` : Application du titre de groupe sur `mainNavItems` (`t.nav.sectionMain`) et remplacement du premier lien `/` par `t.nav.home` dans `ModernSidebar.tsx`.
+    - [x] `TASK-NAV-01.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🎨 Sprint 44 Achevée : Calibrage Géométrique Modal & Footer Sélecteur d'IA (Zéro Débordement & Hauteur Optimisée)
+
+- [x] **`TASK-UI-MODEL-01` — Calibrage Spatial du Sélecteur d'IA & Footer Sans Débordement**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/layout/AIModelSelector.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-UI-MODEL-01.01` : Retrait des marges négatives cassantes (`-mb-4`, `-mb-6`) sur le footer pour éliminer tout débordement de texte hors du conteneur modal.
+    - [x] `TASK-UI-MODEL-01.02` : Fixation explicite du footer avec `shrink-0`, `sticky bottom-0`, fond opaque avec bordure supérieure nette et padding interne sécurisé.
+    - [x] `TASK-UI-MODEL-01.03` : Ajustement de la hauteur du dialogue (`h-[92dvh] sm:h-[86dvh] max-h-[850px]`) avec conteneur de liste `flex-1 min-h-0 overflow-y-auto` pour garantir une surface généreuse de défilement.
+    - [x] `TASK-UI-MODEL-01.04` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## ⚡ Sprint 43 Achevée : Fiabilisation Compteur de Quota Journalier (Redis, LocalStorage Sync & Event Bus) & Lisibilité Footer Sélecteur d'IA
+
+- [x] **`TASK-QUOTA-01` — Fiabilisation Compteur de Quota (Redis + In-Memory Fallback, LocalStorage BYOK Sync, Event Bus) & Restructuration Footer Sélecteur IA**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/actions/shared/quota-limiter.ts`, `src/contexts/AnalysisContext.tsx`, `src/components/layout/ModernHeader.tsx`, `src/components/layout/ModernSidebar.tsx`, `src/app/data-source/page.tsx`, `src/components/layout/AIModelSelector.tsx`, `src/components/api-keys/GuestApiKeyDialog.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-QUOTA-01.01` : Stockage persistant du compteur journalier dans Upstash Redis (`quota:daily:YYYY-MM-DD:identifier`) avec TTL automatique à minuit UTC, avec fallback transparent sur la Map en mémoire si Redis est indisponible.
+    - [x] `TASK-QUOTA-01.02` : Détection BYOK multi-sources : vérification Better-Auth session, cookie 24h chiffré, et support du paramètre `clientHasByok` pour les clés configurées dans `useTemporaryApiKeys` (localStorage).
+    - [x] `TASK-QUOTA-01.03` : Bus d'événements client (`offeranalyst:quota_updated` et `storage`) émis lors de la fin d'une recherche (`AnalysisContext`), de l'ajout/suppression d'une clé API (`GuestApiKeyDialog`), et réécouté en direct par `ModernHeader`, `ModernSidebar` et `DataSourcePage`.
+    - [x] `TASK-QUOTA-01.04` : Refonte ergonomique du footer du sélecteur d'IA (`AIModelSelector`) : texte plus grand (`text-xs sm:text-sm`), icône bien dimensionnée, contraste fort pour une lisibilité optimale, disposition équilibrée et bouton d'accès direct vers `/dashboard/api-keys`.
+    - [x] `TASK-QUOTA-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🛡️ Sprint 42 Achevée : Suppression Feature Flags Obsolètes, Télémétrie des Services & Rate Limiting DDoS Auto-Adaptatif (5 req/min Upstash Redis)
+
+- [x] **`TASK-SEC-01` — Purge des Feature Flags, Télémétrie des Services & Rate Limiting DDoS Auto-Adaptatif**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts`, `src/lib/redis.ts`, `src/lib/ddos-defense.ts`, `src/app/actions/db/service-health.ts`, `src/app/admin/page.tsx`, `src/app/actions/analyze.ts`, `.env.example`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-SEC-01.01` : Suppression complète du code mort des anciens Feature Flags (`src/lib/feature-flags.ts`, `src/app/api/admin/feature-flags/route.ts` et du composant d'affichage dans `src/app/admin/page.tsx`).
+    - [x] `TASK-SEC-01.02` : Client singleton Upstash Redis (`src/lib/redis.ts`) avec fallback mémoire résilient et variables d'environnement documentées dans `.env.example`.
+    - [x] `TASK-SEC-01.03` : Moteur de détection DDoS & Rate Limiting adaptatif (`src/lib/ddos-defense.ts`) calibré à 5 req/min max sur les recherches / analyses, avec système d'isolation automatique (Jail IP temporaire 15 min) et whitelist admin.
+    - [x] `TASK-SEC-01.04` : Sonde de télémétrie multi-services (`src/app/actions/db/service-health.ts`) mesurant la latence et disponibilité en direct de MongoDB Atlas, Upstash Redis, Upstash QStash, OpenRouter et Better-Auth.
+    - [x] `TASK-SEC-01.05` : Nouveau Centre de Contrôle Sécurité & Infrastructure sur `src/app/admin/page.tsx` avec statut des services, métriques DDoS, liste des IPs isolées avec déblocage en 1 clic.
+    - [x] `TASK-SEC-01.06` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🤖 Sprint 41 Achevée : Modèles IA Modernisés (2 par Structure), Détection Hors-Ligne Admin/Sélecteur, Espacements UI & Modèle sur Recherche
+
+- [x] **`TASK-MODEL-02` — Modernisation Modèles IA (2/Structure, GPT-6.1/o3/4o, Nemotron), Détection Offline, Calibrage UI & Affichage Modèle Utilisé**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `src/app/actions/models.ts`, `src/app/actions/analyze.ts`, `src/components/layout/AIModelSelector.tsx`, `src/app/admin/page.tsx`, `src/components/offers/ResultsSection.tsx`, `src/app/history/page.tsx`, `src/types/index.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-MODEL-02.01` : Structuration stricte des modèles IA dans `src/lib/ai-models.ts` : 2 modèles par provider (NVIDIA : Nemotron 3.5 Lightning & Nemotron 3 Ultra 550B, pas de Gemma ; OpenAI : GPT-6.1 Terra, o3, GPT-4o ; Anthropic : Claude 5.5 Sonnet & Haiku ; DeepSeek : V3 & R1-0528 ; Google : Gemini 3.8 Flash & 2.5 Pro ; Mistral : Large & Small).
+    - [x] `TASK-MODEL-02.02` : Service de détection en temps réel de disponibilité / statut hors-ligne des modèles via l'API OpenRouter avec cache résilient (`src/app/actions/models.ts`).
+    - [x] `TASK-MODEL-02.03` : Signalisation visuelle des modèles hors-ligne / indisponibles dans l'interface de sélection (`AIModelSelector`) et dans le tableau de bord Admin (`/admin`).
+    - [x] `TASK-MODEL-02.04` : Correction des espacements du footer de `AIModelSelector` et augmentation des marges horizontales des cartes de sélection (`px-4 sm:px-5 sm:py-4`).
+    - [x] `TASK-MODEL-02.05` : Affichage proéminent et systématique du modèle d'IA utilisé sur les résultats de recherche (`ResultsSection`) et sur l'historique (`/history`).
+    - [x] `TASK-MODEL-02.06` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🛡️ Sprint 40 Achevée : Sécurisation Native & Fiabilisation du Bookmarklet de Capture 1-Clic
+
+- [x] **`TASK-CAPTURE-02` — Sécurisation Native du Bookmarklet 1-Clic (Bypass React 19 Sanitizer & Zero-Leak)**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/components/data-source/CaptureAssistantModal.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-CAPTURE-02.01` : Élimination du blocage React 19 sur `javascript:` URLs via rattachement dynamique par ref native DOM (`bookmarkletAnchorRef.current.setAttribute('href', bookmarkletCode)`).
+    - [x] `TASK-CAPTURE-02.02` : Support complet du Drag & Drop vers la barre de favoris du navigateur avec `dataTransfer.setData('text/uri-list', ...)` et `dataTransfer.setData('text/plain', ...)`.
+    - [x] `TASK-CAPTURE-02.03` : Sécurité stricte du code bookmarklet : exécution purement locale dans le navigateur du client, extraction ciblée des annonces sans cookies ni transmission distante de tokens.
+    - [x] `TASK-CAPTURE-02.04` : Notification toast guidance au clic direct pour assister l'utilisateur à glisser le bouton dans ses favoris (raccourci Ctrl+Shift+B).
+    - [x] `TASK-CAPTURE-02.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🔍 Sprint 39 Achevée : Historique (Badge BYOK/Free, Modèle NVIDIA Solo & Grand Affichage Détails)
+
+- [x] **`TASK-HISTORY-01` — Badge BYOK/Free, NVIDIA Modèle Gratuit Unique & Vue Détaillée Agrandie**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/lib/ai-models.ts`, `prisma/schema.prisma`, `src/types/index.ts`, `src/app/history/page.tsx`, `src/hooks/use-search-history.ts`, `src/app/actions/db/history.ts`, `src/contexts/AnalysisContext.tsx`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-HISTORY-01.01` : Retrait de tous les modèles gratuits non fonctionnels dans `src/lib/ai-models.ts`, ne conservant que NVIDIA (`nvidia/nemotron-3.5-lightning:free`) comme unique modèle gratuit par défaut.
+    - [x] `TASK-HISTORY-01.02` : Persistance et propagation de l'indicateur clé (`isByok: boolean`, `keyType: 'byok' | 'free'`) dans les modèles Prisma, types TypeScript et actions MongoDB Atlas.
+    - [x] `TASK-HISTORY-01.03` : Affichage sur chaque carte `/history` d'un badge distinctif et visible indiquant si la recherche a été effectuée en "BYOK" ou "Free Key".
+    - [x] `TASK-HISTORY-01.04` : Intégration d'un modal/dialogue grand format (`max-w-4xl max-h-[85vh]`) pour afficher confortablement les détails complets de la recherche.
+    - [x] `TASK-HISTORY-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).
+
+---
+
+## 🚀 Sprint 38 Achevée : Refonte Onboarding (Retrait Test Fictif) & Visibilité Admin des Raisons d'Inscription
+
+- [x] **`TASK-ONBOARD-01` — Streamlining Onboarding & Reporting Admin des Motifs d'Inscription**
+  - **Priorité :** 🔴 HAUTE
+  - **Fichiers cibles :** `src/app/onboarding/page.tsx`, `src/app/actions/db/admin.ts`, `src/app/admin/page.tsx`, `src/app/api/profile/onboarding/route.ts`, `docs/TASKS.md`
+  - **Critères d'acceptation :**
+    - [x] `TASK-ONBOARD-01.01` : Retrait de l'étape de test d'analyse fictive/lente (`FirstSearchStep`) de l'onboarding au profit d'un parcours fluide en 4 étapes claires.
+    - [x] `TASK-ONBOARD-01.02` : Persistance fiable du motif d'inscription (`useCase`) dans le profil MongoDB de l'utilisateur authentifié et en LocalStorage pour les sessions invité.
+    - [x] `TASK-ONBOARD-01.03` : Extension de la Server Action `getRecentUsers` et `getSystemStats` pour inclure les motifs d'inscription (`useCase`) réels issus de la base de données.
+    - [x] `TASK-ONBOARD-01.04` : Intégration dans le Dashboard Admin (`/admin`) d'un widget analytique visuel des causes d'inscription et affichage de la colonne "Domaine / Motif" dans la table des utilisateurs récents.
+    - [x] `TASK-ONBOARD-01.05` : Validation déterministe avec `pnpm run eval:quick` (100/100 PASS, 0 TS error, 0 ESLint warning).

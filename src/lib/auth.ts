@@ -1,7 +1,7 @@
 /**
  * Better-Auth Configuration
  * 
- * This file sets up Better-Auth with MongoDB adapter for authentication.
+ * This file sets up Better-Auth with PostgreSQL adapter for authentication.
  * It supports email/password and OAuth providers (Google, GitHub).
  */
 
@@ -17,7 +17,7 @@ export const auth = betterAuth({
     }),
   ],
   database: prismaAdapter(prisma, {
-    provider: "mongodb",
+    provider: "postgresql",
   }),
   emailAndPassword: {
     enabled: true,

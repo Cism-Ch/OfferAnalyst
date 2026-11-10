@@ -68,29 +68,29 @@ export async function getServicesHealthAction(): Promise<{
   const now = Date.now();
   const services: ServiceHealthItem[] = [];
 
-  // 1. MongoDB Atlas Health
-  const mongoStart = Date.now();
+  // 1. Supabase PostgreSQL Health
+  const dbStart = Date.now();
   try {
-    // Ping MongoDB with a lightweight command
-    await prisma.$runCommandRaw({ ping: 1 });
-    const latency = Date.now() - mongoStart;
+    // Ping PostgreSQL with a lightweight query
+    await prisma.$queryRaw`SELECT 1`;
+    const latency = Date.now() - dbStart;
     services.push({
-      id: 'mongodb',
-      name: 'MongoDB Atlas',
+      id: 'supabase',
+      name: 'Supabase PostgreSQL',
       provider: 'Database',
       status: latency < 350 ? 'healthy' : 'degraded',
       latencyMs: latency,
       message: `Connecté (${latency}ms)`,
       lastChecked: now,
     });
-  } catch (mongoErr) {
+  } catch (dbErr) {
     services.push({
-      id: 'mongodb',
-      name: 'MongoDB Atlas',
+      id: 'supabase',
+      name: 'Supabase PostgreSQL',
       provider: 'Database',
       status: 'down',
-      latencyMs: Date.now() - mongoStart,
-      message: mongoErr instanceof Error ? mongoErr.message : 'Erreur de connexion MongoDB',
+      latencyMs: Date.now() - dbStart,
+      message: dbErr instanceof Error ? dbErr.message : 'Erreur de connexion PostgreSQL',
       lastChecked: now,
     });
   }

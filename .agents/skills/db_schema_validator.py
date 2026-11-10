@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Prisma MongoDB Schema & ORM Hygiene Validator for OfferAnalyst.
+Prisma PostgreSQL / Supabase Schema & ORM Hygiene Validator for OfferAnalyst.
 Validates:
-1. Provider is mongodb.
-2. Every model has an id with @id @default(auto()) @map("_id") @db.ObjectId.
-3. Foreign keys defined in @relation fields use @db.ObjectId attribute.
+1. Provider is postgresql.
+2. Every model has a valid primary key (@id).
+3. No legacy MongoDB artifacts (@db.ObjectId, @map("_id"), @db.String) remain.
 4. Checks that codebase uses prisma singleton (@/lib/prisma) instead of direct instantiation.
-5. Runs `npx prisma validate`.
+5. Runs `pnpm exec prisma validate`.
 """
 
 import sys
@@ -36,13 +36,32 @@ def validate_prisma_schema_content() -> list[dict]:
     content = SCHEMA_PATH.read_text(encoding="utf-8")
 
     # 1. Vérification du provider
-    if 'provider = "mongodb"' not in content:
+    if 'provider  = "postgresql"' not in content and 'provider = "postgresql"' not in content:
         issues.append({
             "severity": "ERROR",
-            "message": "Le datasource db doit utiliser le provider 'mongodb'."
+            "message": "Le datasource db doit utiliser le provider 'postgresql'."
         })
 
-    # 2. Analyse des modèles
+    # 2. Vérification des artefacts MongoDB résiduels
+    if "@db.ObjectId" in content:
+        issues.append({
+            "severity": "ERROR",
+            "message": "Artefact MongoDB résiduel détecté: '@db.ObjectId' interdit sous PostgreSQL."
+        })
+
+    if '@map("_id")' in content:
+        issues.append({
+            "severity": "ERROR",
+            "message": "Artefact MongoDB résiduel détecté: '@map(\"_id\")' interdit sous PostgreSQL."
+        })
+
+    if "@db.String" in content:
+        issues.append({
+            "severity": "WARNING",
+            "message": "Type MongoDB '@db.String' détecté. Utilisez le type natif 'String' ou '@db.Text' sous PostgreSQL."
+        })
+
+    # 3. Analyse des modèles
     model_regex = re.compile(r"model\s+(\w+)\s+\{([^}]+)\}", re.MULTILINE)
     for match in model_regex.finditer(content):
         model_name = match.group(1)
@@ -51,34 +70,15 @@ def validate_prisma_schema_content() -> list[dict]:
 
         # Vérifier l'ID principal
         has_valid_id = any(
-            re.search(r"^id\s+String\s+@id\s+@default\(auto\(\)\)\s+@map\(\"_id\"\)\s+@db\.ObjectId", line)
+            re.search(r"^id\s+String\s+@id", line)
             for line in lines
         )
         if not has_valid_id:
             issues.append({
                 "severity": "ERROR",
                 "model": model_name,
-                "message": f"Le modèle '{model_name}' ne possède pas d'identifiant MongoDB valide: 'id String @id @default(auto()) @map(\"_id\") @db.ObjectId'"
+                "message": f"Le modèle '{model_name}' ne possède pas d'identifiant valide: 'id String @id ...'"
             })
-
-        # Extraire les champs référencés dans @relation(fields: [field1, field2])
-        relation_fields = set()
-        for line in lines:
-            rel_match = re.search(r"@relation\([^)]*fields:\s*\[([^\]]+)\]", line)
-            if rel_match:
-                for f in rel_match.group(1).split(","):
-                    relation_fields.add(f.strip())
-
-        # Vérifier que ces champs relationnels utilisent @db.ObjectId
-        for line in lines:
-            for rf in relation_fields:
-                if re.match(rf + r"\s+String", line) and "@db.ObjectId" not in line:
-                    issues.append({
-                        "severity": "WARNING",
-                        "model": model_name,
-                        "field": rf,
-                        "message": f"Le champ relationnel '{rf}' dans '{model_name}' devrait être annoté avec '@db.ObjectId'."
-                    })
 
     return issues
 

@@ -7,7 +7,7 @@
  * In production, we create a new client each time.
  * In development, we reuse the same client across hot-reloads.
  * 
- * Prisma 5.22.0 - Compatible with MongoDB without adapters
+ * Prisma 6.2 - Compatible with Supabase PostgreSQL and connection pooling
  */
 
 import { PrismaClient } from '@prisma/client';

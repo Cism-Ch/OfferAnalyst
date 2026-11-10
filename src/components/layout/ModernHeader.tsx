@@ -11,7 +11,7 @@
  * - Strict adherence to zero-emoji policy and WCAG 44x44px touch targets
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

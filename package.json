@@ -22,7 +22,9 @@
     "db:seed-admin": "node scripts/seed-admin.mjs",
     "version:bump": "python evals/version_manager.py",
     "version:check": "python evals/version_manager.py --dry-run",
-    "postinstall": "node scripts/silence-baseline.js"
+    "postinstall": "node scripts/silence-baseline.js",
+    "cognitive:serve": "python ../cognitive-rsi-ops/cli.py serve",
+    "cognitive:status": "python ../cognitive-rsi-ops/cli.py status"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",
@@ -55,7 +57,6 @@
     "dotenv": "^18.0.9",
     "framer-motion": "^14.6.0",
     "lucide-react": "^1.61.0",
-    "mongodb": "^7.7.0",
     "next": "16.4.3",
     "next-themes": "^0.4.6",
     "pino": "^10.4.0",

@@ -9,7 +9,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Sparkles, Shield, TrendingUp, Cpu, Server, Zap, Globe, Layers } from 'lucide-react';
+import { CheckCircle2, Sparkles, Shield, TrendingUp, Zap } from 'lucide-react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';

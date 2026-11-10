@@ -91,13 +91,13 @@ export async function logAPIKeyUsage(
             costUsd = calculateTokenCostUSD(data.model, promptTokens, completionTokens);
         }
 
-        // Validate MongoDB ObjectId (24 hex characters) to prevent P2023 malformed errors
-        const isValidObjectId = (val?: string | null): boolean => {
-            return typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
+        // Validate record ID (non-empty string)
+        const isValidId = (val?: string | null): boolean => {
+            return typeof val === 'string' && val.trim().length > 0;
         };
 
-        const safeUserId = isValidObjectId(userId) ? userId! : null;
-        const safeApiKeyId = isValidObjectId(apiKeyId) ? apiKeyId! : null;
+        const safeUserId = isValidId(userId) ? userId! : null;
+        const safeApiKeyId = isValidId(apiKeyId) ? apiKeyId! : null;
 
         // Sanitize error message against credential leakage
         const safeErrorMessage = data.errorMessage

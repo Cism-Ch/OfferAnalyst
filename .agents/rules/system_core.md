@@ -13,9 +13,9 @@
 | :--- | :--- | :--- |
 | **Framework** | Next.js 16 (App Router) | React Server Components (RSC) par défaut. 'use client' restreint aux feuilles d'interaction. |
 | **Langage & Types** | TypeScript 5.9 (Strict) | Zéro `any`. Inférence forte. Validation Zod runtime systématique. |
-| **Base de Données** | Prisma 6.2 + MongoDB Atlas | Client singleton via `@/lib/prisma`. ObjectIds natifs (`@id @default(auto()) @map("_id") @db.ObjectId`). |
-| **Authentification** | Better-Auth 1.4 | Sessions validées côté serveur (`await auth.api.getSession`). Zéro fuite de hash ou secret. |
-| **Stockage Fichiers** | Tigris Cloud Storage (S3 API) | URLs pré-signées temporaires. Pas de blobs volumineux dans MongoDB. |
+| **Base de Données** | Prisma 6.2 + Supabase PostgreSQL | Client singleton via `@/lib/prisma`. Clés CUID canoniques (`@id @default(cuid())`), Pooler 6543 / Direct 5432. |
+| **Authentification** | Better-Auth 1.7+ | Sessions validées côté serveur (`await auth.api.getSession`). Adaptateur PostgreSQL. Zéro fuite de hash ou secret. |
+| **Stockage Fichiers** | Tigris Cloud Storage (S3 API) | URLs pré-signées temporaires. Pas de blobs volumineux dans la base de données. |
 | **Background Jobs** | Upstash QStash | Traitements lourds déchargés (emails, PDF). Signature HMAC validée (`receiver.verify`). Idempotence. |
 | **Cache & Rate-Limit**| Upstash Redis & In-Memory | Protection des routes sensibles et Server Actions. Mise en cache des requêtes coûteuses. |
 | **Emails** | Resend + React Email | Envois transactionnels strictly asynchrones via jobs de fond. |

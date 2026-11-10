@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-08T02:05:22.630837",
-  "mode": "QUICK",
+  "timestamp": "2026-11-10T23:36:53.400493",
+  "mode": "FULL",
   "total_score": 100,
   "raw_score": 100,
   "max_score": 100,
@@ -11,6 +11,7 @@
     "lint": "PASSED",
     "prisma_hygiene": "PASSED",
     "rsi_memory_hygiene": "PASSED",
-    "secret_leak_guard": "PASSED"
+    "secret_leak_guard": "PASSED",
+    "prod_build": "PASSED"
   }
 }

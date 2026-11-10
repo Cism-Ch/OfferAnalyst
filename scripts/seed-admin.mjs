@@ -20,7 +20,7 @@ const prisma = new PrismaClient();
 
 const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "mongodb",
+    provider: "postgresql",
   }),
   emailAndPassword: {
     enabled: true,

@@ -162,20 +162,14 @@ export async function getSharedAnalysisAction(
     const currentUserId = await resolveCurrentUserId();
     const shouldIncrement = options?.incrementView !== false;
 
-    // Secure query: Only match shareToken for public consultation.
-    // If querying by internal MongoDB ObjectId, require that current user is the owner (userId)
-    const isObjectId = /^[0-9a-fA-F]{24}$/.test(sanitizedToken);
+    // Secure query: Match shareToken for public consultation, or id if current user is owner
     const record = await prisma.sharedAnalysis.findFirst({
-      where: isObjectId
-        ? {
-            OR: [
-              { shareToken: sanitizedToken },
-              ...(currentUserId ? [{ id: sanitizedToken, userId: currentUserId }] : []),
-            ],
-          }
-        : {
-            shareToken: sanitizedToken,
-          },
+      where: {
+        OR: [
+          { shareToken: sanitizedToken },
+          ...(currentUserId ? [{ id: sanitizedToken, userId: currentUserId }] : []),
+        ],
+      },
     });
 
     if (!record) {

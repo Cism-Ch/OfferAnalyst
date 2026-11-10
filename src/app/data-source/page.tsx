@@ -13,7 +13,7 @@
  * Responsive mobile-first SaaS premium design.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SimpleLayout } from '@/components/layout/SimpleLayout';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 import { useLanguage } from '@/contexts/LanguageContext';
