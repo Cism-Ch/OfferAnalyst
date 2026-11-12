@@ -1,98 +1,103 @@
 ---
-description: Développe une fonctionnalité Fullstack complète sur OfferAnalyst avec cycle d'auto-amélioration RSI en 4 phases.
+description: Develop an end-to-end feature with a deterministic 4-phase Recursive Self-Improvement (RSI) cycle.
 ---
 
-# Workflow : /rsi-feature
+# Workflow: /rsi-feature
 
-Ce workflow formalise le protocole d'auto-amélioration récursive (RSI) pour tout agent IA développant sur **OfferAnalyst**.  
-Suis scrupuleusement ces 4 phases séquentielles sans en sauter aucune :
-
----
-
-## 🚀 PHASE 1 : Préparation & Exécution Fullstack Initiale
-
-1. **Vérification SSOT Tâche (`docs/TASKS.md`) & Artefact IDE :**
-   - Assure-toi que la tâche existe dans `docs/TASKS.md` sous la forme `TASK-DOMAINE-XX`.
-   - Si elle n'existe pas, formalise-la immédiatement avec ID, priorité, description et critères cochables `[ ]`.
-   - Passe son statut à `[-]` (En cours) dans le Kanban et la section active.
-   - **Mémoire Épisodique (Artefact IDE) :** Si la tâche nécessite une planification multi-étapes ou un suivi étendu, initialise un Artefact Antigravity Markdown (`plan.md` ou `task_tracking.md`) dans le dossier Brain. L'artefact sert de tableau de bord visuel hors contexte conversationnel. Ne jamais recopier l'intégralité d'un artefact dans les messages de chat pour préserver les tokens de contexte.
-
-2. **Audit de Stack & Outillage Officiel (Skills & MCP) :**
-   - Exécute `python evals/stack_inspector.py` (ou `pnpm run rsi:inspect`).
-   - Vérifie qu'aucun outillage officiel (serveurs MCP Upstash/Tigris, skills Shadcn/Prisma) n'est manquant pour éviter de coder à l'aveugle.
-
-3. **Résolution Dynamique de la Mémoire Contextuelle :**
-   - Exécute `python evals/memory_engine.py --inject [fichiers_cibles]` pour charger exactement les sous-playbooks atomiques concernés (`.agents/rules/modules/`) sans saturer la fenêtre de contexte.
-   - Lis `.agents/rules/system_core.md` pour les règles absolues.
-
-4. **Implémentation de Bout en Bout avec Cadence Anti-Saturation :**
-   - **Micro-éditions locales :** Lors de l'écriture ou de l'ajustement de composants/fonctions, n'exécute pas de test global (`tsc`/`lint`). Laisser le flux d'édition se dérouler librement.
-   - **BDD :** Si nécessaire, mets à jour `prisma/schema.prisma` (`@db.ObjectId`, `@map("_id")`), puis lance `pnpm exec prisma validate` et `pnpm exec prisma generate`.
-   - **Backend :** Crée/adapte la Server Action dans `src/app/actions/` avec validation Zod stricte, auth serveur Better-Auth (`await auth.api.getSession`), standard `{ success, data } | { success, error }` et `revalidatePath()`.
-   - **Frontend :** Développe les composants React 19 dans `src/components/` ou colocalisés dans `src/app/`, avec design Tailwind v4 soigné, gestion des 4 états (`isLoading`, `isError`, `isEmpty`, `data`), et micro-interactions.
-   - **Hygiène :** Utilise exclusivement l'alias `@/*`, supprime les variables/imports inutilisés et commente les cas limites.
+This workflow formalizes the Recursive Self-Improvement (RSI) protocol for any AI agent.  
+Scrupulously follow these 4 sequential phases without skipping any:
 
 ---
 
-## 🧪 PHASE 2 : Évaluation Déterministe & Boucle Réflexive (Max 3 Tentatives)
+## PHASE 1: Preparation & Initial Execution
 
-1. **Exécution du Juge Déterministe (Cadence Jalon vs Clôture) :**
-   - **En cours de tâche / Jalon :** Exécute toujours le mode rapide compact :
+1. **Cold-Start Pulse & SSOT Task Check (`docs/TASKS.md`):**
+   - Run `python evals/rsi_orchestrator.py --pulse` to get an instant briefing on repository health, active tasks, git workspace, and recommended rule modules.
+   - Ensure the task exists in `docs/TASKS.md` in the format `TASK-DOMAIN-XX`.
+   - If `docs/TASKS.md` approaches 250 lines, run `python evals/rsi_orchestrator.py --rollover` to archive completed `[x]` sprint blocks into `docs/archive/tasks/`.
+   - If the task is missing, formalize it immediately with ID, priority, `Target files`, and checkable criteria `[ ]`.
+   - Update its status to `[-]` (In progress) in the Kanban and active section.
+   - **Episodic Memory (IDE Artifact):** If the task requires multi-step planning or extended tracking, initialize a Markdown Artifact (`plan.md` or `task_tracking.md`) in the IDE's Brain directory. The artifact acts as an out-of-context visual board. Never dump full artifact contents into chat messages to conserve context tokens.
+
+2. **Stack Audit, Topological Map & Blast Radius:**
+   - Run `python evals/stack_inspector.py` (or `pnpm run rsi:inspect`) to verify official tooling (MCP servers, framework/ORM skills).
+   - Run `python evals/stack_inspector.py --map` to inspect existing singletons and top dependency hubs in `O(1)` before creating new helpers.
+   - Before modifying a shared module or interface, run `python evals/stack_inspector.py --impact [file]` to evaluate its reverse-dependency Blast Radius.
+
+3. **Dynamic Contextual Memory Resolution:**
+   - Run `python evals/memory_engine.py --inject [target_files]` to inject only the relevant atomic sub-playbooks (`.agents/rules/modules/`) without saturating the context window.
+   - Read `.agents/rules/system_core.md` for project-wide invariant rules.
+
+4. **End-to-End Implementation with Anti-Saturation Cadence:**
+   - **Local micro-edits:** During routine component/function coding, do NOT trigger global checks (`tsc`/`lint`). Keep editing flow fluid (0 tokens wasted).
+   - **Backend / Database:** Model data persistence and APIs with strict input validation (e.g., Zod) and strong typing.
+   - **Frontend:** Build interfaces with complete state coverage (`loading`, `error`, `empty`, `data`).
+   - **Hygiene:** Exclusively use clean import aliases, removing any unused variables or imports.
+
+---
+
+## PHASE 2: Deterministic Evaluation & Reflexive Loop (Max 3 Attempts)
+
+1. **Run Deterministic Judge (Milestone vs. Closure Cadence):**
+   - **Mid-task / Milestone check:** Always run the compact quick mode:
      ```bash
      python evals/run_fullstack_eval.py --quick
-     # ou pnpm run eval:quick
+     # or pnpm run eval:quick
      ```
-     La sortie JSON compacte (`failed_steps` tronqués à 10 lignes) évite de saturer la fenêtre de contexte de l'agent.
-   - **Avant Clôture finale uniquement :** Exécute le test complet :
+     The compact JSON output (with `failed_steps` truncated to 10 lines) protects the agent's context budget.
+   - **Before final closure only:** Run the full test suite:
      ```bash
      python evals/run_fullstack_eval.py
-     # ou pnpm run eval:fullstack
+     # or pnpm run eval:fullstack
      ```
-2. **Si le score est de 100/100 dès la Tentative 1 :**
-   - Si la tâche était un **audit de sécurité, un débogage ou une refonte** ayant révélé et corrigé des failles du code existant : **Exécute la PHASE 3** pour consigner ces enseignements critiques dans le playbook.
-   - S'il s'agissait d'une création de feature standard sans découverte d'anti-pattern : Passe directement à la **PHASE 4**.
 
-3. **Si le score est inférieur à 100/100 :**
-   - Lis immédiatement le rapport d'échec dans `evals/logs/trajectory_latest.json`.
-   - Note mentalement la cause exacte (TypeScript, ESLint, validation Prisma ou Build).
-   - Corrige le code applicatif et relance :
+2. **If Score is 100/100 on Attempt 1:**
+   - If the task was a **security audit, debugging session, or refactor** that exposed and resolved code defects: **Execute PHASE 3** to record critical learnings into the playbook.
+   - If it was a standard feature addition without novel anti-patterns: Proceed directly to **PHASE 4**.
+
+3. **If Score is Below 100/100:**
+   - Inspect the compact failure report in `evals/logs/trajectory_latest.json`.
+   - Identify the exact root cause (Typecheck, Lint, Test, or Schema).
+   - Fix application code and re-evaluate:
      ```bash
      python evals/rsi_orchestrator.py --eval --attempt 2
      ```
-   - Répète jusqu'à obtention du score 100/100 (maximum 3 tentatives).
-   - *Si après 3 tentatives le score reste inférieur à 100, interromps le flux et sollicite l'arbitrage humain en expliquant le point de blocage.*
+   - Iterate until reaching 100/100 (maximum 3 attempts).
+   - *If the score remains below 100 after 3 attempts, halt execution and request human guidance detailing the roadblock.*
 
 ---
 
-## 🧠 PHASE 3 : Mutation Méta-Cognitive (Apprentissage & Amélioration)
+## PHASE 3: Meta-Cognitive Mutation (Learning & Optimization)
 
-Cette phase s'exécute dès qu'un échec a été réparé (> 1 tentative) OU qu'un audit/refactoring a neutralisé des vulnérabilités ou anti-patterns :
-1. Adopte le rôle défini dans `.agent/prompts/meta_optimizer.md`.
-2. Identifie la couche défaillante (DB, Server Action, UI, Types, Sécurité).
-3. Formule une règle générale préventive d'une à deux lignes (ex: `[R-API-XX] Toujours...`).
-4. **Anti-Bloat & Modularité :** Vérifie que le sous-module cible dans `.agents/rules/modules/` ne dépasse pas 80 lignes. Si c'est le cas, fusionne les règles sémantiquement proches avant d'ajouter la nouvelle règle. Si le domaine est nouveau, crée un nouveau fichier modulaire `[domaine].md`.
-5. Édite le sous-module ciblé dans `.agents/rules/modules/` et mets à jour `.agents/rules/fullstack_playbook.md` (ou ajoute un script d'audit dans `.agents/skills/` si l'erreur est automatisable).
+This phase triggers whenever an error was resolved (> 1 attempt) OR a security audit/refactoring neutralized vulnerabilities or anti-patterns:
+
+1. Assume the persona defined in `.agents/prompts/meta_optimizer.md`.
+2. Pinpoint the affected layer (DB, Server Action, UI, Types, Security).
+3. Formulate a general, preventive 1-2 line rule (e.g., `[R-DOM-XX] Always...`).
+4. **Anti-Bloat & Modularity (< 80 lines):** Ensure the target sub-module in `.agents/rules/modules/` remains strictly under 80 lines using a 2-step lossless strategy: first merge semantically overlapping or redundant rules without losing technical specificity; second, if all rules are distinct and the file is full, split the module into finer domain sub-modules (`[sub_domain].md`) and register the new triggers in `evals/memory_engine.py` and `.agents/rules/fullstack_playbook.md`.
+5. Update the target sub-module in `.agents/rules/modules/` and keep `.agents/rules/fullstack_playbook.md` synchronized.
 
 ---
 
-## 🛡️ PHASE 4 : Validation Finale, Git Guardrail & Clôture
+## PHASE 4: Final Validation, Git Guardrail & Closure
 
-1. **Vérification des Guardrails :**
+1. **Verify Guardrails & Scope Alignment:**
    ```bash
    python evals/rsi_orchestrator.py --guardrail
    ```
-2. **Double Vérification Déterministe :**
-   - `pnpm exec tsc --noEmit` (0 erreur).
-   - `pnpm run lint` (0 avertissement/erreur).
-3. **Scellement Automatique de Version SemVer :**
-   - Exécute `pnpm run version:bump` pour calculer le saut de version, synchroniser `package.json`, sceller le bloc `[Unreleased]` de `CHANGELOG.md` avec la date du jour et créer le tag Git annoté (`vX.Y.Z`).
-4. **Clôture SSOT dans `docs/TASKS.md` :**
-   - Coche tous les critères d'acceptation `[x]`.
-   - Marque la tâche terminée `[x]`.
-   - Transfère la tâche dans le tableau `Historique des Tâches Terminées` avec la date et la liste des fichiers créés/modifiés.
-   - Mets à jour le tableau Kanban synthétique.
-5. **Restitution à l'Utilisateur :**
-   - Fonctionnalité livrée et validée à 100/100.
-   - Version SemVer scellée et tag Git créé.
-   - Nombre de tentatives nécessaires.
-   - Leçon apprise et nouvelle règle insérée dans `fullstack_playbook.md` (diff exact le cas échéant).
+   Confirm `docs/TASKS.md` (`< 250L`), modules (`< 80L`), and Scope Guard (`git status` aligned with `Target files` in `docs/TASKS.md`).
+2. **Double Deterministic Check:**
+   - Typecheck (0 errors).
+   - Linter (0 errors / warnings).
+3. **Automatic SemVer Version Sealing:**
+   - Run `python evals/version_manager.py --bump patch` to bump version, seal `CHANGELOG.md`, and create Git tag.
+4. **SSOT Task Closure in `docs/TASKS.md`:**
+   - Check off all acceptance criteria `[x]`.
+   - Mark task completed `[x]`.
+   - Move task entry to `Completed Tasks History` with date and list of created/modified files.
+   - Update the synthetic Kanban table.
+5. **Final User Report:**
+   - Delivered and verified feature (100/100 score).
+   - Sealed SemVer release.
+   - Number of attempts required.
+   - Lessons learned and newly registered rules (with exact diff if applicable).

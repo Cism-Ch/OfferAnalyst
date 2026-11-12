@@ -3,9 +3,9 @@
 > **Source Unique de Vérité (SSOT)** pour le pilotage et le suivi de toutes les tâches techniques et fonctionnelles du projet **OfferAnalyst**.  
 > **Règle absolue pour tout Agent IA :** Ce document DOIT être consulté avant toute tâche et mis à jour immédiatement après chaque réalisation ou découverte de nouvelle sous-tâche. Plafond strict : **250 lignes**.
 
-**Dernière mise à jour :** 10 Novembre 2026  
+**Dernière mise à jour :** 12 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 52 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning, Build Next.js 16 validé)
+**Statut Global :** Sprints 1 à 53 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning, Security Audit PASSED)
 
 ---
 
@@ -13,15 +13,27 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SPRINT 53) │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SP 54)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 52 (Supab- │
-│     à définir           │  │ [ ] Chrome Store Publish│  │       ase PostgreSQL)   │
-│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 51 (Anti-  │
-│                         │  │                         │  │       Leak & BA Dash)   │
-│                         │  │                         │  │     - Sprints 1 à 50    │
+│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 53 (RSI v3 │
+│     à définir           │  │ [ ] Chrome Store Publish│  │       Observabilité)    │
+│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 52 (Supab) │
+│                         │  │                         │  │     - Sprints 1 à 51    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## Active Sprint 53: Initialisation & Déploiement du Protocole RSI v3 (Observabilité Cognitive, Scope Guard & SemVer)
+
+- [x] **`TASK-RSI-04` - Initialisation du Protocole RSI v3, Observabilité Cognitive & Scope Guard**
+  - **Priority:** HIGH
+  - **Target files:** `evals/*`, `evals/**/*`, `.agents/*`, `.agents/**/*`, `.gitignore`, `AGENTS.md`, `VERSION`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-RSI-04.01`: Intégration du cockpit 1-commande `python evals/rsi_orchestrator.py --pulse` et des gardes d'intégrité `--guardrail` et `--scope`.
+    - [x] `TASK-RSI-04.02`: Optimisation de `evals/security_audit.py` avec `os.walk` et exclusion des faux positifs sur `.env` et placeholders de doc.
+    - [x] `TASK-RSI-04.03`: Mise en place de l'observabilité cognitive automatique via `evals/telemetry_hook.py` vers `.agents/telemetry/cognitive_state.json`.
+    - [x] `TASK-RSI-04.04`: Validation déterministe avec `python evals/run_fullstack_eval.py --quick` (100/100 PASS, 0 TS error, 0 lint warning, security_audit PASSED).
 
 ---
 
@@ -29,14 +41,7 @@
 
 - [x] **`TASK-DB-01` — Migration vers Supabase (PostgreSQL), Dépréciation du Driver MongoDB & Refonte Prisma ORM**
   - **Priorité :** 🔴 CRITIQUE
-  - **Fichiers cibles :** `prisma/schema.prisma`, `src/lib/auth.ts`, `scripts/seed-admin.mjs`, `src/app/actions/db/service-health.ts`, `src/app/actions/db/api-key-analytics.ts`, `src/server/share.ts`, `package.json`, `.agents/skills/db_schema_validator.py`, `.agents/rules/modules/db.md`, `.agents/rules/system_core.md`, `.env.example`, `docs/TASKS.md`
-  - **Critères d'acceptation :**
-    - [x] `TASK-DB-01.01` : Conversion du schéma Prisma (`prisma/schema.prisma`) vers `provider = "postgresql"` avec `directUrl = env("DIRECT_URL")`, conversion de toutes les clés primaires vers `@id @default(cuid())`, élimination de `@db.ObjectId` et conversion des champs textuels volumineux en `@db.Text`.
-    - [x] `TASK-DB-01.02` : Mise à jour de l'adaptateur Better-Auth dans `src/lib/auth.ts` et `scripts/seed-admin.mjs` vers `provider: "postgresql"`.
-    - [x] `TASK-DB-01.03` : Refonte de la sonde d'infrastructure dans `src/app/actions/db/service-health.ts` avec la commande PostgreSQL native `prisma.$queryRaw\`SELECT 1\`` et libellé Supabase PostgreSQL.
-    - [x] `TASK-DB-01.04` : Généralisation de la validation d'identifiant dans `src/app/actions/db/api-key-analytics.ts` et assainissement des filtres dans `src/server/share.ts`.
-    - [x] `TASK-DB-01.05` : Désinstallation du driver `mongodb` dans `package.json` et mise à jour de l'auditeur RSI `.agents/skills/db_schema_validator.py` pour le standard PostgreSQL.
-    - [x] `TASK-DB-01.06` : Documentation des variables d'environnement (`DATABASE_URL`, `DIRECT_URL`) et validation déterministe avec `python evals/run_fullstack_eval.py` (100/100 PASS, 0 TS error, 0 ESLint warning, 34/34 pages buildées).
+  - **Critères d'acceptation :** Conversion Prisma PostgreSQL CUID, adaptateur Better-Auth PostgreSQL, sonde `SELECT 1`, validation 100/100 PASS.
 
 ---
 
@@ -46,10 +51,6 @@
   - **Priorité :** 🔴 CRITIQUE
   - **Critères d'acceptation :** Mocks synthétiques factices, check bloquant `secret_leak_guard` dans `evals/run_fullstack_eval.py`, règle R-SEC-09 validée.
 
-- [x] **`TASK-AUTH-03` — Intégration du Plugin Better-Auth Dash (`@better-auth/infra`) pour Vérification d'Ownership**
-  - **Priorité :** 🔴 HAUTE
-  - **Critères d'acceptation :** `@better-auth/infra` installé, plugin `dash()` configuré dans `src/lib/auth.ts`, validation déterministe 100/100 PASS.
-
 ---
 
 ## ⚡ Sprint 50 Achevée : Déduplication API Quota, Verrou Anti-Concurrence IA & Badge Workspace Responsive
@@ -57,10 +58,6 @@
 - [x] **`TASK-PERF-01` — Déduplication des Requêtes Quota & Verrou Anti-Concurrence Analyse IA**
   - **Priorité :** 🔴 HAUTE
   - **Critères d'acceptation :** Hook singleton `useDailyQuota`, élimination des `useEffect` redondants, verrouillage strict anti-concurrence dans `AnalysisContext.tsx`.
-
-- [x] **`TASK-UI-WORKSPACE-02` — Badge Workspace Responsive : Mobile 2e ligne avec Wrap & Masquage sur Grand Écran (`lg:hidden`)**
-  - **Priorité :** 🟡 MOYENNE
-  - **Critères d'acceptation :** Cycle de vie sécurisé avec Skeleton shadcn, responsive wrap sans débordement, déplacement ligne 2 mobile et masquage desktop `lg:hidden`.
 
 ---
 
@@ -100,6 +97,6 @@ Pour préserver la compacité et la clarté du document SSOT (**< 250 lignes**),
 
 ## 📜 Protocole d'Hygiène & Archivage Dynamique (Markdown Rollover)
 
-1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement ~105 lignes).
+1. **Plafond Strict :** `docs/TASKS.md` ne doit JAMAIS dépasser **250 lignes** (actuellement ~100 lignes).
 2. **Archivage Systématique :** Dès qu'un Sprint est achevé, ses tâches détaillées sont transférées dans `docs/archive/tasks/`.
 3. **Validation Technique Obligatoire :** Aucune tâche n'est marquée `[x]` sans validation du juge déterministe.

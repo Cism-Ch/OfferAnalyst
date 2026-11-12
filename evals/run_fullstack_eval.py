@@ -1,28 +1,24 @@
 #!/usr/bin/env python3
 """
-Adaptive & Agnostic Deterministic Judge for OfferAnalyst and Universal RSI Projects.
-
-Automatically adapts to the target repository stack:
-1. Detects Package Manager (pnpm, bun, yarn, npm).
-2. Runs Typecheck if tsconfig.json is present.
-3. Runs Linter if eslint, biome, or ruff is present.
-4. Detects ORM / DB: runs Prisma validator if prisma exists, Drizzle if drizzle exists, or gracefully bypasses without false failure.
-5. Verifies RSI Modular Memory compliance (evals/memory_engine.py --audit).
-6. Optional production build check (--full).
-
-Usage:
-  python evals/run_fullstack_eval.py [--quick | -q]
+RSI Adaptive & Agnostic Deterministic Judge
+- Automatic detection of package manager (pnpm, npm, yarn, bun)
+- Execution of typecheck and linter if configured
+- Adaptive validation of DB schemas (Prisma, Drizzle, etc.) when present
+- RSI modular memory hygiene verification
+- Static security audit & secret leak detection
+- Compact error filtering (max 10 significant lines) to protect AI agent context windows
 """
 
-import subprocess
-import json
 import sys
 import os
+import time
+import subprocess
+import json
 import argparse
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
-# Force UTF-8 on Windows
+# Configure Windows console encoding
 if sys.stdout.encoding != 'utf-8':
     try:
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -44,12 +40,14 @@ def detect_package_manager() -> str:
         return "npm"
     return "pnpm"
 
-def run_cmd(name: str, cmd_str: str, weight: int, timeout_sec: int = 180) -> dict:
-    is_windows = os.name == "nt"
+def run_cmd(name: str, cmd_or_list: str | list[str], weight: int, timeout_sec: int = 180) -> dict:
+    use_shell = isinstance(cmd_or_list, str)
+    cmd_repr = " ".join(cmd_or_list) if isinstance(cmd_or_list, list) else cmd_or_list
+    start_ts = time.perf_counter()
     try:
         res = subprocess.run(
-            cmd_str,
-            shell=True if is_windows else False,
+            cmd_or_list,
+            shell=use_shell,
             cwd=str(ROOT_DIR),
             capture_output=True,
             text=True,
@@ -57,10 +55,10 @@ def run_cmd(name: str, cmd_str: str, weight: int, timeout_sec: int = 180) -> dic
             encoding="utf-8",
             errors="replace"
         )
+        duration_ms = int(round((time.perf_counter() - start_ts) * 1000))
         passed = res.returncode == 0
         error_output = ""
         if not passed:
-            # Capture tronquée et propre pour éviter de saturer la fenêtre de contexte
             raw_err = (res.stderr.strip() or res.stdout.strip())
             lines = [l for l in raw_err.split("\n") if l.strip()]
             error_output = "\n".join(lines[-10:]) if len(lines) > 10 else "\n".join(lines)
@@ -69,22 +67,27 @@ def run_cmd(name: str, cmd_str: str, weight: int, timeout_sec: int = 180) -> dic
             "passed": passed,
             "score": weight if passed else 0,
             "max_score": weight,
+            "duration_ms": duration_ms,
             "error_log": error_output.strip()
         }
     except subprocess.TimeoutExpired:
+        duration_ms = int(round((time.perf_counter() - start_ts) * 1000))
         return {
             "step": name,
             "passed": False,
             "score": 0,
             "max_score": weight,
-            "error_log": f"Timeout dépassé ({timeout_sec}s) lors de l'exécution de: {cmd_str}"
+            "duration_ms": duration_ms,
+            "error_log": f"Timeout exceeded ({timeout_sec}s) while executing: {cmd_repr}"
         }
     except Exception as e:
+        duration_ms = int(round((time.perf_counter() - start_ts) * 1000))
         return {
             "step": name,
             "passed": False,
             "score": 0,
             "max_score": weight,
+            "duration_ms": duration_ms,
             "error_log": str(e)
         }
 
@@ -93,23 +96,23 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
     py = sys.executable
     checks = []
 
-    # 1. Typecheck (if tsconfig.json exists)
+    # 1. Typecheck (if TypeScript is configured)
     if (ROOT_DIR / "tsconfig.json").exists():
-        tc_cmd = f"{pm} exec tsc --noEmit" if pm in ["pnpm", "bun"] else f"npx tsc --noEmit"
         checks.append({
             "name": "typecheck",
-            "cmd": tc_cmd,
-            "weight": 25 if quick else 20,
-            "timeout": 150
+            "cmd": f"{pm} exec tsc --noEmit",
+            "weight": 30 if quick else 25,
+            "timeout": 120
         })
 
-    # 2. Linting (if ESLint, Biome or package.json has lint)
-    pkg_json = ROOT_DIR / "package.json"
+    # 2. Linter (if configured in package.json)
     has_lint_script = False
+    pkg_json = ROOT_DIR / "package.json"
     if pkg_json.exists():
         try:
-            pkg_data = json.loads(pkg_json.read_text(encoding="utf-8"))
-            has_lint_script = "lint" in pkg_data.get("scripts", {})
+            with open(pkg_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                has_lint_script = "lint" in data.get("scripts", {})
         except Exception:
             pass
 
@@ -117,18 +120,18 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
         checks.append({
             "name": "lint",
             "cmd": f"{pm} run lint",
-            "weight": 25 if quick else 20,
+            "weight": 30 if quick else 25,
             "timeout": 240
         })
 
-    # 3. ORM & Database Schema Hygiene (Adaptive)
+    # 3. Database / ORM Validation (Optional & Adaptive)
     prisma_schema = ROOT_DIR / "prisma" / "schema.prisma"
     db_validator = ROOT_DIR / ".agents" / "skills" / "db_schema_validator.py"
 
     if prisma_schema.exists() and db_validator.exists():
         checks.append({
             "name": "prisma_hygiene",
-            "cmd": f'"{py}" "{db_validator}"',
+            "cmd": [py, str(db_validator)],
             "weight": 25 if quick else 15,
             "timeout": 60
         })
@@ -145,66 +148,100 @@ def build_adaptive_checks(quick: bool) -> list[dict]:
     if memory_engine.exists():
         checks.append({
             "name": "rsi_memory_hygiene",
-            "cmd": f'"{py}" "{memory_engine}" --audit',
-            "weight": 10 if quick else 10,
+            "cmd": [py, str(memory_engine), "--audit"],
+            "weight": 15 if quick else 10,
             "timeout": 30
         })
 
-    # 5. Zero-Leak Secret Guard
-    secret_guard = ROOT_DIR / "evals" / "secret_guard.py"
-    if secret_guard.exists():
+    # 5. Static Security Audit (Secrets & .gitignore)
+    sec_audit = ROOT_DIR / "evals" / "security_audit.py"
+    if sec_audit.exists():
         checks.append({
-            "name": "secret_leak_guard",
-            "cmd": f'"{py}" "{secret_guard}"',
+            "name": "security_audit",
+            "cmd": [py, str(sec_audit)],
             "weight": 15 if quick else 10,
             "timeout": 30
         })
 
     # 6. Production Build (Full mode only)
     if not quick and has_lint_script:
-        checks.append({
-            "name": "prod_build",
-            "cmd": f"{pm} run build",
-            "weight": 25,
-            "timeout": 240
-        })
+        pkg_has_build = False
+        try:
+            with open(pkg_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                pkg_has_build = "build" in data.get("scripts", {})
+        except Exception:
+            pass
+
+        if pkg_has_build:
+            checks.append({
+                "name": "prod_build",
+                "cmd": f"{pm} run build",
+                "weight": 25,
+                "timeout": 180
+            })
 
     return checks
 
 def main():
-    parser = argparse.ArgumentParser(description="Juge Déterministe RSI Adaptatif & Agnostique")
-    parser.add_argument("--quick", "-q", action="store_true", help="Ignorer le build de production pour une boucle rapide")
+    parser = argparse.ArgumentParser(description="Adaptive & Agnostic RSI Deterministic Judge")
+    parser.add_argument("--quick", "-q", action="store_true", help="Skip production build for fast reflexive loops")
+    parser.add_argument("--no-telemetry", action="store_true", help="Skip automatic telemetry_hook invocation (used when orchestrated)")
     args = parser.parse_args()
 
     check_configs = build_adaptive_checks(args.quick)
     executed_checks = []
+    eval_start_ts = time.perf_counter()
 
     for cfg in check_configs:
         res = run_cmd(cfg["name"], cfg["cmd"], weight=cfg["weight"], timeout_sec=cfg["timeout"])
         executed_checks.append(res)
+        # Fast exit on critical syntax/typecheck errors
+        if not res["passed"] and cfg["name"] in ["typecheck", "rsi_memory_hygiene", "security_audit"]:
+            break
 
-    total_score = sum(c["score"] for c in executed_checks)
-    max_possible = sum(c["max_score"] for c in executed_checks)
-    normalized_score = int((total_score / max_possible) * 100) if max_possible > 0 else 100
+    total_duration_ms = int(round((time.perf_counter() - eval_start_ts) * 1000))
+    total_score = 0
+    max_score = sum(c["weight"] for c in check_configs)
+    raw_score = sum(r["score"] for r in executed_checks)
 
-    failed_steps = [c for c in executed_checks if not c["passed"]]
+    if max_score > 0:
+        total_score = int((raw_score / max_score) * 100)
+    else:
+        total_score = 100
 
-    report = {
-        "timestamp": datetime.now().isoformat(),
+    failed_steps = [r for r in executed_checks if not r["passed"]]
+    status = "PASS" if total_score == 100 and not failed_steps else "FAIL"
+
+    trajectory = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "mode": "QUICK" if args.quick else "FULL",
-        "total_score": normalized_score,
-        "raw_score": total_score,
-        "max_score": max_possible,
-        "status": "PASS" if normalized_score == 100 else "FAIL",
+        "total_score": total_score,
+        "raw_score": raw_score,
+        "max_score": max_score,
+        "total_duration_ms": total_duration_ms,
+        "status": status,
+        "checks": executed_checks,
         "failed_steps": failed_steps,
-        "summary": {c["step"]: "PASSED" if c["passed"] else "FAILED" for c in executed_checks}
+        "summary": {r["step"]: ("PASSED" if r["passed"] else "FAILED") for r in executed_checks}
     }
 
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    LOG_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    with open(LOG_PATH, "w", encoding="utf-8") as f:
+        json.dump(trajectory, f, indent=2, ensure_ascii=False)
 
-    sys.exit(0 if normalized_score == 100 else 1)
+    # Optional Cognitive-RSI-Ops telemetry hook
+    hook_script = ROOT_DIR / "evals" / "telemetry_hook.py"
+    if hook_script.exists() and not args.no_telemetry:
+        try:
+            subprocess.run([sys.executable, str(hook_script)], cwd=str(ROOT_DIR), timeout=10, capture_output=True)
+        except Exception:
+            pass
+
+    print(json.dumps(trajectory, indent=2, ensure_ascii=False))
+
+    if status != "PASS":
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

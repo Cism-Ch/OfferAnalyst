@@ -1,22 +1,17 @@
-# 📖 Fullstack Playbook (Index de la Mémoire Évolutive RSI)
-> **ARCHITECTURE MODULAIRE :** Ce fichier constitue la table des matières centrale reliant les sous-modules de règles spécialisés situés dans `.agents/rules/modules/`.  
-> Pour toute tâche ciblée, l'agent ou le moteur d'injection `evals/memory_engine.py` charge dynamiquement uniquement les sous-modules concernés.
+# Index & Router for RSI Procedural Memory
+
+> This file serves as a catalog and routing index to the modular memory sub-playbooks located in `.agents/rules/modules/`.  
+> The AI agent uses the engine `evals/memory_engine.py --inject [files]` to dynamically load only the relevant domain rules.
 
 ---
 
-## 🗂️ Modules de Règles Spécialisés
+### Specialized Sub-Module Map (< 80 lines per file)
 
-| Domaine | Fichier Source | Description & Portée |
+| Domain | Rule File | Scope & Triggers |
 | :--- | :--- | :--- |
-| **BDD & ORM** | [db.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/.agents/rules/modules/db.md) | Prisma, MongoDB ObjectIds, migrations, singletons et intégrité. |
-| **Backend & Actions** | [api_backend.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/.agents/rules/modules/api_backend.md) | Server Actions, validation Zod, QStash, Redis, retries et revalidatePath. |
-| **Frontend & UI** | [ui_frontend.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/.agents/rules/modules/ui_frontend.md) | React 19, Tailwind v4, ergonomie mobile-first, Shadcn, Radix Focus Traps. |
-| **Sécurité & Auth** | [security_auth.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/.agents/rules/modules/security_auth.md) | Better-Auth, clés AES-256-GCM, cookies, Anti-SSRF et anti-IDOR. |
-| **Intégration & AI** | [integration_ai.md](file:///c:/Users/hanok/Dev/Personal-Project/OfferAnalyst/.agents/rules/modules/integration_ai.md) | OpenRouter SDK, flux LLM, exports, SemVer et gestion de contexte. |
-
----
-
-## 📌 Règles Fondamentales Transverses
-- **Plafond Modulaire :** Aucun sous-module ne doit dépasser 80 lignes. En cas de dépassement, compacter ou ventiler en sous-fichiers.
-- **Ajout Dynamique :** Tout nouveau domaine technologique (ex: mobile natif, webhooks Stripe, etc.) donne lieu à un nouveau sous-module dans `.agents/rules/modules/<nom>.md`.
-- **Injection Contextuelle :** Utiliser `python evals/memory_engine.py --inject [fichiers]` pour récupérer exactement les règles pertinentes.
+| **Database** | [db.md](modules/db.md) | Data modeling, migrations, transactions, ORM schema validation. |
+| **API & Backend** | [api_backend.md](modules/api_backend.md) | Server routes, actions, background jobs, caching, idempotency. |
+| **Frontend & UI** | [ui_frontend.md](modules/ui_frontend.md) | Components, accessibility, styling, mobile-first, 4-state management. |
+| **Security & Auth** | [security_auth.md](modules/security_auth.md) | Authentication, sessions, roles, encryption, sanitization. |
+| **AI Integration** | [integration_ai.md](modules/integration_ai.md) | LLM models, prompts, API key management, structured parsing. |
+| **Pattern Recognition** | [pattern_recognition.md](modules/pattern_recognition.md) | Cognitive routing (System 1/2), structural mimicry, fast-fail reflexes. |

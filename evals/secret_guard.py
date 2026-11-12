@@ -102,17 +102,17 @@ def audit_repository() -> int:
         # 2. Heuristic check: Live Google API Key pattern (AIza + 35 chars)
         raw_google_keys = re.findall(r"AIza[0-9A-Za-z-_]{35}", content)
         for gkey in raw_google_keys:
-            if not any(token in gkey for token in ["Mock", "Test", "REDACTED", "XXXX", "••••"]):
+            if not any(token in gkey for token in ["Mock", "Test", "REDACTED", "XXXX"]):
                 violations.append(f"Hardcoded Google API Key format detected in '{file_rel}' (starts with {gkey[:8]}...)")
 
     if violations:
-        print("❌ [SECURITY ALERT] Secret leakage audit FAILED:")
+        print("[FAIL] [SECURITY ALERT] Secret leakage audit FAILED:")
         for v in violations:
             print(f"   - {v}")
         print("\nAction required: Replace all sensitive credentials with environment variables or synthetic mock strings.")
         return 1
 
-    print(f"✅ [SECURITY AUDIT] Clean: 0 secrets leaked across {len(tracked_files)} tracked files (Checked against {len(secrets)} active secrets).")
+    print(f"[OK] [SECURITY AUDIT] Clean: 0 secrets leaked across {len(tracked_files)} tracked files (Checked against {len(secrets)} active secrets).")
     return 0
 
 if __name__ == "__main__":
