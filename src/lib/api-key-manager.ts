@@ -4,10 +4,11 @@
  * Secure API key generation, hashing, and validation
  */
 
-import bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
 
-const SALT_ROUNDS = 12;
+const scrypt = promisify(scryptCallback);
+const SCRYPT_KEY_LEN = 64;
 
 /**
  * Generate a secure random API key
@@ -19,16 +20,18 @@ export function generateAPIKey(): string {
 }
 
 /**
- * Hash an API key for storage
+ * Hash an API key for storage using Node's native crypto.scrypt
  * @param apiKey - The plain text API key
- * @returns Hashed API key
+ * @returns Versioned scrypt hash (scrypt$<salt>$<derivedKey>)
  */
 export async function hashAPIKey(apiKey: string): Promise<string> {
-  return bcrypt.hash(apiKey, SALT_ROUNDS);
+  const salt = randomBytes(16).toString('hex');
+  const derivedKey = (await scrypt(apiKey, salt, SCRYPT_KEY_LEN)) as Buffer;
+  return `scrypt$${salt}$${derivedKey.toString('hex')}`;
 }
 
 /**
- * Verify an API key against its hash
+ * Verify an API key against its stored scrypt hash in constant time
  * @param apiKey - The plain text API key
  * @param hashedKey - The hashed API key from database
  * @returns True if valid, false otherwise
@@ -38,7 +41,20 @@ export async function verifyAPIKey(
   hashedKey: string
 ): Promise<boolean> {
   try {
-    return await bcrypt.compare(apiKey, hashedKey);
+    const parts = hashedKey.split('$');
+    if (parts.length !== 3 || parts[0] !== 'scrypt') {
+      return false;
+    }
+    const [, salt, keyHex] = parts;
+    if (!salt || !keyHex) {
+      return false;
+    }
+    const expectedBuffer = Buffer.from(keyHex, 'hex');
+    const derivedKey = (await scrypt(apiKey, salt, expectedBuffer.length)) as Buffer;
+    if (derivedKey.length !== expectedBuffer.length) {
+      return false;
+    }
+    return timingSafeEqual(derivedKey, expectedBuffer);
   } catch {
     return false;
   }

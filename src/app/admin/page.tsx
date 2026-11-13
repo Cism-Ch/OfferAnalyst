@@ -59,7 +59,7 @@ import { UserWorldMapCard } from '@/components/admin/UserWorldMapCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { DEFAULT_PLATFORM_CONFIG, type PlatformQuotaConfig, type TavilyAdminSlot } from '@/lib/platform-config';
+import { DEFAULT_PLATFORM_CONFIG, type PlatformQuotaConfig, type TavilyAdminSlot } from '@/lib/platform-config-shared';
 import type { TavilyAdminPoolStatus } from '@/lib/tavily';
 import {
     SlidersHorizontal as GovernanceIcon,

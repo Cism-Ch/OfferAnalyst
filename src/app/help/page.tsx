@@ -55,7 +55,7 @@ const faqs: FAQItem[] = [
   {
     category: 'api',
     question: 'Are my API keys secure?',
-    answer: 'Yes. Keys are encrypted (bcrypt) before storage and never exposed in client-side code. We use industry-standard security practices.',
+    answer: 'Yes. Keys are encrypted (AES-256 / scrypt) before storage and never exposed in client-side code. We use industry-standard security practices.',
   },
   {
     category: 'api',

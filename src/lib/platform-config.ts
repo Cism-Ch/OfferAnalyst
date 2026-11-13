@@ -9,29 +9,16 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCache, setCache, deleteCache } from '@/lib/cache';
+import {
+  DEFAULT_PLATFORM_CONFIG,
+  type PlatformQuotaConfig,
+  type TavilyAdminSlot,
+} from '@/lib/platform-config-shared';
 
-export type TavilyAdminSlot = 'auto' | 'primary' | 'secondary';
-
-export interface PlatformQuotaConfig {
-  freeTierDailyQuota: number;
-  quotaBannerEnabled: boolean;
-  quotaBannerMessageFr: string;
-  quotaBannerMessageEn: string;
-  tavilyActiveAdminSlot: TavilyAdminSlot;
-  tavilyPrimaryCreditsUsed: number;
-  tavilySecondaryCreditsUsed: number;
-}
-
-export const DEFAULT_PLATFORM_CONFIG: PlatformQuotaConfig = {
-  freeTierDailyQuota: 5,
-  quotaBannerEnabled: true,
-  quotaBannerMessageFr:
-    "Quota Free Tier fixé à 5 recherches/jour (les recherches web avancées consomment 2 crédits Tavily). Créez un compte gratuit sur tavily.com pour obtenir 1 000 crédits/mois avec votre propre clé API.",
-  quotaBannerMessageEn:
-    'Free Tier quota is set to 5 searches/day (advanced web searches consume 2 Tavily credits). Create a free account at tavily.com to get 1,000 free monthly credits with your own API key.',
-  tavilyActiveAdminSlot: 'auto',
-  tavilyPrimaryCreditsUsed: 0,
-  tavilySecondaryCreditsUsed: 0,
+export {
+  DEFAULT_PLATFORM_CONFIG,
+  type PlatformQuotaConfig,
+  type TavilyAdminSlot,
 };
 
 const CACHE_KEY = 'platform:config:v1';

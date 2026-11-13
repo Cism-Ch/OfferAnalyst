@@ -14,7 +14,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from 'better-auth/crypto';
 
 const UpdateProfileSchema = z.object({
     name: z.string().trim().min(1, 'Name is required').max(100),
@@ -108,7 +108,7 @@ export async function changeUserPassword(input: {
         const authCtx = await auth.$context.catch(() => null);
         const hashedPassword = authCtx?.password?.hash
             ? await authCtx.password.hash(parsed.data.newPassword)
-            : await bcrypt.hash(parsed.data.newPassword, 12);
+            : await hashPassword(parsed.data.newPassword);
 
         await prisma.user.update({
             where: { id: session.user.id },

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import crypto from "crypto";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 import { z } from "zod";
 import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 import { log } from "@/lib/logger";
@@ -74,11 +74,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Hash password using Better-Auth's native password hasher (fallback to bcrypt)
+      // Hash password using Better-Auth's native scrypt password hasher
       const authCtx = await auth.$context.catch(() => null);
       const hashedPassword = authCtx?.password?.hash
         ? await authCtx.password.hash(newPassword)
-        : await bcrypt.hash(newPassword, 12);
+        : await hashPassword(newPassword);
 
       // Update user password and synchronize Better-Auth Credential Account
       const updatedUser = await prisma.user.update({

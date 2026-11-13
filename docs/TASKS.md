@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 13 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 55 Achevé — Agents v2 (Tavily Web Search/Extract, Géolocalisation, Quota Dynamique, FinOps & Carte Mondiale)
+**Statut Global :** Sprint 56 Achevé — Modernisation Dépendances, Abandon `bcryptjs`, Prisma 7 (Supabase) & TypeScript 6
 
 ---
 
@@ -13,16 +13,30 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SP 56)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SP 57)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ (Prêt pour prochain     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 55 (Agents)│
-│  sprint — aucune tâche  │  │ [ ] Chrome Store Publish│  │     - Sprint 54 (Secur) │
-│  active en cours)       │  │ [ ] Export PDF / CSV    │  │     - Sprint 53 (RSI v3 │
+│ (Prêt pour prochain     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 56 (Maint) │
+│  sprint — aucune tâche  │  │ [ ] Chrome Store Publish│  │     - Sprint 55 (Agents)│
+│  active en cours)       │  │ [ ] Export PDF / CSV    │  │     - Sprint 54 (Secur) │
+│                         │  │                         │  │     - Sprint 53 (RSI v3 │
 │                         │  │                         │  │       Observabilité)    │
-│                         │  │                         │  │     - Sprint 52 (Supab) │
-│                         │  │                         │  │     - Sprints 1 à 51    │
+│                         │  │                         │  │     - Sprints 1 à 52    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 56 Achevé : Modernisation des Dépendances, Abandon `bcryptjs`, Prisma 7 (Supabase) & TypeScript
+
+- [x] **`TASK-MAINT-01` - Suppression totale de `bcryptjs`, Migration Prisma `7.10.1` (`@prisma/adapter-pg`), TypeScript `6.0.3` & Dépendances Stables**
+  - **Priority:** HIGH
+  - **Target files:** `package.json`, `pnpm-lock.yaml`, `prisma.config.ts`, `prisma/schema.prisma`, `src/lib/prisma.ts`, `src/lib/platform-config.ts`, `src/lib/platform-config-shared.ts`, `src/lib/api-key-manager.ts`, `src/app/actions/db/profile.ts`, `src/app/api/auth/reset-password/route.ts`, `src/app/help/page.tsx`, `src/app/admin/page.tsx`, `scripts/seed-admin.mjs`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-MAINT-01.01`: Supprimer `bcryptjs` et `@types/bcryptjs` ; migrer le hachage vers `crypto.scrypt` / `better-auth/crypto` et mettre à jour `src/app/help/page.tsx`.
+    - [x] `TASK-MAINT-01.02`: Migrer Prisma `6.2.1` → `7.10.1` avec `prisma.config.ts`, `@prisma/adapter-pg` + `pg`, `src/lib/prisma.ts` et `scripts/seed-admin.mjs` (compatible Supabase Pooler).
+    - [x] `TASK-MAINT-01.03`: Mettre à jour les paquets mineurs/patch (`next@16.4.6`, `better-auth@1.7.22`, SDKs, Tailwind, UI) et valider `typescript@6.0.3` (TS `7.0.2` bloqué par `typescript-eslint@8.72.0`).
+    - [x] `TASK-MAINT-01.04`: Vérifier `prisma validate`, `prisma generate`, `prisma db push`, `db_schema_validator.py` et `pnpm run build`.
+    - [x] `TASK-MAINT-01.05`: Valider 100/100 PASS via `python evals/run_fullstack_eval.py`.
 
 ---
 
