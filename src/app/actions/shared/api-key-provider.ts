@@ -31,7 +31,7 @@ export interface APIKeyResult {
  * @param clientApiKey - Optional temporary key from unauthenticated users (from localStorage)
  */
 export async function getAPIKey(
-    provider: 'openrouter' | 'openai' | 'anthropic' | 'google' | 'mistral',
+    provider: 'openrouter' | 'openai' | 'anthropic' | 'google' | 'mistral' | 'tavily',
     clientApiKey?: string
 ): Promise<APIKeyResult | null> {
     // Try to get authenticated user's BYOK key first
@@ -190,6 +190,8 @@ function getEnvAPIKey(provider: string): string | null {
             return process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || null;
         case 'mistral':
             return process.env.MISTRAL_API_KEY || null;
+        case 'tavily':
+            return process.env.TAVILY_API_KEY || process.env.TAVILY_API_KEY_SECONDARY || null;
         default:
             return null;
     }
@@ -224,6 +226,7 @@ export function sanitizeTelemetryError(errorMessage?: string | null, knownKey?: 
 
     // 2. Redact standard AI provider keys & Bearer tokens
     sanitized = sanitized
+        .replace(/tvly-(?:dev-|prod-)?[a-zA-Z0-9_-]{12,}/gi, 'tvly-[REDACTED]')
         .replace(/sk-or-v1-[a-zA-Z0-9_-]{16,}/gi, 'sk-or-v1-[REDACTED]')
         .replace(/sk-ant-[a-zA-Z0-9_-]{16,}/gi, 'sk-ant-[REDACTED]')
         .replace(/sk-[a-zA-Z0-9_-]{16,}/gi, 'sk-[REDACTED]')
@@ -284,7 +287,7 @@ export async function recordAITelemetry(params: {
         });
 
         // If key is BYOK and had an error, update health state
-        if (apiKeyId && apiKeyId.length === 24) {
+        if (apiKeyId && apiKeyId.trim().length > 0) {
             if (params.success === false) {
                 const isQuota = params.statusCode === 402 || sanitizedError?.toLowerCase().includes('quota');
                 const isAuth = params.statusCode === 401 ||

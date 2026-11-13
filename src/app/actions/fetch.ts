@@ -5,6 +5,8 @@ import { Offer, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError, extractOffersArray } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+import { searchWebOffers } from '@/lib/tavily';
+import { getCountryOption, normalizeCountryCode } from '@/lib/geo';
 
 // Schéma Zod résilient pour valider une offre
 const OfferSchema = z.object({
@@ -36,15 +38,27 @@ const FetchInputSchema = z.object({
     context: z.string().max(10000, "Context exceeds 10000 characters").default(""),
     modelName: z.string().max(200).optional().default(DEFAULT_MODEL_ID),
     clientApiKey: z.string().max(500).optional(),
+    country: z.string().max(10).optional().default('INTL'),
+    clientTavilyKey: z.string().max(500).optional(),
 });
 
 export async function fetchOffersAction(
     domain: string,
     context: string,
     modelName: string = DEFAULT_MODEL_ID,
-    clientApiKey?: string // Optional BYOK key for temporary/authenticated users
+    clientApiKey?: string, // Optional OpenRouter BYOK key
+    country: string = 'INTL',
+    clientTavilyKey?: string // Optional Tavily BYOK key
 ): Promise<AgentActionResult<Offer[]>> {
-    const inputValidation = FetchInputSchema.safeParse({ domain, context, modelName, clientApiKey });
+    const normalizedCountry = normalizeCountryCode(country);
+    const inputValidation = FetchInputSchema.safeParse({
+        domain,
+        context,
+        modelName,
+        clientApiKey,
+        country: normalizedCountry,
+        clientTavilyKey
+    });
     if (!inputValidation.success) {
         return {
             success: false,
@@ -57,9 +71,9 @@ export async function fetchOffersAction(
 
     const startTime = Date.now();
 
-    // Check Multi-Tier Cache to avoid duplicate token burning and eliminate Vercel timeouts
+    // Check Multi-Tier Cache (Upstash Redis + in-memory) to save Tavily & LLM credits
     const { getCache, setCache, generateCacheKey } = await import('@/lib/cache');
-    const cacheKey = generateCacheKey('fetch_offers', domain, context, modelName);
+    const cacheKey = generateCacheKey('fetch_offers_v2', domain, context, normalizedCountry, modelName);
     const cachedOffers = await getCache<Offer[]>(cacheKey);
     if (cachedOffers && Array.isArray(cachedOffers) && cachedOffers.length > 0) {
         return {
@@ -68,76 +82,138 @@ export async function fetchOffersAction(
             meta: {
                 model: modelName,
                 latencyMs: Date.now() - startTime,
-                cached: true
+                cached: true,
+                country: normalizedCountry
             }
         };
     }
 
     let userId: string | undefined;
-    
-    // Try to get API key with BYOK support
+
     const { getAPIKey, trackBYOKUsage, recordAITelemetry } = await import('./shared/api-key-provider');
     const { checkForSuspiciousActivity } = await import('./db/api-key-analytics');
     const { auth } = await import('@/lib/auth');
     const { headers } = await import('next/headers');
-    
-    // Get session for logging
+
     try {
         const session = await auth.api.getSession({ headers: await headers() });
         userId = session?.user?.id;
     } catch {
         // Continue without user ID
     }
-    
+
     const apiKeyResult = await getAPIKey('openrouter', clientApiKey);
-    
     if (!apiKeyResult) {
         return {
             success: false,
             error: toAgentActionError(
-                new AgentError("No API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING'),
+                new AgentError("No OpenRouter API key available. Please add an API key in Settings or set OPENROUTER_API_KEY.", 'API_KEY_MISSING'),
                 'fetch offers'
             )
         };
     }
 
-    // Quota Enforcement: Check 10 searches/day limit for free tier
-    const isByok = apiKeyResult.source === 'byok' || apiKeyResult.source === 'guest_cookie' || Boolean(clientApiKey);
-    const { checkDailyQuota, incrementDailyQuota } = await import('./shared/quota-limiter');
+    // Check daily quota (single deduction happens in analyzeOffersAction to avoid double counting)
+    const isByok =
+        apiKeyResult.source === 'byok' ||
+        apiKeyResult.source === 'guest_cookie' ||
+        Boolean(clientApiKey) ||
+        Boolean(clientTavilyKey);
+
+    const { checkDailyQuota } = await import('./shared/quota-limiter');
     const quotaCheck = await checkDailyQuota(isByok);
     if (!quotaCheck.allowed) {
         return {
             success: false,
             error: {
-                code: 'RATE_LIMIT_EXCEEDED',
-                message: 'Quota quotidien de 10 recherches atteint. Réinitialisation à minuit UTC ou utilisez votre propre clé API.'
+                code: 'RATE_LIMITED',
+                message: `Quota quotidien Free Tier (${quotaCheck.total}/jour) atteint. Créez un compte gratuit sur tavily.com pour obtenir 1 000 crédits/mois avec votre propre clé API.`,
+                remedy: {
+                    type: 'configure_api_key',
+                    label: 'Ajouter une clé Tavily gratuite (1 000 crédits)',
+                    targetUrl: 'https://app.tavily.com'
+                }
             }
         };
     }
 
-    // Only log in development mode
-    if (process.env.NODE_ENV === 'development') {
-        console.log(`[fetchOffersAction] Using ${apiKeyResult.source} API key`);
+    // Step 1: Real-time grounded web search via Tavily
+    const countryMeta = getCountryOption(normalizedCountry);
+    const geoHint = normalizedCountry === 'INTL' ? '' : ` ${countryMeta.labelEn} ${countryMeta.labelFr}`;
+    const searchQuery = `${domain} ${context}${geoHint}`.trim().slice(0, 380);
+
+    let tavilyResults;
+    let tavilyMeta = { creditsUsed: 0, keySource: 'none' as string };
+    try {
+        const searchOut = await searchWebOffers(searchQuery, {
+            country: normalizedCountry,
+            searchDepth: 'advanced',
+            maxResults: 10,
+            clientTavilyKey,
+            userId,
+            actionName: 'fetch_offers_tavily',
+        });
+        tavilyResults = searchOut.results;
+        tavilyMeta = { creditsUsed: searchOut.creditsUsed, keySource: searchOut.keySource };
+    } catch (tavilyErr) {
+        const msg = tavilyErr instanceof Error ? tavilyErr.message : String(tavilyErr);
+        if (msg.includes('TAVILY_API_KEY_MISSING')) {
+            return {
+                success: false,
+                error: {
+                    code: 'API_KEY_MISSING',
+                    message: "Clé API Tavily manquante pour la recherche web réelle. Créez un compte gratuit sur tavily.com pour obtenir 1 000 crédits offerts et ajoutez votre clé dans Paramètres -> Clés API.",
+                    remedy: {
+                        type: 'configure_api_key',
+                        label: 'Obtenir 1 000 crédits gratuits sur Tavily',
+                        targetUrl: 'https://app.tavily.com'
+                    }
+                }
+            };
+        }
+        return {
+            success: false,
+            error: {
+                code: 'SEARCH_FAILED',
+                message: `La collecte web Tavily a échoué : ${msg}`,
+                remedy: {
+                    type: 'retry',
+                    label: 'Réessayer la recherche'
+                }
+            }
+        };
     }
 
+    if (!tavilyResults || tavilyResults.length === 0) {
+        return {
+            success: true,
+            data: [],
+            meta: {
+                model: modelName,
+                latencyMs: Date.now() - startTime,
+                cached: false,
+                country: normalizedCountry,
+                tavilyCredits: tavilyMeta.creditsUsed
+            }
+        };
+    }
+
+    // Step 2: Structure & deduplicate ONLY from verified Tavily web results (zero hallucinated URLs)
     const openrouter = new OpenRouter({
         apiKey: apiKeyResult.key,
     });
 
     const systemInstruction = `
-    You are a professional AI Retrieval Agent specializing in market data.
-    
-    GOAL: Find real-world current offers (jobs, products, real estate, etc.) based on the provided Domain and Context.
-    
-    PROCESS:
-    1. Reason about the best sources for "${domain}" in the context of "${context}".
-    2. Retrieve or generate a list of at least 5-10 realistic, current listings.
-    3. Ensure each listing includes a title, price, location, and a valid source URL if possible.
-    
-    OUTPUT REQUIREMENTS:
-    - You MUST return ONLY a valid JSON object matching the JSON SCHEMA below.
-    - DO NOT include any introductory text, summary, or "thinking" tags in the final JSON output.
-    - If you use research, ensure the data is as up-to-date as possible.
+    You are a strict Web Data Extraction & Deduplication Agent.
+
+    GOAL: Convert the verified Tavily live web search results below into structured, deduplicated Offer objects.
+
+    CRITICAL GROUNDING RULES:
+    1. NEVER invent, fabricate, or alter URLs. Every "url" in the output MUST be copied verbatim from the provided TAVILY_WEB_RESULTS.
+    2. Extract real details from the snippet/title: exact price/salary/rent if stated (otherwise "À vérifier sur l'annonce"), location (anchored to ${countryMeta.labelFr} if applicable), and a clear factual description.
+    3. Deduplicate identical listings pointing to the same offer.
+    4. Ignore pure generic homepages/blog posts if better direct listings exist; otherwise synthesize the real offering accurately with its exact source URL.
+    5. Return ONLY a valid JSON object matching the schema below.
 
     JSON SCHEMA:
     {
@@ -145,18 +221,23 @@ export async function fetchOffersAction(
         {
           "id": "1",
           "title": "string",
-          "description": "key details",
+          "description": "factual summary extracted from web result",
           "price": "string or number",
           "location": "string",
           "category": "string",
-          "url": "full_source_url"
+          "url": "exact_tavily_url"
         }
       ]
     }
-
-    DOMAIN: ${domain}
-    CONTEXT: ${context}
   `;
+
+    const webContextPayload = tavilyResults.map((r, idx) => ({
+        index: idx + 1,
+        title: r.title,
+        url: r.url,
+        snippet: r.content.slice(0, 1200),
+        publishedDate: r.publishedDate || undefined,
+    }));
 
     let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
 
@@ -166,7 +247,10 @@ export async function fetchOffersAction(
                 model: modelName,
                 messages: [
                     { role: "system", content: systemInstruction },
-                    { role: "user", content: `Find real, current offers for: Domain: "${domain}", Context: "${context}". Return valid JSON only.` }
+                    {
+                        role: "user",
+                        content: `DOMAIN: "${domain}"\nCOUNTRY TARGET: ${countryMeta.labelFr} (${normalizedCountry})\nCRITERIA: "${context}"\n\nTAVILY_WEB_RESULTS:\n${JSON.stringify(webContextPayload)}`
+                    }
                 ],
                 responseFormat: { type: "json_object" }
             }
@@ -186,39 +270,33 @@ export async function fetchOffersAction(
         }
 
         const text = typeof content === 'string' ? content : '';
-        console.log(`Fetch (DeepSeek): AI response received (${text.length} chars)`);
-
-        // Extraire le JSON (DeepSeek-R1 inclut souvent des balises <think>)
         const cleanedText = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-
-        // On utilise l'utilitaire de parsing robuste
         const parsedData = parseJSONFromText(cleanedText, 'fetch response');
-
-        // Extraire le tableau d'offres de manière ultra-résiliente (gère { offers: [] }, direct [], dicts, offre unique)
         const offersArray = extractOffersArray(parsedData);
-
-        // Validation avec Zod
         const validatedOffers = validateWithZod(offersArray, FetchResponseSchema, 'fetch response');
 
-        console.log(`Fetch: Successfully retrieved ${validatedOffers.length} offers`);
-        return validatedOffers;
+        // Enforce strict URL integrity against Tavily returned URLs
+        const allowedUrls = new Set(tavilyResults.map((r) => r.url));
+        const groundedOffers = validatedOffers.map((offer, i) => ({
+            ...offer,
+            url: offer.url && allowedUrls.has(offer.url)
+                ? offer.url
+                : tavilyResults[i % tavilyResults.length]?.url || '',
+        }));
+
+        return groundedOffers;
     };
 
     try {
         const offers = await retryWithBackoff(operation, 3, 'fetch offers');
-        
-        // Cache result for 2 hours (7200 seconds)
+
         await setCache(cacheKey, offers, 7200).catch(() => {});
 
-        // Track BYOK usage if using a user's key
         if (apiKeyResult.source === 'byok' && apiKeyResult.keyId) {
-            await trackBYOKUsage(apiKeyResult.keyId).catch(err => 
-                console.error('Failed to track BYOK usage:', err)
-            );
+            await trackBYOKUsage(apiKeyResult.keyId).catch(() => {});
         }
-        
+
         const responseTime = Date.now() - startTime;
-        // Log telemetry and FinOps accounting
         await recordAITelemetry({
             apiKeyResult,
             model: modelName,
@@ -228,33 +306,28 @@ export async function fetchOffersAction(
             tokensUsed: capturedUsage?.total_tokens,
             responseTimeMs: responseTime,
             success: true
-        }).catch(err => console.error('Failed to record AI telemetry:', err));
+        }).catch(() => {});
 
-        // Check for suspicious activity
         if (userId && apiKeyResult.keyId) {
-            await checkForSuspiciousActivity(userId, apiKeyResult.keyId).catch(err =>
-                console.error('Failed to check suspicious activity:', err)
-            );
+            await checkForSuspiciousActivity(userId, apiKeyResult.keyId).catch(() => {});
         }
 
-        // Increment daily quota on search success
-        await incrementDailyQuota(isByok).catch(err =>
-            console.error('Failed to increment daily quota:', err)
-        );
-        
         return {
             success: true,
             data: offers,
             meta: {
                 model: modelName,
                 latencyMs: responseTime,
-                cached: false
+                cached: false,
+                country: normalizedCountry,
+                tavilyCredits: tavilyMeta.creditsUsed,
+                tavilySource: tavilyMeta.keySource
             }
         };
     } catch (error) {
         console.error('Fetch offers failed', error);
         const responseTime = Date.now() - startTime;
-        
+
         await recordAITelemetry({
             apiKeyResult,
             model: modelName,
@@ -263,7 +336,7 @@ export async function fetchOffersAction(
             success: false,
             errorMessage: error instanceof Error ? error.message : 'Unknown error'
         }).catch(() => {});
-        
+
         return {
             success: false,
             error: toAgentActionError(error, 'fetch offers')

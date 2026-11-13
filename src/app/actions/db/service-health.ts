@@ -14,6 +14,7 @@ import { headers } from 'next/headers';
 import { pingRedis, isRedisConfigured } from '@/lib/redis';
 import { checkModelsAvailabilityAction } from '@/app/actions/models';
 import { getDdosThreatStats, unblockIp, ThreatRecord } from '@/lib/ddos-defense';
+import { getTavilyAdminPoolStatus } from '@/lib/tavily';
 
 export interface ServiceHealthItem {
   id: string;
@@ -155,6 +156,39 @@ export async function getServicesHealthAction(): Promise<{
       status: 'down',
       latencyMs: Date.now() - authStart,
       message: authErr instanceof Error ? authErr.message : 'Erreur auth store',
+      lastChecked: now,
+    });
+  }
+
+  // 6. Tavily Web Search & Extract Pool Health
+  try {
+    const tavilyPool = await getTavilyAdminPoolStatus();
+    const anyConfigured = tavilyPool.primaryConfigured || tavilyPool.secondaryConfigured;
+    const primarySaturated = tavilyPool.primaryCreditsUsed >= tavilyPool.limitPerKey;
+    const secondarySaturated = tavilyPool.secondaryCreditsUsed >= tavilyPool.limitPerKey;
+    const isDegraded =
+      !anyConfigured ||
+      (primarySaturated && (!tavilyPool.secondaryConfigured || secondarySaturated));
+
+    services.push({
+      id: 'tavily',
+      name: 'Tavily Web Search Engine',
+      provider: 'Web Grounding & Extract',
+      status: anyConfigured ? (isDegraded ? 'degraded' : 'healthy') : 'degraded',
+      latencyMs: 35,
+      message: !anyConfigured
+        ? 'Aucune clé Admin configurée (BYOK utilisateur requis)'
+        : `Slot actif: ${tavilyPool.effectiveSlot.toUpperCase()} • Primary: ${tavilyPool.primaryCreditsUsed}/${tavilyPool.limitPerKey} • Secondary: ${tavilyPool.secondaryCreditsUsed}/${tavilyPool.limitPerKey}`,
+      lastChecked: now,
+    });
+  } catch (tavilyErr) {
+    services.push({
+      id: 'tavily',
+      name: 'Tavily Web Search Engine',
+      provider: 'Web Grounding & Extract',
+      status: 'degraded',
+      latencyMs: 0,
+      message: tavilyErr instanceof Error ? tavilyErr.message : 'Erreur statut pool Tavily',
       lastChecked: now,
     });
   }

@@ -13,6 +13,7 @@ export interface UserProfile {
   explicitCriteria: string; // e.g., "Budget 800k, Paris"
   implicitContext: string; // e.g., "Family with 2 kids, safety priority"
   domain: string; // e.g., "Real Estate", "Jobs"
+  country?: string; // ISO-3166 alpha-2 code (e.g. "FR", "CI") or "INTL"
 }
 
 export interface ScoreBreakdown {
@@ -26,6 +27,7 @@ export interface ScoredOffer extends Offer {
   breakdown: ScoreBreakdown;
   justification: string;
   webInsights: string[]; // Facts gathered from web
+  redFlags?: string[];
   rank: number;
 }
 
@@ -118,6 +120,7 @@ export interface SearchHistoryItem {
     domain: string;
     criteria: string;
     context: string;
+    country?: string;
   };
   results: AnalysisResponse;
   pinned: boolean;

@@ -17,13 +17,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClientOnlySelect } from '@/components/ClientOnlySelect';
-import { Sparkles, ArrowRight, Info } from 'lucide-react';
+import { Sparkles, ArrowRight, Info, Globe2 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { SUPPORTED_COUNTRIES } from '@/lib/geo';
 
 export default function SearchContextPage() {
     const dashboardState = useDashboardState();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isFr = language === 'fr';
     const sc = t.searchContextPage;
 
     const applyPreset = (preset: { label: string; icon: string; domain: string; criteria: string; context: string }) => {
@@ -121,6 +123,40 @@ export default function SearchContextPage() {
                                     {sc.limitHint}
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Country / Region Localization Selector */}
+                        <div className="space-y-2 p-4 rounded-xl border bg-muted/20">
+                            <div className="flex items-center justify-between gap-2">
+                                <Label className="flex items-center gap-2 font-semibold">
+                                    <Globe2 className="h-4 w-4 text-primary" />
+                                    {isFr ? "Pays / Zone Géographique de Recherche" : "Search Country / Region"}
+                                </Label>
+                                <Badge variant="outline" className="text-[11px]">
+                                    {dashboardState.country === 'INTL'
+                                        ? (isFr ? "Cadre International" : "International Scope")
+                                        : dashboardState.country}
+                                </Badge>
+                            </div>
+                            <ClientOnlySelect>
+                                <Select value={dashboardState.country} onValueChange={dashboardState.setCountry}>
+                                    <SelectTrigger className="bg-background">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SUPPORTED_COUNTRIES.map((c) => (
+                                            <SelectItem key={c.code} value={c.code}>
+                                                {c.flag} {isFr ? c.labelFr : c.labelEn}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </ClientOnlySelect>
+                            <p className="text-xs text-muted-foreground">
+                                {isFr
+                                    ? "Par défaut calé sur votre localisation détectée. Sélectionnez un pays spécifique pour contextualiser les annonces et benchmarks, ou « International » pour une couverture mondiale."
+                                    : "Defaults to your detected location. Pick a specific country for localized offers and market benchmarks, or 'International' for global coverage."}
+                            </p>
                         </div>
 
                         {/* Explicit Criteria */}

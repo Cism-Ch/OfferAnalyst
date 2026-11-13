@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 13 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 54 Achevé (Audit & Renforcement Sécurité) — Prêt pour Sprint 55
+**Statut Global :** Sprint 55 Achevé — Agents v2 (Tavily Web Search/Extract, Géolocalisation, Quota Dynamique, FinOps & Carte Mondiale)
 
 ---
 
@@ -13,15 +13,30 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SP 55)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SP 56)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ (Prêt pour prochain sp) │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 54 (Secur) │
-│                         │  │ [ ] Chrome Store Publish│  │     - Sprint 53 (RSI v3 │
-│                         │  │ [ ] Export PDF / CSV    │  │       Observabilité)    │
+│ (Prêt pour prochain     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 55 (Agents)│
+│  sprint — aucune tâche  │  │ [ ] Chrome Store Publish│  │     - Sprint 54 (Secur) │
+│  active en cours)       │  │ [ ] Export PDF / CSV    │  │     - Sprint 53 (RSI v3 │
+│                         │  │                         │  │       Observabilité)    │
 │                         │  │                         │  │     - Sprint 52 (Supab) │
 │                         │  │                         │  │     - Sprints 1 à 51    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## ⚡ Sprint 55 Achevé : Agents v2 (Tavily Search/Extract, Géolocalisation, Quota Dynamique & Carte Mondiale Admin)
+
+- [x] **`TASK-AGT-01` - Architecture Agent v2 (Tavily Search/Extract, Géolocalisation, Quota Dynamique, FinOps & Carte Mondiale Admin)**
+  - **Priority:** CRITICAL
+  - **Target files:** `package.json`, `pnpm-lock.yaml`, `.env.example`, `prisma/schema.prisma`, `src/types/index.ts`, `src/lib/**`, `src/app/api/**`, `src/app/actions/**`, `src/contexts/**`, `src/hooks/**`, `src/components/**`, `src/app/**`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-AGT-01.01`: Installer `@tavily/core` + Tavily Agent Skills, documenter `.env.example` et synchroniser `prisma/schema.prisma` (`Profile.country`, `SearchHistory.country`, `SystemConfig`).
+    - [x] `TASK-AGT-01.02`: Implémenter la géolocalisation RGPD (`src/lib/geo.ts`, `/api/geo/detect`), le cache distribué Upstash Redis (`src/lib/cache.ts`) et le client Tavily multi-clés avec failover & Anti-SSRF (`src/lib/tavily.ts`).
+    - [x] `TASK-AGT-01.03`: Refondre `fetchOffersAction`, `analyzeOffersAction` (`searchSources` + benchmark marché localisé), `structureRawOffersAction` (extraction URL) et `generateOfferActionContentAction` (adapté à la nature réelle de l'offre).
+    - [x] `TASK-AGT-01.04`: Implémenter le quota Free Tier dynamique (5/j par défaut, bannière UI, BYOK Tavily), le onboarding/sélecteur pays + International, le suivi FinOps User & Admin, et la carte du monde interactive RGPD (`UserWorldMapCard`).
+    - [x] `TASK-AGT-01.05`: Valider le build et l'intégrité via `pnpm exec prisma generate` et `python evals/run_fullstack_eval.py` (100/100 PASS).
 
 ---
 

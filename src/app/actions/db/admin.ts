@@ -12,6 +12,13 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import {
+    getPlatformConfig,
+    savePlatformConfig,
+    type PlatformQuotaConfig,
+} from '@/lib/platform-config';
+import { getTavilyAdminPoolStatus, type TavilyAdminPoolStatus } from '@/lib/tavily';
+import { getCountryOption, normalizeCountryCode } from '@/lib/geo';
 
 const UpdateUserRoleSchema = z.object({
     userId: z.string().min(1),
@@ -42,6 +49,28 @@ export interface UseCaseStat {
     count: number;
     percentage: number;
 }
+
+export interface UserGeoStat {
+    countryCode: string;
+    labelFr: string;
+    labelEn: string;
+    flag: string;
+    lat: number;
+    lng: number;
+    userCount: number;
+    searchCount: number;
+    percentage: number;
+}
+
+const UpdatePlatformGovernanceSchema = z.object({
+    freeTierDailyQuota: z.number().int().min(1).max(1000).optional(),
+    quotaBannerEnabled: z.boolean().optional(),
+    quotaBannerMessageFr: z.string().trim().min(5).max(500).optional(),
+    quotaBannerMessageEn: z.string().trim().min(5).max(500).optional(),
+    tavilyActiveAdminSlot: z.enum(['auto', 'primary', 'secondary']).optional(),
+    tavilyPrimaryCreditsUsed: z.number().int().min(0).max(100000).optional(),
+    tavilySecondaryCreditsUsed: z.number().int().min(0).max(100000).optional(),
+});
 
 /**
  * Validates that current session belongs to a user with ADMIN role
@@ -295,6 +324,128 @@ export async function getOnboardingUseCasesSummary(): Promise<UseCaseStat[]> {
         })).sort((a, b) => b.count - a.count);
     } catch (error) {
         console.error('Error fetching use cases summary:', error);
+        return [];
+    }
+}
+
+/**
+ * Get Admin Platform Governance (Quota Config + Tavily Admin Pool)
+ */
+export async function getAdminPlatformGovernanceAction(): Promise<{
+    success: true;
+    data: {
+        config: PlatformQuotaConfig;
+        tavilyPool: TavilyAdminPoolStatus;
+    };
+} | {
+    success: false;
+    error: string;
+}> {
+    if (!(await ensureAdminSession())) {
+        return { success: false, error: 'Unauthorized: Admin access required' };
+    }
+
+    try {
+        const [config, tavilyPool] = await Promise.all([
+            getPlatformConfig(),
+            getTavilyAdminPoolStatus(),
+        ]);
+        return { success: true, data: { config, tavilyPool } };
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to load governance config',
+        };
+    }
+}
+
+/**
+ * Update Free Tier daily quota, UI warning banner, or Tavily Admin slot (Admin only)
+ */
+export async function updateAdminPlatformGovernanceAction(
+    input: z.infer<typeof UpdatePlatformGovernanceSchema>
+): Promise<{
+    success: boolean;
+    data?: { config: PlatformQuotaConfig; tavilyPool: TavilyAdminPoolStatus };
+    error?: string;
+}> {
+    if (!(await ensureAdminSession())) {
+        return { success: false, error: 'Unauthorized: Admin access required' };
+    }
+
+    const parsed = UpdatePlatformGovernanceSchema.safeParse(input);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message || 'Paramètres invalides' };
+    }
+
+    try {
+        const config = await savePlatformConfig(parsed.data);
+        const tavilyPool = await getTavilyAdminPoolStatus();
+        revalidatePath('/admin');
+        revalidatePath('/');
+        return { success: true, data: { config, tavilyPool } };
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Échec de mise à jour de la gouvernance',
+        };
+    }
+}
+
+/**
+ * Aggregate GDPR-compliant country-level stats across registered profiles and search history (Admin only)
+ */
+export async function getUserGeographyStats(): Promise<UserGeoStat[]> {
+    try {
+        if (!(await ensureAdminSession())) {
+            return [];
+        }
+
+        const [profiles, searches] = await Promise.all([
+            prisma.profile.findMany({ select: { country: true } }),
+            prisma.searchHistory.findMany({ select: { country: true } }),
+        ]);
+
+        const map = new Map<string, { userCount: number; searchCount: number }>();
+
+        profiles.forEach((p: { country: string | null }) => {
+            const code = normalizeCountryCode(p.country);
+            const curr = map.get(code) || { userCount: 0, searchCount: 0 };
+            curr.userCount += 1;
+            map.set(code, curr);
+        });
+
+        searches.forEach((s: { country: string | null }) => {
+            const code = normalizeCountryCode(s.country);
+            const curr = map.get(code) || { userCount: 0, searchCount: 0 };
+            curr.searchCount += 1;
+            map.set(code, curr);
+        });
+
+        const totalWeight = Array.from(map.values()).reduce(
+            (acc, item) => acc + item.userCount + item.searchCount,
+            0
+        );
+
+        return Array.from(map.entries())
+            .map(([countryCode, counts]) => {
+                const meta = getCountryOption(countryCode);
+                const weight = counts.userCount + counts.searchCount;
+                return {
+                    countryCode,
+                    labelFr: meta.labelFr,
+                    labelEn: meta.labelEn,
+                    flag: meta.flag,
+                    lat: meta.lat,
+                    lng: meta.lng,
+                    userCount: counts.userCount,
+                    searchCount: counts.searchCount,
+                    percentage: totalWeight > 0 ? Math.round((weight / totalWeight) * 100) : 0,
+                };
+            })
+            .sort((a, b) => (b.userCount + b.searchCount) - (a.userCount + a.searchCount));
+    } catch (error) {
+        console.error('Error aggregating user geography stats:', error);
         return [];
     }
 }

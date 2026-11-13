@@ -129,10 +129,11 @@ model VerificationToken {
 model Profile {
   id              String   @id @default(cuid())
   userId          String   @unique
-  bio             String?
-  company         String?
-  location        String?
-  website         String?
+  bio                String?
+  company            String?
+  location           String?
+  country            String?  @default("INTL")
+  website            String?
   avatar          String?
   theme           String   @default("light")
   language        String   @default("en")
@@ -215,6 +216,7 @@ model SearchHistory {
   isPinned         Boolean  @default(false)
   isByok           Boolean  @default(false)
   keyType          String?  @default("free")
+  country          String?  @default("INTL")
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -460,4 +462,13 @@ enum WorkspaceRole {
   ADMIN
   MEMBER
   VIEWER
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
 }

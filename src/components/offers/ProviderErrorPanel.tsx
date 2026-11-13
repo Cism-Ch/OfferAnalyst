@@ -131,15 +131,22 @@ export function ProviderErrorPanel({
         {/* Actionable Remedies (1-Click Solutions) */}
         <div className="pt-2 border-t border-border/50 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {/* If Key Error -> Direct add key button */}
-            {isKeyError && (
-              <Button asChild size="sm" className="gap-2 bg-primary text-primary-foreground shadow-sm">
-                <Link href={`/dashboard/api-keys?action=add&provider=openrouter&model=${encodeURIComponent(model.id)}`}>
-                  <Key className="h-4 w-4" />
-                  Ajouter ma clé API
-                  <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
-                </Link>
-              </Button>
+            {/* If Key Error or Rate Limited -> Direct add key button + Tavily 1000 free credits CTA */}
+            {(isKeyError || isRateLimit) && (
+              <>
+                <Button asChild size="sm" className="gap-2 bg-primary text-primary-foreground shadow-sm">
+                  <Link href={`/dashboard/api-keys?action=add&provider=${error.remedy?.targetUrl?.includes('tavily') ? 'tavily' : 'openrouter'}&model=${encodeURIComponent(model.id)}`}>
+                    <Key className="h-4 w-4" />
+                    Ajouter ma clé API
+                    <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="gap-2 border-cyan-500/40 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10">
+                  <a href="https://app.tavily.com" target="_blank" rel="noopener noreferrer">
+                    Créer un compte Tavily (1 000 crédits gratuits)
+                  </a>
+                </Button>
+              </>
             )}
 
             {/* If Credit or Overload Error -> Switch to Free Tier */}

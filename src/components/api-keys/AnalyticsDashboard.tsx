@@ -149,12 +149,14 @@ export function AnalyticsDashboard({ userId, apiKeyId, days = 30 }: AnalyticsDas
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Tokens Used</CardTitle>
+                        <CardTitle className="text-sm font-medium">Tokens &amp; Tavily Credits</CardTitle>
                         <Zap className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{analytics.totalTokens.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">Total consumption</p>
+                        <p className="text-xs text-muted-foreground">
+                            Tavily: {(analytics.tavilyCreditsUsed ?? 0).toLocaleString()} crédits • Coût: ${(analytics.totalCostUsd ?? 0).toFixed(4)}
+                        </p>
                     </CardContent>
                 </Card>
             </div>

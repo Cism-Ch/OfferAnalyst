@@ -45,7 +45,29 @@ import { checkModelsAvailabilityAction, type ModelsHealthReport } from '@/app/ac
 import { motion } from 'framer-motion';
 import { fadeInUpProps, staggerContainerProps, staggerItemProps } from '@/lib/motion';
 import { getAdminTelemetryStats, type AdminTelemetryStats } from '@/app/actions/db/api-key-analytics';
-import { getRecentUsers, getOnboardingUseCasesSummary, type UserData, type UseCaseStat } from '@/app/actions/db/admin';
+import {
+    getRecentUsers,
+    getOnboardingUseCasesSummary,
+    getAdminPlatformGovernanceAction,
+    updateAdminPlatformGovernanceAction,
+    getUserGeographyStats,
+    type UserData,
+    type UseCaseStat,
+    type UserGeoStat,
+} from '@/app/actions/db/admin';
+import { UserWorldMapCard } from '@/components/admin/UserWorldMapCard';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { DEFAULT_PLATFORM_CONFIG, type PlatformQuotaConfig, type TavilyAdminSlot } from '@/lib/platform-config';
+import type { TavilyAdminPoolStatus } from '@/lib/tavily';
+import {
+    SlidersHorizontal as GovernanceIcon,
+    KeyRound as TavilyPoolIcon,
+    RotateCcw as ResetSlotIcon,
+    BellRing as QuotaBannerIcon,
+    Save as SaveGovernanceIcon,
+} from 'lucide-react';
 import { 
     getServicesHealthAction, 
     getDdosSecurityCenterAction, 
@@ -62,7 +84,16 @@ export default function AdminPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [usersList, setUsersList] = useState<UserData[]>([]);
     const [useCasesSummary, setUseCasesSummary] = useState<UseCaseStat[]>([]);
+    const [geoStats, setGeoStats] = useState<UserGeoStat[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+    const [platformConfig, setPlatformConfig] = useState<PlatformQuotaConfig>(DEFAULT_PLATFORM_CONFIG);
+    const [tavilyPool, setTavilyPool] = useState<TavilyAdminPoolStatus | null>(null);
+    const [quotaInput, setQuotaInput] = useState<string>(String(DEFAULT_PLATFORM_CONFIG.freeTierDailyQuota));
+    const [bannerEnabledInput, setBannerEnabledInput] = useState<boolean>(DEFAULT_PLATFORM_CONFIG.quotaBannerEnabled);
+    const [bannerMessageFrInput, setBannerMessageFrInput] = useState<string>(DEFAULT_PLATFORM_CONFIG.quotaBannerMessageFr);
+    const [activeSlotInput, setActiveSlotInput] = useState<TavilyAdminSlot>(DEFAULT_PLATFORM_CONFIG.tavilyActiveAdminSlot);
+    const [isSavingGovernance, setIsSavingGovernance] = useState(false);
+    const [governanceFeedback, setGovernanceFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [modelsHealth, setModelsHealth] = useState<ModelsHealthReport>({});
     const [isLoadingModelsHealth, setIsLoadingModelsHealth] = useState(true);
 
@@ -219,10 +250,12 @@ export default function AdminPage() {
 
     const loadTelemetry = useCallback(async (force = false) => {
         try {
-            const [stats, users, useCases, healthRes, servicesRes, ddosRes] = await Promise.all([
+            const [stats, users, useCases, geoData, governanceRes, healthRes, servicesRes, ddosRes] = await Promise.all([
                 getAdminTelemetryStats(),
                 getRecentUsers(25),
                 getOnboardingUseCasesSummary(),
+                getUserGeographyStats(),
+                getAdminPlatformGovernanceAction(),
                 checkModelsAvailabilityAction(force),
                 getServicesHealthAction(),
                 getDdosSecurityCenterAction()
@@ -230,6 +263,16 @@ export default function AdminPage() {
             setTelemetry(stats);
             setUsersList(users);
             setUseCasesSummary(useCases);
+            setGeoStats(geoData);
+            if (governanceRes.success) {
+                const { config, tavilyPool: pool } = governanceRes.data;
+                setPlatformConfig(config);
+                setTavilyPool(pool);
+                setQuotaInput(String(config.freeTierDailyQuota));
+                setBannerEnabledInput(config.quotaBannerEnabled);
+                setBannerMessageFrInput(config.quotaBannerMessageFr);
+                setActiveSlotInput(config.tavilyActiveAdminSlot);
+            }
             if (healthRes.success) {
                 setModelsHealth(healthRes.data.report);
             }
@@ -251,6 +294,80 @@ export default function AdminPage() {
             setIsRefreshing(false);
         }
     }, []);
+
+    const handleSaveGovernance = async () => {
+        const parsedQuota = Number.parseInt(quotaInput, 10);
+        if (Number.isNaN(parsedQuota) || parsedQuota < 1 || parsedQuota > 200) {
+            setGovernanceFeedback({
+                type: 'error',
+                message: 'Le quota journalier doit être compris entre 1 et 200 recherches/jour.',
+            });
+            return;
+        }
+
+        setIsSavingGovernance(true);
+        setGovernanceFeedback(null);
+        try {
+            const res = await updateAdminPlatformGovernanceAction({
+                freeTierDailyQuota: parsedQuota,
+                quotaBannerEnabled: bannerEnabledInput,
+                quotaBannerMessageFr: bannerMessageFrInput.trim(),
+                tavilyActiveAdminSlot: activeSlotInput,
+            });
+            if (res.success && res.data) {
+                setPlatformConfig(res.data.config);
+                setTavilyPool(res.data.tavilyPool);
+                setGovernanceFeedback({
+                    type: 'success',
+                    message: 'Gouvernance Free Tier et routage Tavily enregistrés.',
+                });
+            } else {
+                setGovernanceFeedback({
+                    type: 'error',
+                    message: res.error ?? 'Échec de la mise à jour.',
+                });
+            }
+        } catch {
+            setGovernanceFeedback({
+                type: 'error',
+                message: 'Erreur réseau lors de la sauvegarde.',
+            });
+        } finally {
+            setIsSavingGovernance(false);
+        }
+    };
+
+    const handleResetTavilySlot = async (slot: 'primary' | 'secondary') => {
+        setIsSavingGovernance(true);
+        setGovernanceFeedback(null);
+        try {
+            const res = await updateAdminPlatformGovernanceAction(
+                slot === 'primary'
+                    ? { tavilyPrimaryCreditsUsed: 0 }
+                    : { tavilySecondaryCreditsUsed: 0 }
+            );
+            if (res.success && res.data) {
+                setPlatformConfig(res.data.config);
+                setTavilyPool(res.data.tavilyPool);
+                setGovernanceFeedback({
+                    type: 'success',
+                    message: `Compteur Tavily ${slot === 'primary' ? 'Clé #1' : 'Clé #2'} réinitialisé à 0.`,
+                });
+            } else {
+                setGovernanceFeedback({
+                    type: 'error',
+                    message: res.error ?? 'Impossible de réinitialiser le compteur.',
+                });
+            }
+        } catch {
+            setGovernanceFeedback({
+                type: 'error',
+                message: 'Erreur lors de la réinitialisation du compteur Tavily.',
+            });
+        } finally {
+            setIsSavingGovernance(false);
+        }
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -483,6 +600,223 @@ export default function AdminPage() {
                         </CardContent>
                     </Card>
                 </motion.div>
+
+                {/* Gouvernance Quota Free Tier & Pool Clés Tavily Admin */}
+                <Card className="border-border/60 bg-card/80 backdrop-blur-sm">
+                    <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <GovernanceIcon className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">
+                                    Gouvernance Free Tier & Pool Clés Tavily Admin
+                                </CardTitle>
+                                <Badge variant="outline" className="font-mono text-xs">
+                                    Quota actif : {platformConfig.freeTierDailyQuota} rech./jour
+                                </Badge>
+                            </div>
+                            <CardDescription>
+                                Ajustez le quota journalier des utilisateurs gratuits (5 à 10+ rech./j), publiez une alerte UI et basculez automatiquement sur la clé Tavily secondaire à 1 000 crédits.
+                            </CardDescription>
+                        </div>
+
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => void handleSaveGovernance()}
+                            disabled={isSavingGovernance}
+                            className="shrink-0"
+                        >
+                            <SaveGovernanceIcon className="mr-2 h-4 w-4" />
+                            {isSavingGovernance ? 'Enregistrement...' : 'Appliquer la gouvernance'}
+                        </Button>
+                    </CardHeader>
+
+                    <CardContent className="space-y-6">
+                        {governanceFeedback && (
+                            <div
+                                className={`rounded-lg border px-3 py-2 text-xs ${
+                                    governanceFeedback.type === 'success'
+                                        ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                                        : 'border-destructive/50 bg-destructive/10 text-destructive'
+                                }`}
+                            >
+                                {governanceFeedback.message}
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            {/* Quota & UI Banner Governance */}
+                            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-4">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="free-tier-quota" className="text-sm font-medium">
+                                        Quota journalier Free Tier (sans BYOK)
+                                    </Label>
+                                    <div className="flex items-center gap-1.5">
+                                        {[5, 10, 15].map((preset) => (
+                                            <Button
+                                                key={preset}
+                                                type="button"
+                                                size="sm"
+                                                variant={quotaInput === String(preset) ? 'default' : 'outline'}
+                                                onClick={() => setQuotaInput(String(preset))}
+                                                className="h-7 px-2.5 text-xs"
+                                            >
+                                                {preset}/j
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <Input
+                                        id="free-tier-quota"
+                                        type="number"
+                                        min={1}
+                                        max={200}
+                                        value={quotaInput}
+                                        onChange={(e) => setQuotaInput(e.target.value)}
+                                        className="w-28 font-mono"
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        Soit ~{Number.parseInt(quotaInput || '5', 10) * 2 || 10} crédits Tavily avancés/jour par utilisateur gratuit actif.
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/50 px-3 py-2.5">
+                                    <div className="flex items-center gap-2">
+                                        <QuotaBannerIcon className="h-4 w-4 text-amber-400" />
+                                        <div>
+                                            <p className="text-xs font-medium text-foreground">
+                                                Bandeau d&apos;avertissement UI Free Tier
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Affiche le message d&apos;ajustement de quota aux utilisateurs sans clé BYOK.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Switch
+                                        checked={bannerEnabledInput}
+                                        onCheckedChange={setBannerEnabledInput}
+                                        aria-label="Activer le bandeau d'avertissement quota"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="quota-banner-fr" className="text-xs text-muted-foreground">
+                                        Message affiché dans l&apos;interface utilisateur (FR)
+                                    </Label>
+                                    <Input
+                                        id="quota-banner-fr"
+                                        value={bannerMessageFrInput}
+                                        onChange={(e) => setBannerMessageFrInput(e.target.value)}
+                                        placeholder="Ex: Quota Free Tier ajusté à 5 recherches avancées/jour..."
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Tavily Admin Pool Failover */}
+                            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <TavilyPoolIcon className="h-4 w-4 text-cyan-400" />
+                                        <span className="text-sm font-medium">
+                                            Routage Pool Tavily Admin
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        {(['auto', 'primary', 'secondary'] as const).map((slot) => (
+                                            <Button
+                                                key={slot}
+                                                type="button"
+                                                size="sm"
+                                                variant={activeSlotInput === slot ? 'default' : 'outline'}
+                                                onClick={() => setActiveSlotInput(slot)}
+                                                className="h-7 px-2.5 text-xs capitalize"
+                                            >
+                                                {slot === 'auto' ? 'Auto' : slot === 'primary' ? 'Clé #1' : 'Clé #2'}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {(['primary', 'secondary'] as const).map((slot) => {
+                                    const isPrimary = slot === 'primary';
+                                    const configured = isPrimary
+                                        ? Boolean(tavilyPool?.primaryConfigured)
+                                        : Boolean(tavilyPool?.secondaryConfigured);
+                                    const used = isPrimary
+                                        ? tavilyPool?.primaryCreditsUsed ?? 0
+                                        : tavilyPool?.secondaryCreditsUsed ?? 0;
+                                    const limit = tavilyPool?.limitPerKey ?? 1000;
+                                    const pct = Math.min(100, Math.round((used / limit) * 100));
+                                    const isEffective = tavilyPool?.effectiveSlot === slot;
+
+                                    return (
+                                        <div
+                                            key={slot}
+                                            className="space-y-2 rounded-lg border border-border/40 bg-card/50 p-3"
+                                        >
+                                            <div className="flex items-center justify-between gap-2 text-xs">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-foreground">
+                                                        {isPrimary ? 'Clé Admin #1 (TAVILY_API_KEY)' : 'Clé Admin #2 (TAVILY_API_KEY_SECONDARY)'}
+                                                    </span>
+                                                    {isEffective && (
+                                                        <Badge variant="default" className="h-5 text-[10px]">
+                                                            Active
+                                                        </Badge>
+                                                    )}
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`h-5 text-[10px] ${
+                                                            configured
+                                                                ? 'border-emerald-500/40 text-emerald-400'
+                                                                : 'border-amber-500/40 text-amber-400'
+                                                        }`}
+                                                    >
+                                                        {configured ? 'Configurée' : 'Absente'}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-muted-foreground">
+                                                        {used} / {limit} crédits ({pct}%)
+                                                    </span>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => void handleResetTavilySlot(slot)}
+                                                        disabled={isSavingGovernance}
+                                                        title="Réinitialiser le compteur mensuel"
+                                                        className="h-6 px-2 text-[11px]"
+                                                    >
+                                                        <ResetSlotIcon className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-muted/60">
+                                                <div
+                                                    className={`h-full rounded-full transition-all ${
+                                                        pct >= 90
+                                                            ? 'bg-destructive'
+                                                            : pct >= 70
+                                                                ? 'bg-amber-500'
+                                                                : 'bg-cyan-500'
+                                                    }`}
+                                                    style={{ width: `${pct}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Carte du Monde Interactive RGPD */}
+                <UserWorldMapCard stats={geoStats} isLoading={isLoadingUsers} />
 
                 {/* Main 2-Column Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

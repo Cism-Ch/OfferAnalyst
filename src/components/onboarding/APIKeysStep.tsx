@@ -136,8 +136,15 @@ export default function APIKeysStep({ hasOwnKeys, apiKeys, onChange, onNext }: A
             </h3>
             <p className="text-sm text-muted-foreground">
               {isFr
-                ? "Ajoutez votre clé OpenRouter ou Gemini (sauvegardée dans le Cloud si connecté, ou localement en mode Invité)"
-                : "Add your OpenRouter or Gemini key (saved to Cloud if signed in, or locally in Guest Mode)"}
+                ? "Ajoutez votre clé Tavily (1 000 crédits web gratuits/mois sur app.tavily.com) ou OpenRouter (sauvegardées dans le Cloud si connecté, ou localement en mode Invité)."
+                : "Add your Tavily key (1,000 free monthly web credits at app.tavily.com) or OpenRouter key (saved to Cloud if signed in, or locally in Guest Mode)."}
+            </p>
+            <p className="text-xs text-primary mt-1">
+              <a href="https://app.tavily.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+                {isFr
+                  ? "Obtenir 1 000 crédits gratuits sur Tavily (app.tavily.com) ->"
+                  : "Get 1,000 free credits on Tavily (app.tavily.com) ->"}
+              </a>
             </p>
           </div>
           <Switch
@@ -152,9 +159,9 @@ export default function APIKeysStep({ hasOwnKeys, apiKeys, onChange, onNext }: A
               <Card key={index} className="p-4">
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label>{isFr ? "Fournisseur IA" : "Provider"}</Label>
+                    <Label>{isFr ? "Fournisseur IA / Web" : "Provider"}</Label>
                     <Input
-                      placeholder="openrouter, gemini, deepseek..."
+                      placeholder="tavily, openrouter, gemini, deepseek..."
                       value={customKey.provider}
                       onChange={(e) => handleCustomKeyChange(index, "provider", e.target.value)}
                       className="h-11"

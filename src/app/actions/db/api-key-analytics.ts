@@ -18,6 +18,8 @@ export interface APIKeyAnalytics {
     successRate: number;
     avgResponseTime: number;
     totalTokens: number;
+    totalCostUsd?: number;
+    tavilyCreditsUsed?: number;
     requestsByProvider: { provider: string; count: number }[];
     requestsByAction: { action: string; count: number }[];
     recentActivity: {
@@ -213,7 +215,9 @@ export async function getAPIKeyAnalytics(
             select: {
                 success: true,
                 responseTime: true,
-                tokensUsed: true
+                tokensUsed: true,
+                costUsd: true,
+                provider: true
             }
         });
 
@@ -226,13 +230,21 @@ export async function getAPIKeyAnalytics(
             ? responseTimes.reduce((sum: number, time: number) => sum + time, 0) / responseTimes.length
             : 0;
 
-        const totalTokens = allLogs.reduce((sum: number, log: { tokensUsed: number | null }) => sum + (log.tokensUsed || 0), 0);
+        const totalTokens = allLogs
+            .filter((log: { provider: string }) => log.provider !== 'tavily')
+            .reduce((sum: number, log: { tokensUsed: number | null }) => sum + (log.tokensUsed || 0), 0);
+        const totalCostUsd = allLogs.reduce((sum: number, log: { costUsd: number | null }) => sum + (log.costUsd || 0), 0);
+        const tavilyCreditsUsed = allLogs
+            .filter((log: { provider: string }) => log.provider === 'tavily')
+            .reduce((sum: number, log: { tokensUsed: number | null }) => sum + (log.tokensUsed || 0), 0);
 
         return {
             totalRequests,
             successRate: Math.round(successRate * 10) / 10,
             avgResponseTime: Math.round(avgResponseTime),
             totalTokens,
+            totalCostUsd,
+            tavilyCreditsUsed,
             requestsByProvider: byProvider.map((item: { provider: string; _count: { provider: number } }) => ({
                 provider: item.provider,
                 count: item._count.provider

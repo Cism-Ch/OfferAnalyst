@@ -7,15 +7,28 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Home, Briefcase, Rocket, ShoppingBag, MoreHorizontal, Building2 } from "lucide-react";
+import { Home, Briefcase, Rocket, ShoppingBag, MoreHorizontal, Building2, Globe2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { SUPPORTED_COUNTRIES } from "@/lib/geo";
 
 interface UseCaseStepProps {
   value: string;
   onChange: (useCase: string) => void;
+  country?: string;
+  onCountryChange?: (country: string) => void;
+  detectedCountry?: string | null;
   onNext: () => void;
 }
 
-export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProps) {
+export default function UseCaseStep({
+  value,
+  onChange,
+  country = "INTL",
+  onCountryChange,
+  detectedCountry,
+  onNext,
+}: UseCaseStepProps) {
   const { language } = useLanguage();
   const isFr = language === "fr";
 
@@ -115,6 +128,44 @@ export default function UseCaseStep({ value, onChange, onNext }: UseCaseStepProp
           </motion.button>
         ))}
       </div>
+
+      {/* Default Search Country Localization */}
+      {onCountryChange && (
+        <div className="p-4 sm:p-5 rounded-xl border border-border/80 bg-muted/30 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Globe2 className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm sm:text-base">
+                  {isFr ? "Pays de recherche par défaut" : "Default Search Country / Region"}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {isFr
+                    ? "Localise automatiquement les recherches web Tavily et les benchmarks marché (modifiable à tout moment)."
+                    : "Automatically localizes Tavily web searches and market benchmarks (changeable anytime)."}
+                </p>
+              </div>
+            </div>
+            {detectedCountry && detectedCountry !== "INTL" && (
+              <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                {isFr ? `Détecté : ${detectedCountry}` : `Detected: ${detectedCountry}`}
+              </Badge>
+            )}
+          </div>
+          <Select value={country} onValueChange={onCountryChange}>
+            <SelectTrigger className="w-full h-11 bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_COUNTRIES.map((c) => (
+                <SelectItem key={c.code} value={c.code}>
+                  {c.flag} {isFr ? c.labelFr : c.labelEn}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <motion.div
         initial={{ opacity: 0 }}

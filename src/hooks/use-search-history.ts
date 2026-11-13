@@ -96,6 +96,7 @@ function mapDbRecordToItem(dbRecord: any): SearchHistoryItem {
       domain: dbRecord.domain,
       criteria: dbRecord.criteria,
       context: dbRecord.implicitContext || "",
+      country: dbRecord.country || "INTL",
     },
     results: {
       marketSummary: "",
@@ -214,7 +215,7 @@ export function useSearchHistory() {
    */
   const addToHistory = useCallback(
     async (
-      inputs: { domain: string; criteria: string; context: string },
+      inputs: { domain: string; criteria: string; context: string; country?: string },
       results: AnalysisResponse,
       model?: string,
       isByok?: boolean
@@ -259,6 +260,7 @@ export function useSearchHistory() {
             resultCount,
             isByok: !!isByok,
             keyType,
+            country: inputs.country || "INTL",
           });
 
           if (actionRes.success && actionRes.data?.id) {

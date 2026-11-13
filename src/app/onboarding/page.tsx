@@ -12,7 +12,8 @@
  * Supports both Authenticated Cloud Persistence and Guest Mode Local Persistence.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { inferCountryFromLocaleOrTimezone } from "@/lib/geo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,12 +39,45 @@ export default function OnboardingPage() {
   const { language, t } = useLanguage();
   const tempKeys = useTemporaryApiKeys();
   const [currentStep, setCurrentStep] = useState(1);
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [data, setData] = useState({
     useCase: "",
+    country: "INTL",
     hasOwnKeys: false,
     apiKeys: {} as Record<string, string>,
     completedFirstSearch: false,
   });
+
+  useEffect(() => {
+    let active = true;
+    const detectCountry = async () => {
+      try {
+        const res = await fetch("/api/geo/detect");
+        if (res.ok) {
+          const json = (await res.json()) as { countryCode?: string };
+          if (active && json.countryCode && json.countryCode !== "INTL") {
+            setDetectedCountry(json.countryCode);
+            setData((prev) => (prev.country === "INTL" ? { ...prev, country: json.countryCode! } : prev));
+            return;
+          }
+        }
+      } catch {
+        // Fallback below
+      }
+      if (active && typeof navigator !== "undefined") {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const inferred = inferCountryFromLocaleOrTimezone(navigator.language, tz);
+        if (inferred !== "INTL") {
+          setDetectedCountry(inferred);
+          setData((prev) => (prev.country === "INTL" ? { ...prev, country: inferred } : prev));
+        }
+      }
+    };
+    void detectCountry();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const progress = (currentStep / TOTAL_STEPS) * 100;
 
@@ -87,6 +121,9 @@ export default function OnboardingPage() {
         if (data.useCase) {
           window.localStorage.setItem("offeranalyst_onboarding_usecase", data.useCase);
         }
+        if (data.country) {
+          window.localStorage.setItem("offeranalyst_country", data.country);
+        }
       }
 
       // 3. Synchronize with server profile if authenticated
@@ -120,6 +157,9 @@ export default function OnboardingPage() {
           <UseCaseStep
             value={data.useCase}
             onChange={(useCase) => updateData({ useCase })}
+            country={data.country}
+            onCountryChange={(country) => updateData({ country })}
+            detectedCountry={detectedCountry}
             onNext={handleNext}
           />
         );

@@ -19,8 +19,10 @@ import { analyzeOffersAction } from '@/app/actions/analyze';
 import { useTemporaryApiKeys } from '@/hooks/use-temporary-api-keys';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { useToast } from '@/components/ui/toast';
+import { inferCountryFromLocaleOrTimezone, normalizeCountryCode } from '@/lib/geo';
 
 const DASHBOARD_STATE_KEY = "offeranalyst_dashboard_state";
+const COUNTRY_STORAGE_KEY = "offeranalyst_country";
 
 export type LLMExecutionStatus =
   | 'idle'
@@ -34,6 +36,8 @@ interface AnalysisContextValue {
   // Config & Inputs
   domain: string;
   setDomain: (val: string) => void;
+  country: string;
+  setCountry: (val: string) => void;
   explicitCriteria: string;
   setExplicitCriteria: (val: string) => void;
   implicitContext: string;
@@ -78,6 +82,18 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
 
   // Inputs
   const [domain, setDomain] = useState("Jobs");
+  const [country, setCountryState] = useState("INTL");
+  const setCountry = useCallback((val: string) => {
+    const normalized = normalizeCountryCode(val);
+    setCountryState(normalized);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(COUNTRY_STORAGE_KEY, normalized);
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, []);
   const [explicitCriteria, setExplicitCriteria] = useState("Salary > 100k, Remote or Hybrid");
   const [implicitContext, setImplicitContext] = useState("Looking for good work-life balance, startup culture");
   const [offersInput, setOffersInput] = useState(JSON.stringify(DUMMY_OFFERS, null, 2));
@@ -106,12 +122,34 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed.domain) setDomain(parsed.domain);
+          if (parsed.country) setCountryState(normalizeCountryCode(parsed.country));
           if (parsed.explicitCriteria) setExplicitCriteria(parsed.explicitCriteria);
           if (parsed.implicitContext) setImplicitContext(parsed.implicitContext);
           if (parsed.offersInput) setOffersInput(parsed.offersInput);
           if (parsed.autoFetch !== undefined) setAutoFetch(parsed.autoFetch);
           if (parsed.limit) setLimit(parsed.limit);
           if (parsed.model) setModel(parsed.model);
+        }
+
+        const savedCountry = window.localStorage.getItem(COUNTRY_STORAGE_KEY);
+        if (savedCountry) {
+          setCountryState(normalizeCountryCode(savedCountry));
+        } else {
+          // Auto-detect country silently in background
+          void fetch('/api/geo/detect')
+            .then((r) => (r.ok ? r.json() : null))
+            .then((geo: { countryCode?: string } | null) => {
+              const detected = geo?.countryCode && geo.countryCode !== 'INTL'
+                ? normalizeCountryCode(geo.countryCode)
+                : inferCountryFromLocaleOrTimezone(
+                    typeof navigator !== 'undefined' ? navigator.language : undefined,
+                    typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined
+                  );
+              if (detected && detected !== 'INTL') {
+                setCountry(detected);
+              }
+            })
+            .catch(() => {});
         }
 
         // Restore search if navigated from History page
@@ -160,12 +198,12 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
     try {
       window.localStorage.setItem(
         DASHBOARD_STATE_KEY,
-        JSON.stringify({ domain, explicitCriteria, implicitContext, offersInput, autoFetch, limit, model })
+        JSON.stringify({ domain, country, explicitCriteria, implicitContext, offersInput, autoFetch, limit, model })
       );
     } catch (e) {
       console.error("[AnalysisContext] Failed to save to localStorage", e);
     }
-  }, [domain, explicitCriteria, implicitContext, offersInput, autoFetch, limit, model]);
+  }, [domain, country, explicitCriteria, implicitContext, offersInput, autoFetch, limit, model]);
 
   // Elapsed seconds timer handler
   useEffect(() => {
@@ -233,11 +271,14 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
                             tempKeys.getKey(modelMeta.provider.toLowerCase()) || 
                             tempKeys.getKey(targetModel.split('/')[0]?.toLowerCase()) || 
                             undefined;
+          const clientTavilyKey = tempKeys.getKey('tavily') || undefined;
           const fetchResult = await fetchOffersAction(
             domain,
             `${explicitCriteria} ${implicitContext}`,
             targetModel,
-            clientKey
+            clientKey,
+            country,
+            clientTavilyKey
           );
 
           if (abortRef.current) return false;
@@ -315,19 +356,23 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         const profile: UserProfile = {
           domain,
           explicitCriteria,
-          implicitContext
+          implicitContext,
+          country
         };
 
         const clientKey = tempKeys.getKey('openrouter') || 
                           tempKeys.getKey(modelMeta.provider.toLowerCase()) || 
                           tempKeys.getKey(targetModel.split('/')[0]?.toLowerCase()) || 
                           undefined;
+        const clientTavilyKey = tempKeys.getKey('tavily') || undefined;
         const analysisResult = await analyzeOffersAction(
           currentOffers,
           profile,
           parseInt(limit) || 3,
           targetModel,
-          clientKey
+          clientKey,
+          'fr',
+          clientTavilyKey
         );
 
         if (abortRef.current) return false;
@@ -356,9 +401,9 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         setProviderError(null);
 
         // Sauvegarde dans l'historique
-        const isByokUsed = !!clientKey;
+        const isByokUsed = !!clientKey || !!clientTavilyKey;
         addToHistory(
-          { domain, criteria: explicitCriteria, context: implicitContext },
+          { domain, criteria: explicitCriteria, context: implicitContext, country },
           analysisResult.data,
           targetModel,
           isByokUsed
@@ -397,7 +442,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         isExecutingRef.current = false;
       }
     },
-    [autoFetch, domain, explicitCriteria, implicitContext, limit, offersInput, tempKeys, addToHistory, toast]
+    [autoFetch, country, domain, explicitCriteria, implicitContext, limit, offersInput, tempKeys, addToHistory, toast]
   );
 
   const startAnalysis = useCallback(async (): Promise<boolean> => {
@@ -424,6 +469,8 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
       value={{
         domain,
         setDomain,
+        country,
+        setCountry,
         explicitCriteria,
         setExplicitCriteria,
         implicitContext,

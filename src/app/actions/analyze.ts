@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { headers } from 'next/headers';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { evaluateDdosProtection } from '@/lib/ddos-defense';
+import { searchWebOffers, hasTavilyAvailability } from '@/lib/tavily';
+import { getCountryOption, normalizeCountryCode } from '@/lib/geo';
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -19,6 +21,7 @@ const ScoredOfferSchema = z.object({
     rank: z.number(),
     justification: z.string(),
     webInsights: z.array(z.string()),
+    redFlags: z.array(z.string()).optional().default([]),
     breakdown: z.object({
         relevance: z.number(),
         quality: z.number(),
@@ -32,6 +35,7 @@ const AnalyzeInputSchema = z.object({
     modelName: z.string().max(200).optional().default(DEFAULT_MODEL_ID),
     clientApiKey: z.string().max(500).optional(),
     language: z.enum(['fr', 'en']).default('fr'),
+    clientTavilyKey: z.string().max(500).optional(),
 });
 
 const AnalysisResponseSchema = z.object({
@@ -44,12 +48,15 @@ export async function analyzeOffersAction(
     profile: UserProfile,
     limit: number = 3,
     modelName: string = DEFAULT_MODEL_ID,
-    clientApiKey?: string, // Optional BYOK key for temporary/authenticated users
-    language: 'fr' | 'en' = 'fr'
+    clientApiKey?: string, // Optional OpenRouter BYOK key
+    language: 'fr' | 'en' = 'fr',
+    clientTavilyKey?: string // Optional Tavily BYOK key
 ): Promise<AgentActionResult<AnalysisResponse>> {
     const startedAt = Date.now();
+    const targetCountry = normalizeCountryCode(profile.country);
+    const countryMeta = getCountryOption(targetCountry);
     
-    const inputValidation = AnalyzeInputSchema.safeParse({ offers, limit, modelName, clientApiKey, language });
+    const inputValidation = AnalyzeInputSchema.safeParse({ offers, limit, modelName, clientApiKey, language, clientTavilyKey });
     if (!inputValidation.success) {
         return {
             success: false,
@@ -60,9 +67,9 @@ export async function analyzeOffersAction(
         };
     }
 
-    // Check Multi-Tier Cache to eliminate redundant AI evaluation
+    // Check Multi-Tier Cache (Upstash Redis + Memory) to eliminate redundant AI evaluation
     const { getCache, setCache, generateCacheKey } = await import('@/lib/cache');
-    const cacheKey = generateCacheKey('analyze_offers', offers, profile, limit, modelName, language);
+    const cacheKey = generateCacheKey('analyze_offers_v2', offers, { ...profile, country: targetCountry }, limit, modelName, language);
     const cachedAnalysis = await getCache<AnalysisResponse>(cacheKey);
     if (cachedAnalysis && cachedAnalysis.topOffers && cachedAnalysis.topOffers.length > 0) {
         return {
@@ -111,56 +118,94 @@ export async function analyzeOffersAction(
         // Silently pass if headers() called outside request context (e.g. tests)
     }
 
-    // Quota Enforcement: Check 10 searches/day limit for free tier
-    const isByok = apiKeyResult.source === 'byok' || apiKeyResult.source === 'guest_cookie' || Boolean(clientApiKey);
+    // Quota Enforcement: Check dynamic daily quota limit for free tier
+    const isByok =
+        apiKeyResult.source === 'byok' ||
+        apiKeyResult.source === 'guest_cookie' ||
+        Boolean(clientApiKey) ||
+        Boolean(clientTavilyKey);
     const { checkDailyQuota, incrementDailyQuota } = await import('./shared/quota-limiter');
     const quotaCheck = await checkDailyQuota(isByok);
     if (!quotaCheck.allowed) {
         return {
             success: false,
             error: {
-                code: 'RATE_LIMIT_EXCEEDED',
-                message: 'Quota quotidien de 10 recherches atteint. Réinitialisation à minuit UTC ou utilisez votre propre clé API.'
+                code: 'RATE_LIMITED',
+                message: `Quota quotidien Free Tier (${quotaCheck.total}/jour) atteint. Créez un compte gratuit sur tavily.com pour obtenir 1 000 crédits/mois avec votre propre clé API.`,
+                remedy: {
+                    type: 'configure_api_key',
+                    label: 'Obtenir 1 000 crédits gratuits sur Tavily',
+                    targetUrl: 'https://app.tavily.com'
+                }
             }
         };
     }
 
     // Only log in development mode
     if (process.env.NODE_ENV === 'development') {
-        console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key (language: ${language})`);
+        console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key (country: ${targetCountry}, language: ${language})`);
+    }
+
+    // Real-time Market Benchmark via Tavily (localized to user's target country)
+    let benchmarkSources: { title: string; uri: string }[] = [];
+    let marketBenchmarkContext = 'No external web benchmark available.';
+    try {
+        const canUseTavily = await hasTavilyAvailability(clientTavilyKey);
+        if (canUseTavily) {
+            const benchmarkQuery = `${profile.domain} ${profile.explicitCriteria} ${targetCountry === 'INTL' ? 'global market benchmark price salary trend' : `${countryMeta.labelEn} prix salaire tendance marché`}`.trim().slice(0, 320);
+            const benchRes = await searchWebOffers(benchmarkQuery, {
+                country: targetCountry,
+                searchDepth: 'basic',
+                maxResults: 5,
+                clientTavilyKey,
+                actionName: 'analyze_market_benchmark',
+            });
+            if (benchRes.results.length > 0) {
+                benchmarkSources = benchRes.results.map((r) => ({
+                    title: r.title,
+                    uri: r.url,
+                }));
+                marketBenchmarkContext = benchRes.results
+                    .map((r, i) => `[Source ${i + 1}] ${r.title} (${r.url}): ${r.content.slice(0, 400)}`)
+                    .join('\n');
+            }
+        }
+    } catch (benchErr) {
+        console.warn('[analyzeOffersAction] Tavily market benchmark skipped:', benchErr instanceof Error ? benchErr.message : benchErr);
     }
 
     const openrouter = new OpenRouter({
         apiKey: apiKeyResult.key,
     });
 
-    // Optimize payload: Simplify offers to reduce token usage and prevent Vercel timeouts
+    // Preserve up to 1500 chars per offer so critical conditions, salary bands & caveats aren't lost
     const simplifiedOffers = offers.map(offer => ({
         id: offer.id,
         title: offer.title,
         price: offer.price,
         location: offer.location,
         category: offer.category,
-        // Truncate description to avoid token overflow while keeping context
-        description: offer.description.length > 500 
-            ? offer.description.substring(0, 500) + "..." 
+        url: offer.url || '',
+        description: offer.description.length > 1500 
+            ? offer.description.substring(0, 1500) + "..." 
             : offer.description
     }));
 
     const systemInstruction = `
-    You are an expert Market Analyst AI.
+    You are an expert Market Analyst AI specializing in grounded evaluation and risk detection.
     
-    TASK: Rank the provided offers and return the top ${limit} based on the user profile and current market context.
+    TASK: Rank the provided offers and return the top ${limit} based on the user profile, target country (${countryMeta.labelFr} / ${targetCountry}), and real-time web market benchmark.
     
     PROCESS:
-    1. Analyze the provided offers against the User Profile.
-    2. Use your reasoning and internal market data (and simulated web search if available) to provide context.
-    3. Calculate scores for each offer based on Relevance (50%), Quality (30%), and Trend (20%).
+    1. Analyze every offer rigorously against the User Profile explicit criteria and implicit context.
+    2. Cross-reference prices, compensation, location, and terms with the LIVE_MARKET_BENCHMARK below (adapted to ${countryMeta.labelFr}).
+    3. Calculate honest, differentiated scores: Relevance (50%), Quality (30%), and Trend (20%).
+    4. Explicitly detect and list any red flags (missing price, vague terms, unrealistic compensation, location mismatch, expired/generic posting) in "redFlags".
     
     OUTPUT REQUIREMENTS:
     - Return ONLY a valid JSON object.
     - DO NOT include summary text or "thinking" tags in the final JSON.
-    - LANGUAGE REQUIREMENT: All textual output (including "justification", "webInsights", and "marketSummary") MUST be generated in ${language === 'fr' ? 'FRENCH (Français)' : 'ENGLISH'}.
+    - LANGUAGE REQUIREMENT: All textual output ("justification", "webInsights", "redFlags", "marketSummary") MUST be generated in ${language === 'fr' ? 'FRENCH (Français)' : 'ENGLISH'}.
 
     JSON SCHEMA:
     {
@@ -174,8 +219,9 @@ export async function analyzeOffersAction(
           "category": "string",
           "finalScore": number (0-100),
           "rank": number (1 to ${limit}),
-          "justification": "Detailed explanation of the rank in ${language === 'fr' ? 'French' : 'English'}",
-          "webInsights": ["specific market insight", "another insight"],
+          "justification": "Detailed grounded explanation citing real criteria & market context in ${language === 'fr' ? 'French' : 'English'}",
+          "webInsights": ["specific benchmark fact or insight", "another market insight"],
+          "redFlags": ["potential risk or missing detail if any"],
           "breakdown": {
             "relevance": number (0-100),
             "quality": number (0-100),
@@ -183,13 +229,17 @@ export async function analyzeOffersAction(
           }
         }
       ],
-      "marketSummary": "2-sentence overview of the current market context in ${language === 'fr' ? 'French' : 'English'}"
+      "marketSummary": "2-3 sentence overview of the real market context in ${countryMeta.labelFr} in ${language === 'fr' ? 'French' : 'English'}"
     }
 
-    USER PROFILE: ${JSON.stringify(profile)}
+    USER PROFILE: ${JSON.stringify({ ...profile, country: targetCountry })}
     DOMAIN: ${profile.domain}
+    TARGET COUNTRY: ${countryMeta.labelFr} (${targetCountry})
     LIMIT: Top ${limit} offers
     TARGET LANGUAGE: ${language.toUpperCase()}
+    
+    LIVE_MARKET_BENCHMARK:
+    ${marketBenchmarkContext}
   `;
 
     let capturedUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
@@ -242,10 +292,22 @@ export async function analyzeOffersAction(
             };
         });
 
-        // OpenRouter doesn't provide grounding sources directly like Gemini.
-        const searchSources: { title: string; uri: string }[] = [];
+        // Combine Tavily market benchmark sources + verified offer source URLs (deduplicated)
+        const sourceMap = new Map<string, { title: string; uri: string }>();
+        benchmarkSources.forEach((src) => {
+            if (src.uri && src.uri.startsWith('http')) {
+                sourceMap.set(src.uri, src);
+            }
+        });
+        mergedTopOffers.forEach((o) => {
+            const url = 'url' in o && typeof o.url === 'string' ? o.url.trim() : '';
+            if (url && url.startsWith('http') && !sourceMap.has(url)) {
+                sourceMap.set(url, { title: o.title, uri: url });
+            }
+        });
+        const searchSources = Array.from(sourceMap.values());
 
-        console.log(`Analyze: Successfully analyzed ${mergedTopOffers.length} offers`);
+        console.log(`Analyze: Successfully analyzed ${mergedTopOffers.length} offers (${searchSources.length} verified sources)`);
 
         return {
             topOffers: mergedTopOffers,

@@ -112,15 +112,47 @@ export async function generateOfferActionContentAction(
 
     const isNegotiation = actionType === 'negotiation_pitch';
 
+    // Detect real offer nature to adapt strategy, vocabulary & email structure
+    const natureSignal = `${domain} ${offer.category || ''} ${offer.title} ${offer.description}`.toLowerCase();
+    let offerNature = 'Opportunité professionnelle / commerciale générale';
+    let natureGuidance = isNegotiation
+        ? 'Focus on realistic market value benchmarks, clear counter-offer terms, and win-win leverage.'
+        : 'Focus on a sharp, value-first outreach email or inquiry directly tailored to this offer.';
+
+    if (/(immobilier|real estate|appartement|maison|villa|studio|terrain|loyer|rent|m²|pièces|lease)/i.test(natureSignal)) {
+        offerNature = 'Immobilier (Achat ou Location)';
+        natureGuidance = isNegotiation
+            ? 'Adapt specifically to real estate: cite price/m² comparables, renovation/DPE/charges leverage, financing solidity (apport/accord bancaire), and draft a polite written price or rent counter-offer to the owner/agency.'
+            : 'Draft a standout buyer/tenant application dossier & visit request highlighting financial reliability, rapid decision readiness, and specific questions about the property.';
+    } else if (/(freelance|tjm|mission|prestation|appel d'offre|rfp|b2b|consulting|consultant)/i.test(natureSignal)) {
+        offerNature = 'Mission Freelance / Prestation B2B';
+        natureGuidance = isNegotiation
+            ? 'Adapt to B2B/freelance contracting: justify target TJM/forfait via ROI, scope delimitation, payment terms, or volume commitment.'
+            : 'Draft a commercial proposal / pitch tailored to the client brief: problem understanding, concrete methodology, relevant deliverables, and call-to-action for a discovery call.';
+    } else if (/(produit|product|e-commerce|achat|vendeur|gpu|macbook|iphone|voiture|équipement|saas|abonnement|pricing)/i.test(natureSignal)) {
+        offerNature = 'Achat Produit / Équipement / SaaS';
+        natureGuidance = isNegotiation
+            ? 'Adapt to vendor/commercial negotiation: reference competitor pricing, bundle/warranty conditions, bulk discount or annual commitment terms.'
+            : 'Draft a sharp buyer inquiry / vendor contact message asking for exact condition, warranty, stock availability, and final all-in price.';
+    } else if (/(emploi|job|cdi|cdd|recrutement|salaire|salary|développeur|engineer|manager|lead|stage|alternance)/i.test(natureSignal)) {
+        offerNature = 'Offre d\'Emploi / Recrutement';
+        natureGuidance = isNegotiation
+            ? 'Adapt to job compensation negotiation: cover base salary, variable/bonus, equity, remote days, and onboarding package.'
+            : 'Draft a tailored recruiter/hiring-manager application email & pitch matching skills directly to the role responsibilities.';
+    }
+
     const systemPrompt = isNegotiation
-        ? `You are an elite Negotiation Strategist for high-stakes career and business opportunities.
-Based on the offer details, the score breakdown (${offer.finalScore}%), web insights, and the user's must-haves, formulate an ultra-targeted negotiation strategy and counter-offer pitch script.
+        ? `You are an elite Negotiation Strategist adapting strictly to the REAL nature of the offer (${offerNature}).
+Based on the offer details, the score breakdown (${offer.finalScore}%), web insights, and the user's criteria, formulate a highly practical negotiation strategy and ready-to-send email/message.
+
+OFFER NATURE ADAPTATION (${offerNature}):
+${natureGuidance}
 
 RULES:
-1. Provide a concise, commanding headline.
-2. Provide 3-4 specific leverage bullet points (e.g. market benchmarks, high cost of living compensation, unique match on strict tech stack).
-3. Provide a concrete target term (e.g. "+15% compensation / 95k€ + 1 day additional remote").
-4. Provide a full, polite, diplomatic and persuasive message/email script ready to copy and send.
+1. Provide a concise, commanding headline adapted to ${offerNature}.
+2. Provide 3-4 concrete, grounded leverage bullet points using the real offer price/terms and web insights.
+3. Provide a concrete target term realistic for this offer type (e.g. target salary/TJM, offer price in €/$, or contract clause).
+4. Provide a full, polite, persuasive email/message ready to copy and send to the exact recipient type (recruiter, landlord/agency, B2B client, or seller).
 5. Return ONLY a valid JSON object matching the JSON SCHEMA below.
 
 JSON SCHEMA:
@@ -130,14 +162,17 @@ JSON SCHEMA:
   "suggestedTerms": "string",
   "generatedText": "string"
 }`
-        : `You are an elite Executive Career Consultant and Ghostwriter.
-Draft an authentic, high-converting, tailored application pitch / introductory letter for the given offer and user profile.
+        : `You are an elite Outreach & Application Strategist adapting strictly to the REAL nature of the offer (${offerNature}).
+Draft an authentic, high-converting, ready-to-send message / application / dossier email adapted to the exact offer type and user profile.
+
+OFFER NATURE ADAPTATION (${offerNature}):
+${natureGuidance}
 
 RULES:
-1. Provide a sharp, non-generic headline.
-2. Provide 3-4 key alignment arguments (connecting user strengths directly with the job's core challenges).
-3. Provide a complete, ready-to-send application message / letter (hook, proof of impact, closing call to action).
-4. Avoid corporate clichés and AI fluff; write with confidence, clarity, and authority.
+1. Provide a sharp, non-generic headline adapted to ${offerNature}.
+2. Provide 3-4 key alignment arguments connecting user needs/strengths directly to this specific listing.
+3. Provide a complete, ready-to-send email/message (subject/hook, specific proof/criteria, clear closing call to action).
+4. Avoid generic AI clichés; make it genuinely usable for the real recipient.
 5. Return ONLY a valid JSON object matching the JSON SCHEMA below.
 
 JSON SCHEMA:
@@ -149,18 +184,21 @@ JSON SCHEMA:
 }`;
 
     const userPrompt = `
-OFFER TO ANALYZE:
+OFFER TO ANALYZE (DETECTED NATURE: ${offerNature}):
 - Title: ${offer.title}
-- Organization: ${offer.organization || 'Entreprise'}
+- Category: ${offer.category || domain}
+- Organization: ${offer.organization || 'Destinataire'}
 - Location: ${offer.location}
 - Stated Price/Salary: ${offer.price}
+- URL: ${offer.url || 'N/A'}
+- Description Excerpt: ${(offer.description || '').slice(0, 1200)}
 - AI Match Score: ${offer.finalScore}%
 - AI Justification: ${offer.justification}
 - Verified Web Insights: ${offer.webInsights?.join(' | ') || 'N/A'}
 
 USER SEARCH CONTEXT & PREFERENCES:
 - Domain: ${domain}
-- Criteria & Lifestyle Requirements: ${userContext || 'Profil exigeant, recherche d impact et d équilibre'}
+- Criteria & Requirements: ${userContext || 'Profil exigeant, recherche de qualité et juste valeur'}
 
 Generate the ${actionType} deliverable now in French (or English if user context is predominantly English).
 `;

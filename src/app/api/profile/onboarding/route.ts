@@ -6,9 +6,11 @@ import { encryptAPIKey } from "@/lib/api-key-encryption";
 import { log } from "@/lib/logger";
 import { z } from "zod";
 import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
+import { normalizeCountryCode } from "@/lib/geo";
 
 const OnboardingPayloadSchema = z.object({
   useCase: z.string().trim().max(100).optional(),
+  country: z.string().trim().max(10).optional(),
   hasOwnKeys: z.boolean().optional(),
   apiKeys: z
     .record(
@@ -49,7 +51,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { useCase, apiKeys, onboardingComplete = true } = validation.data;
+    const { useCase, country, apiKeys, onboardingComplete = true } = validation.data;
+    const normalizedCountry = normalizeCountryCode(country);
 
     // Check user session
     let userId: string | undefined;
@@ -70,17 +73,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Persist to Profile in MongoDB
+    // Persist to Profile in Supabase PostgreSQL
     await prisma.profile.upsert({
       where: { userId },
       create: {
         userId,
         useCase: useCase || null,
+        country: normalizedCountry,
         onboardingStep: 5,
         onboardingComplete: onboardingComplete,
       },
       update: {
         useCase: useCase || undefined,
+        country: country ? normalizedCountry : undefined,
         onboardingStep: 5,
         onboardingComplete: onboardingComplete,
       },

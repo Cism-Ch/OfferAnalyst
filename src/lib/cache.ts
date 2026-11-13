@@ -6,6 +6,7 @@
  */
 
 import crypto from 'crypto';
+import { redis, isRedisConfigured } from '@/lib/redis';
 
 interface CacheEntry<T> {
   value: T;
@@ -52,6 +53,18 @@ export function generateCacheKey(prefix: string, ...parts: unknown[]): string {
  * Retrieve an item from the cache
  */
 export async function getCache<T>(key: string): Promise<T | null> {
+  // 1. Check distributed Upstash Redis cache first
+  if (isRedisConfigured && redis) {
+    try {
+      const redisVal = await redis.get<T>(key);
+      if (redisVal !== null && redisVal !== undefined) {
+        return redisVal;
+      }
+    } catch {
+      // Fallback to in-memory cache silently
+    }
+  }
+
   const entry = memoryCache.get(key) as CacheEntry<T> | undefined;
 
   if (!entry) {
@@ -80,6 +93,14 @@ export async function setCache<T>(key: string, value: T, ttlSeconds: number = 36
     createdAt: now,
     expiresAt: now + ttlSeconds * 1000,
   });
+
+  if (isRedisConfigured && redis) {
+    try {
+      await redis.set(key, value, { ex: Math.max(1, Math.floor(ttlSeconds)) });
+    } catch {
+      // Non-fatal fallback
+    }
+  }
 }
 
 /**

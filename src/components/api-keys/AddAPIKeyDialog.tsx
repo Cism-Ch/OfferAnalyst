@@ -37,6 +37,7 @@ interface AddAPIKeyDialogProps {
 
 const AI_PROVIDERS = [
     { value: 'openrouter', label: 'OpenRouter (Recommandé - Tous Modèles)', prefix: 'sk-or-v1-' },
+    { value: 'tavily', label: 'Tavily Search API (1 000 crédits/mois gratuits)', prefix: 'tvly-' },
     { value: 'openai', label: 'OpenAI (GPT-4o, o3-mini)', prefix: 'sk-' },
     { value: 'anthropic', label: 'Anthropic (Claude 3.7 Sonnet)', prefix: 'sk-ant-' },
     { value: 'deepseek', label: 'DeepSeek (R1 & V3)', prefix: 'sk-' },
@@ -186,7 +187,20 @@ export function AddAPIKeyDialog({
                             </Select>
 
                             {/* Informative Guidance Banner based on provider choice */}
-                            {provider === 'openrouter' ? (
+                            {provider === 'tavily' ? (
+                                <div className="bg-cyan-500/10 border border-cyan-500/25 rounded-lg p-2.5 text-xs text-cyan-600 dark:text-cyan-400">
+                                    <p className="font-semibold flex items-center gap-1.5 mb-0.5">
+                                        <span>🌐</span> 1 000 Crédits Web Gratuits / mois sur Tavily
+                                    </p>
+                                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                                        Créez un compte gratuit sur{' '}
+                                        <a href="https://app.tavily.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary">
+                                            app.tavily.com
+                                        </a>{' '}
+                                        pour obtenir immédiatement votre clé <code className="font-mono bg-muted/60 px-1 py-0.5 rounded text-foreground">tvly-...</code> (1 000 crédits free) et rechercher sans limite sur le quota partagé.
+                                    </p>
+                                </div>
+                            ) : provider === 'openrouter' ? (
                                 <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-lg p-2.5 text-xs text-emerald-600 dark:text-emerald-400">
                                     <p className="font-semibold flex items-center gap-1.5 mb-0.5">
                                         <span>✨</span> Clé Universelle Recommandée

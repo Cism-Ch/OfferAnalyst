@@ -30,6 +30,7 @@ const SaveSearchInputSchema = z.object({
   resultCount: z.number().int().nonnegative().default(0),
   isByok: z.boolean().default(false).optional(),
   keyType: z.string().trim().max(50).default('free').optional(),
+  country: z.string().trim().max(10).default('INTL').optional(),
 });
 export type SaveSearchInput = z.infer<typeof SaveSearchInputSchema>;
 
@@ -128,7 +129,7 @@ export async function saveSearchHistoryAction(
       };
     }
 
-    const { domain, criteria, implicitContext, model, resultCount, isByok, keyType } = parsed.data;
+    const { domain, criteria, implicitContext, model, resultCount, isByok, keyType, country } = parsed.data;
 
     const created = await prisma.searchHistory.create({
       data: {
@@ -141,6 +142,7 @@ export async function saveSearchHistoryAction(
         isPinned: false,
         isByok: isByok ?? false,
         keyType: keyType || (isByok ? 'byok' : 'free'),
+        country: (country || 'INTL').toUpperCase(),
       },
     });
 

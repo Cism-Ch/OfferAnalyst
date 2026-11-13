@@ -28,17 +28,24 @@ import {
     Zap,
     ArrowRight,
     CheckCircle2,
-    Presentation
+    Presentation,
+    AlertTriangle,
+    Globe2,
+    Key
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { staggerContainerProps, staggerItemProps } from '@/lib/motion';
 import { setAppModeCookie } from '@/lib/cookie-nav';
+import { useDailyQuota } from '@/hooks/use-daily-quota';
+import { getCountryOption } from '@/lib/geo';
 
 export function HomeDashboardView() {
     const dashboardState = useDashboardState();
     const { t, language } = useLanguage();
+    const { quota } = useDailyQuota();
     const isFr = language === 'fr';
+    const activeCountry = getCountryOption(dashboardState.country);
 
     // Ensure app mode cookie is set so future refreshes stay on the app
     useEffect(() => {
@@ -93,6 +100,50 @@ export function HomeDashboardView() {
                 className="space-y-6 sm:space-y-8"
                 {...staggerContainerProps}
             >
+                {/* Quota Warning & Localization Banner (Controlled by Admin Config) */}
+                {quota && (!quota.isByok && quota.bannerEnabled !== false) && (
+                    <motion.div {...staggerItemProps}>
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm">
+                            <div className="flex items-start gap-2.5">
+                                <div className="p-2 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                                    <AlertTriangle className="h-4 w-4" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="font-semibold text-foreground">
+                                            {isFr
+                                                ? `Free Tier : ${quota.remaining}/${quota.total} recherches restantes aujourd'hui`
+                                                : `Free Tier: ${quota.remaining}/${quota.total} searches left today`}
+                                        </span>
+                                        <Badge variant="outline" className="text-[11px] gap-1 bg-background/70">
+                                            <Globe2 className="h-3 w-3 text-primary" />
+                                            {activeCountry.flag} {isFr ? activeCountry.labelFr : activeCountry.labelEn}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        {isFr ? quota.bannerMessageFr : quota.bannerMessageEn}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 shrink-0 self-end lg:self-center">
+                                <Link href="/search-context">
+                                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                                        <Globe2 className="h-3.5 w-3.5" />
+                                        {isFr ? "Changer de pays" : "Change country"}
+                                    </Button>
+                                </Link>
+                                <Link href="/dashboard/api-keys?action=add&provider=tavily">
+                                    <Button size="sm" className="h-8 text-xs gap-1.5">
+                                        <Key className="h-3.5 w-3.5" />
+                                        {isFr ? "Configurer ma clé Tavily (1 000 free)" : "Add Tavily Key (1,000 free)"}
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* SaaS Showcase Quick Banner */}
                 <motion.div {...staggerItemProps}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-primary/5 border border-primary/20 text-xs sm:text-sm">

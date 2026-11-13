@@ -14,6 +14,7 @@ import { AgentError, parseJSONFromText, retryWithBackoff } from "../shared/agent
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { checkDailyQuota } from '../shared/quota-limiter';
+import { extractUrlsContent, hasTavilyAvailability } from '@/lib/tavily';
 
 const ExtractedOfferSchema = z.object({
     id: z.union([z.string(), z.number()]).transform(val => String(val)),
@@ -49,7 +50,8 @@ export async function structureRawOffersAction(
     rawText: string,
     domain: string = "Opportunités",
     modelName: string = DEFAULT_MODEL_ID,
-    clientApiKey?: string
+    clientApiKey?: string,
+    clientTavilyKey?: string
 ): Promise<AgentActionResult<Offer[]>> {
     const inputValidation = StructureInputSchema.safeParse({ rawText, domain, modelName, clientApiKey });
     if (!inputValidation.success) {
@@ -114,6 +116,27 @@ export async function structureRawOffersAction(
         apiKey: apiKeyResult.key,
     });
 
+    // Auto-extract live webpage content via Tavily Extract if rawText contains URLs
+    let enrichedText = rawText;
+    const detectedUrls = Array.from(
+        new Set(rawText.match(/https?:\/\/[^\s<>"')]+/gi) ?? [])
+    ).slice(0, 5);
+    if (detectedUrls.length > 0) {
+        try {
+            if (await hasTavilyAvailability(clientTavilyKey)) {
+                const extracted = await extractUrlsContent(detectedUrls, { clientTavilyKey });
+                if (extracted.items.length > 0) {
+                    const extractedBlocks = extracted.items
+                        .map((item, idx) => `\n--- EXTRACTED URL [${idx + 1}]: ${item.url} ---\nTitle: ${item.title || 'N/A'}\n${item.rawContent.slice(0, 4000)}`)
+                        .join('\n');
+                    enrichedText = `${rawText}\n\n${extractedBlocks}`;
+                }
+            }
+        } catch (extractErr) {
+            console.warn('[structureRawOffersAction] Tavily URL extraction skipped:', extractErr instanceof Error ? extractErr.message : extractErr);
+        }
+    }
+
     const systemPrompt = `You are a high-speed parsing agent specializing in data extraction.
 Your task is to take unformatted, copied text (from websites, emails, boards, etc.) and extract all distinct offers/listings into a structured JSON array.
 
@@ -151,7 +174,7 @@ RULES:
                     model: modelName,
                     messages: [
                         { role: 'system', content: systemPrompt },
-                        { role: 'user', content: `Extract and structure the following text:\n\n${rawText}` }
+                        { role: 'user', content: `Extract and structure the following text:\n\n${enrichedText}` }
                     ],
                     temperature: 0.1,
                     maxTokens: 4000,

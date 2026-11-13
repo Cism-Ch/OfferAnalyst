@@ -11,9 +11,10 @@
 
 import { cookies, headers } from 'next/headers';
 import { redis } from '@/lib/redis';
+import { getPlatformConfig } from '@/lib/platform-config';
 
 const GUEST_ID_COOKIE_NAME = 'offeranalyst.guest_id';
-const DAILY_QUOTA_LIMIT = 10;
+const DEFAULT_DAILY_QUOTA_LIMIT = 5;
 
 // Persistent in-memory quota store fallback across Next.js HMR reloads
 const globalQuota = globalThis as unknown as {
@@ -27,6 +28,9 @@ export interface DailyQuotaResult {
     remaining: number;
     resetAt: string;
     isByok: boolean;
+    bannerEnabled?: boolean;
+    bannerMessageFr?: string;
+    bannerMessageEn?: string;
 }
 
 /**
@@ -215,13 +219,19 @@ export async function getDailyQuotaAction(clientHasByok?: boolean): Promise<{
     remaining: number;
     resetAt: string;
     isByok: boolean;
+    bannerEnabled?: boolean;
+    bannerMessageFr?: string;
+    bannerMessageEn?: string;
 }> {
     const isByok = clientHasByok || (await hasActiveByokKey());
-    const { identifier } = await resolveClientQuotaIdentifier();
+    const [{ identifier }, platformCfg] = await Promise.all([
+        resolveClientQuotaIdentifier(),
+        getPlatformConfig(),
+    ]);
     const { dateUtc, resetAt } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
     const used = await getStoredQuotaUsage(key);
-    const total = DAILY_QUOTA_LIMIT;
+    const total = platformCfg.freeTierDailyQuota || DEFAULT_DAILY_QUOTA_LIMIT;
     const remaining = isByok ? 999999 : Math.max(0, total - used);
 
     const payload: DailyQuotaResult = {
@@ -229,7 +239,10 @@ export async function getDailyQuotaAction(clientHasByok?: boolean): Promise<{
         total,
         remaining,
         resetAt,
-        isByok
+        isByok,
+        bannerEnabled: platformCfg.quotaBannerEnabled,
+        bannerMessageFr: platformCfg.quotaBannerMessageFr,
+        bannerMessageEn: platformCfg.quotaBannerMessageEn,
     };
 
     return {
@@ -251,11 +264,14 @@ export async function checkDailyQuota(hasByokOverride?: boolean): Promise<{
     isByok: boolean;
 }> {
     const isByok = hasByokOverride !== undefined ? hasByokOverride : await hasActiveByokKey();
-    const { identifier } = await resolveClientQuotaIdentifier();
+    const [{ identifier }, platformCfg] = await Promise.all([
+        resolveClientQuotaIdentifier(),
+        getPlatformConfig(),
+    ]);
     const { dateUtc, resetAt } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
     const used = await getStoredQuotaUsage(key);
-    const total = DAILY_QUOTA_LIMIT;
+    const total = platformCfg.freeTierDailyQuota || DEFAULT_DAILY_QUOTA_LIMIT;
 
     if (isByok) {
         return {
@@ -287,14 +303,18 @@ export async function incrementDailyQuota(hasByokOverride?: boolean): Promise<{
     remaining: number;
 }> {
     const isByok = hasByokOverride !== undefined ? hasByokOverride : await hasActiveByokKey();
-    const { identifier } = await resolveClientQuotaIdentifier();
+    const [{ identifier }, platformCfg] = await Promise.all([
+        resolveClientQuotaIdentifier(),
+        getPlatformConfig(),
+    ]);
     const { dateUtc, ttlSeconds } = getUtcDayInfo();
     const key = `quota:daily:${dateUtc}:${identifier}`;
     const next = await incrementStoredQuotaUsage(key, ttlSeconds);
+    const total = platformCfg.freeTierDailyQuota || DEFAULT_DAILY_QUOTA_LIMIT;
 
     return {
         used: next,
-        remaining: isByok ? 999999 : Math.max(0, DAILY_QUOTA_LIMIT - next)
+        remaining: isByok ? 999999 : Math.max(0, total - next)
     };
 }
 
