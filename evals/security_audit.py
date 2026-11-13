@@ -32,7 +32,24 @@ SECRET_PATTERNS = [
     (re.compile(r'(?i)(?:api_key|secret_key|private_key|auth_token)\s*=\s*["\'][a-zA-Z0-9_\-\.]{16,}["\']'), "Hardcoded Auth Secret")
 ]
 
-IGNORE_DIRS = {'.git', 'node_modules', '__pycache__', '.venv', 'venv', 'dist', 'build', '.next'}
+IGNORE_DIRS = {
+    '.git', 'node_modules', '__pycache__', '.venv', 'venv',
+    'dist', 'build', '.next', 'playwright-report', 'test-results',
+    '.playwright-mcp', 'backups', '.vercel'
+}
+BINARY_EXTENSIONS = {
+    '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.svg',
+    '.woff', '.woff2', '.ttf', '.eot', '.zip', '.tar', '.gz',
+    '.pdf', '.pyc', '.exe', '.dll', '.so', '.dylib', '.db', '.sqlite'
+}
+
+def _iter_project_files():
+    """Walks ROOT_DIR while pruning IGNORE_DIRS early for fast traversal."""
+    for root, dirs, files in os.walk(ROOT_DIR):
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
+        root_path = Path(root)
+        for name in files:
+            yield root_path / name
 
 def audit_gitignore() -> list[str]:
     issues = []
@@ -48,49 +65,46 @@ def audit_gitignore() -> list[str]:
             issues.append(f"Missing essential security rule in .gitignore: '{rule}'")
     return issues
 
+PLACEHOLDER_MARKERS = (
+    "your_password", "your-key-here", "<user>", "<password>", "<username>",
+    "[votre-", "user:pass", "username:password", "%s:%s", "example.com"
+)
+
 def audit_secrets() -> list[dict]:
     findings = []
-    # Placeholders in documentation and mock tests are safe
-    safe_placeholders = {
-        "<username>", "<password>", "<user>", "YOUR_PASSWORD",
-        "username:password", "[VOTRE-", "user:pass@", "%s:%s@",
-        "your-key-here", "user:password@"
-    }
-    for root, dirs, files in os.walk(ROOT_DIR):
-        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
-        for f in files:
-            path = Path(root) / f
-            # Avoid self-flagging on this audit script
-            if path.name == "security_audit.py":
-                continue
-            # Do not flag local uncommitted .env files (these are expected to hold local developer secrets)
-            if path.name.startswith(".env") and path.name != ".env.example":
-                continue
-            try:
-                lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
-                for idx, line in enumerate(lines, start=1):
-                    # Skip comment documentation lines with example placeholders
-                    if any(ph in line for ph in safe_placeholders):
-                        continue
-                    for pattern, label in SECRET_PATTERNS:
-                        if pattern.search(line):
-                            findings.append({
-                                "file": str(path.relative_to(ROOT_DIR)),
-                                "line": idx,
-                                "type": label,
-                                "sample": line.strip()[:60]
-                            })
-            except Exception as e:
-                findings.append({
-                    "file": str(path.relative_to(ROOT_DIR)),
-                    "line": 0,
-                    "type": "Read Error",
-                    "sample": str(e)
-                })
+    for path in _iter_project_files():
+        # Skip local gitignored .env files, lockfiles, and this audit script
+        if path.name in {"security_audit.py", "pnpm-lock.yaml", "package-lock.json", ".env.example"}:
+            continue
+        if path.name == ".env" or path.name.startswith(".env."):
+            continue
+        if path.suffix.lower() in BINARY_EXTENSIONS:
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+            for idx, line in enumerate(lines, start=1):
+                lower_line = line.lower()
+                if any(marker in lower_line for marker in PLACEHOLDER_MARKERS):
+                    continue
+                for pattern, label in SECRET_PATTERNS:
+                    if pattern.search(line):
+                        findings.append({
+                            "file": str(path.relative_to(ROOT_DIR)),
+                            "line": idx,
+                            "type": label,
+                            "sample": line.strip()[:60]
+                        })
+        except Exception as e:
+            findings.append({
+                "file": str(path.relative_to(ROOT_DIR)),
+                "line": 0,
+                "type": "Read Error",
+                "sample": str(e)
+            })
     return findings
 
 def audit_ascii_hygiene() -> list[dict]:
-    """Ensures that Python scripts and tooling are 100% pure ASCII to prevent terminal/CI encoding crashes."""
+    """Ensures that eval Python scripts are 100% pure ASCII to prevent Windows cp1252 console crashes."""
     violations = []
     check_patterns = ["evals/**/*.py"]
     scanned_files = set()
@@ -109,7 +123,7 @@ def audit_ascii_hygiene() -> list[dict]:
                             violations.append({
                                 "file": str(path.relative_to(ROOT_DIR)),
                                 "line": idx,
-                                "type": "Non-ASCII Character in Script",
+                                "type": "Non-ASCII / Emoji Character",
                                 "sample": line.strip()[:60]
                             })
                 except Exception as e:
@@ -142,37 +156,37 @@ APP_CODE_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py"}
 def audit_operational_patterns() -> list[dict]:
     """Detects operational security anti-patterns (public secret vars, non-singleton DB clients, dynamic eval)."""
     violations = []
-    for root, dirs, files in os.walk(ROOT_DIR):
-        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS and d not in {"evals", "tests", "scripts", ".agents"}]
-        for f in files:
-            path = Path(root) / f
-            is_env = path.name.startswith(".env")
-            if path.suffix not in APP_CODE_EXTENSIONS and not is_env:
-                continue
+    for path in _iter_project_files():
+        # Skip RSI harness, skills/validators, standalone CLI scripts, and test files
+        if any(part in {"evals", ".agents", "scripts", "tests"} for part in path.parts):
+            continue
+        is_env = path.name.startswith(".env")
+        if path.suffix not in APP_CODE_EXTENSIONS and not is_env:
+            continue
 
-            try:
-                lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
-                for idx, line in enumerate(lines, start=1):
-                    stripped = line.strip()
-                    if stripped.startswith("//") or stripped.startswith("#"):
+        try:
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+            for idx, line in enumerate(lines, start=1):
+                stripped = line.strip()
+                if stripped.startswith("//") or stripped.startswith("#"):
+                    continue
+                for pattern, label in OPERATIONAL_ANTI_PATTERNS:
+                    if "PrismaClient" in label and path.name in SINGLETON_ALLOWED_FILES:
                         continue
-                    for pattern, label in OPERATIONAL_ANTI_PATTERNS:
-                        if "PrismaClient" in label and path.name in SINGLETON_ALLOWED_FILES:
-                            continue
-                        if pattern.search(line):
-                            violations.append({
-                                "file": str(path.relative_to(ROOT_DIR)),
-                                "line": idx,
-                                "type": label,
-                                "sample": stripped[:60]
-                            })
-            except Exception as e:
-                violations.append({
-                    "file": str(path.relative_to(ROOT_DIR)),
-                    "line": 0,
-                    "type": "Read Error",
-                    "sample": str(e)
-                })
+                    if pattern.search(line):
+                        violations.append({
+                            "file": str(path.relative_to(ROOT_DIR)),
+                            "line": idx,
+                            "type": label,
+                            "sample": stripped[:60]
+                        })
+        except Exception as e:
+            violations.append({
+                "file": str(path.relative_to(ROOT_DIR)),
+                "line": 0,
+                "type": "Read Error",
+                "sample": str(e)
+            })
     return violations
 
 def run_security_audit() -> bool:

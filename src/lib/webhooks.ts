@@ -68,6 +68,18 @@ export function isValidWebhookUrl(urlStr: string): { valid: boolean; reason?: st
       if (o1 === 127 && !isDevelopment) return { valid: false, reason: 'Adresses de boucle locale (127.0.0.0/8) interdites' };
     }
 
+    // Check IPv6 loopback, link-local (fe80::), ULA (fc00::/7), and IPv4-mapped (::ffff:)
+    const cleanHost = hostname.replace(/^\[|\]$/g, '');
+    if (
+      cleanHost.startsWith('fe80:') ||
+      cleanHost.startsWith('fc') ||
+      cleanHost.startsWith('fd') ||
+      cleanHost.startsWith('::ffff:') ||
+      cleanHost === '::'
+    ) {
+      return { valid: false, reason: 'Adresses IPv6 privées ou mappées interdites (Anti-SSRF)' };
+    }
+
     return { valid: true };
   } catch {
     return { valid: false, reason: 'URL malformée' };

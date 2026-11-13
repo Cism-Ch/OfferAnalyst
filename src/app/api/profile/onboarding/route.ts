@@ -5,11 +5,18 @@ import { headers } from "next/headers";
 import { encryptAPIKey } from "@/lib/api-key-encryption";
 import { log } from "@/lib/logger";
 import { z } from "zod";
+import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 
 const OnboardingPayloadSchema = z.object({
-  useCase: z.string().optional(),
+  useCase: z.string().trim().max(100).optional(),
   hasOwnKeys: z.boolean().optional(),
-  apiKeys: z.record(z.string(), z.string()).optional(),
+  apiKeys: z
+    .record(
+      z.string().trim().min(1).max(32).regex(/^[a-z0-9_-]+$/i, "Invalid provider identifier"),
+      z.string().trim().max(512)
+    )
+    .refine((obj) => Object.keys(obj).length <= 10, "Maximum 10 API keys allowed")
+    .optional(),
   completedFirstSearch: z.boolean().optional(),
   onboardingComplete: z.boolean().optional(),
 });
@@ -19,6 +26,19 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIdentifier(request);
+    const rateLimitResult = rateLimit(`onboarding:${clientIp}`, {
+      max: 15,
+      windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait before trying again." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const validation = OnboardingPayloadSchema.safeParse(body);
 

@@ -53,9 +53,16 @@ export const auth = betterAuth({
     return process.env.BETTER_AUTH_SECRET || "development-secret-change-in-production";
   })(),
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  ],
+  trustedOrigins: Array.from(
+    new Set(
+      [
+        process.env.NEXT_PUBLIC_APP_URL,
+        process.env.BETTER_AUTH_URL,
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+        "http://localhost:3000",
+      ].filter((origin): origin is string => Boolean(origin))
+    )
+  ),
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -71,6 +78,12 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "offeranalyst",
+    useSecureCookies: process.env.NODE_ENV === "production",
+    defaultCookieAttributes: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
     database: {
       validateSchema: false,
       generateId: false,

@@ -47,19 +47,11 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
 
-    // If user does not exist or already verified, return generic message for security
-    if (!user) {
+    // Return identical generic response whether account is missing or already verified (prevents enumeration)
+    if (!user || user.emailVerified) {
       return NextResponse.json({
         success: true,
         message: "If an account exists with this email, a verification link has been sent.",
-      });
-    }
-
-    if (user.emailVerified) {
-      return NextResponse.json({
-        success: true,
-        message: "This email address is already verified.",
-        alreadyVerified: true,
       });
     }
 

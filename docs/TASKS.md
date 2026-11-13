@@ -3,9 +3,9 @@
 > **Source Unique de Vérité (SSOT)** pour le pilotage et le suivi de toutes les tâches techniques et fonctionnelles du projet **OfferAnalyst**.  
 > **Règle absolue pour tout Agent IA :** Ce document DOIT être consulté avant toute tâche et mis à jour immédiatement après chaque réalisation ou découverte de nouvelle sous-tâche. Plafond strict : **250 lignes**.
 
-**Dernière mise à jour :** 12 Novembre 2026  
+**Dernière mise à jour :** 13 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprints 1 à 53 Achevés & Validés — Score Déterministe 100/100 PASS (0 erreur TS, 0 ESLint warning, Security Audit PASSED)
+**Statut Global :** Sprint 54 Achevé (Audit & Renforcement Sécurité) — Prêt pour Sprint 55
 
 ---
 
@@ -13,18 +13,32 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SP 54)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SP 55)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ [ ] Prochain sprint     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 53 (RSI v3 │
-│     à définir           │  │ [ ] Chrome Store Publish│  │       Observabilité)    │
-│                         │  │ [ ] Export PDF / CSV    │  │     - Sprint 52 (Supab) │
+│ (Prêt pour prochain sp) │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 54 (Secur) │
+│                         │  │ [ ] Chrome Store Publish│  │     - Sprint 53 (RSI v3 │
+│                         │  │ [ ] Export PDF / CSV    │  │       Observabilité)    │
+│                         │  │                         │  │     - Sprint 52 (Supab) │
 │                         │  │                         │  │     - Sprints 1 à 51    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
 
 ---
 
-## Active Sprint 53: Initialisation & Déploiement du Protocole RSI v3 (Observabilité Cognitive, Scope Guard & SemVer)
+## ⚡ Sprint 54 Achevé : Audit de Sécurité & Renforcement Identité / Accès (Better-Auth, APIs, Headers & RLS)
+
+- [x] **`TASK-SEC-03` - Audit Complet de Sécurité & Renforcement Identité / Accès**
+  - **Priority:** CRITICAL
+  - **Target files:** `src/lib/auth.ts`, `src/lib/webhooks.ts`, `src/app/api/**`, `src/app/actions/**`, `next.config.*`, `evals/security_audit.py`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-SEC-03.01`: Auditer Better-Auth (`src/lib/auth.ts`), cookies (`HttpOnly`, `SameSite`, `Secure`), `trustedOrigins`, Open Redirects et synchronisation schéma PostgreSQL.
+    - [x] `TASK-SEC-03.02`: Auditer toutes les routes API (`/api/*`) et Server Actions (`actions/*`) : suppression de fuite d'énumération (`resend-verification`), ajout Rate Limiting (`verify-email`, `onboarding`), compatibilité CUID (`export/route.ts`).
+    - [x] `TASK-SEC-03.03`: Auditer les en-têtes HTTP (CSP, HSTS, X-Frame-Options), renforcement Anti-SSRF IPv6 (`webhooks.ts`) et audit des dépendances (`pnpm audit`).
+    - [x] `TASK-SEC-03.04`: Valider l'ensemble des correctifs avec le juge déterministe complet `python evals/run_fullstack_eval.py` (100/100 PASS).
+
+---
+
+## ⚡ Sprint 53 Achevée : Initialisation & Déploiement du Protocole RSI v3 (Observabilité Cognitive, Scope Guard & SemVer)
 
 - [x] **`TASK-RSI-04` - Initialisation du Protocole RSI v3, Observabilité Cognitive & Scope Guard**
   - **Priority:** HIGH

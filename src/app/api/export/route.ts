@@ -191,18 +191,13 @@ export async function GET(request: NextRequest) {
       currentUserId = null;
     }
 
-    const isObjectId = /^[0-9a-fA-F]{24}$/.test(token);
     const shared = await prisma.sharedAnalysis.findFirst({
-      where: isObjectId
-        ? {
-            OR: [
-              { shareToken: token },
-              ...(currentUserId ? [{ id: token, userId: currentUserId }] : []),
-            ],
-          }
-        : {
-            shareToken: token,
-          },
+      where: {
+        OR: [
+          { shareToken: token },
+          ...(currentUserId ? [{ id: token, userId: currentUserId }] : []),
+        ],
+      },
     });
 
     if (!shared) {

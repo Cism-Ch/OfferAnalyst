@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { log } from "@/lib/logger";
+import { rateLimit, getClientIdentifier } from "@/lib/rate-limiter";
 
 const VerifyEmailSchema = z.object({
   token: z.string().min(1, "Verification token is required"),
@@ -12,6 +13,19 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIdentifier(request);
+    const rateLimitResult = rateLimit(`verify-email:${clientIp}`, {
+      max: 10,
+      windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many verification attempts. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const validation = VerifyEmailSchema.safeParse(body);
 
