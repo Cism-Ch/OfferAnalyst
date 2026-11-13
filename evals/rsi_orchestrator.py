@@ -138,6 +138,7 @@ def run_evaluation(attempt: int, quick: bool = True) -> bool:
             "task_title": None,
             "sprint_id": sprint_id,
             "session_started_at": None,
+            "last_eval_at": datetime.now(timezone.utc).isoformat(),
             "target_files_queried": [],
             "injected_modules": [],
             "injected_rule_ids": [],
@@ -146,6 +147,14 @@ def run_evaluation(attempt: int, quick: bool = True) -> bool:
         print(f"[OK] [RSI Loop] Deterministic validation passed (Score: 100/100) on attempt {attempt}!")
         return True
     else:
+        try:
+            from memory_engine import load_active_session, save_active_session
+            sess = load_active_session()
+            sess["last_eval_at"] = datetime.now(timezone.utc).isoformat()
+            sess["last_failed_attempt"] = attempt
+            save_active_session(sess)
+        except Exception:
+            pass
         print(f"[WARN] [RSI Loop] Attempt {attempt} failed. Inspect evals/logs/trajectory_latest.json.")
         return False
 
@@ -610,7 +619,19 @@ def main():
     parser.add_argument("--strict-scope", action="store_true", help="Fail with exit code 1 on any scope drift or unregistered coding")
     parser.add_argument("--rollover", action="store_true", help="Archive completed [x] sprint blocks from docs/TASKS.md to docs/archive/tasks/")
     parser.add_argument("--dry-run", action="store_true", help="Preview --rollover without modifying files")
+    parser.add_argument("--sync-to", metavar="TARGET_DIR", help="Synchronize or update protocol engine into a target project workspace")
+    parser.add_argument("--init-target", metavar="TARGET_DIR", help="Initialize protocol structure and sync into a new target project")
     args = parser.parse_args()
+
+    if args.sync_to:
+        from version_manager import sync_protocol_to_target
+        sync_protocol_to_target(args.sync_to, init_mode=False)
+        sys.exit(0)
+
+    if args.init_target:
+        from version_manager import sync_protocol_to_target
+        sync_protocol_to_target(args.init_target, init_mode=True)
+        sys.exit(0)
 
     if args.pulse:
         run_session_pulse()

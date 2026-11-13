@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-11-13T01:53:58.674386+00:00",
+  "timestamp": "2026-11-13T08:39:12.406663+00:00",
   "mode": "FULL",
   "total_score": 100,
   "raw_score": 110,
   "max_score": 110,
-  "total_duration_ms": 191955,
+  "total_duration_ms": 247473,
   "status": "PASS",
   "checks": [
     {
@@ -12,7 +12,7 @@
       "passed": true,
       "score": 25,
       "max_score": 25,
-      "duration_ms": 41077,
+      "duration_ms": 55605,
       "error_log": ""
     },
     {
@@ -20,7 +20,7 @@
       "passed": true,
       "score": 25,
       "max_score": 25,
-      "duration_ms": 18470,
+      "duration_ms": 30234,
       "error_log": ""
     },
     {
@@ -28,7 +28,7 @@
       "passed": true,
       "score": 15,
       "max_score": 15,
-      "duration_ms": 5958,
+      "duration_ms": 10012,
       "error_log": ""
     },
     {
@@ -36,7 +36,7 @@
       "passed": true,
       "score": 10,
       "max_score": 10,
-      "duration_ms": 511,
+      "duration_ms": 548,
       "error_log": ""
     },
     {
@@ -44,7 +44,7 @@
       "passed": true,
       "score": 10,
       "max_score": 10,
-      "duration_ms": 6723,
+      "duration_ms": 11402,
       "error_log": ""
     },
     {
@@ -52,7 +52,7 @@
       "passed": true,
       "score": 25,
       "max_score": 25,
-      "duration_ms": 119216,
+      "duration_ms": 139672,
       "error_log": ""
     }
   ],

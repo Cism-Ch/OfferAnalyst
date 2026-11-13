@@ -589,5 +589,106 @@ def record_latest_eval(attempts: int = 1, agent_name: str = "antigravity-agent",
     )
 
 
+def verify_contract(target_dir: Optional[Path] = None) -> bool:
+    """Validates schema conformance of trajectory_latest.json and cognitive_state.json for cognitive-rsi-ops v2.2."""
+    base_dir = target_dir or ROOT_DIR
+    traj_path = base_dir / "evals" / "logs" / "trajectory_latest.json"
+    state_path = base_dir / ".agents" / "telemetry" / "cognitive_state.json"
+
+    print("=== [COGNITIVE-RSI-OPS CONTRACT VERIFICATION] ===")
+    print(f"Target Directory: {base_dir}")
+    print("-" * 50)
+
+    passed = True
+    errors = []
+
+    # 1. Trajectory Contract Verification
+    if not traj_path.exists():
+        errors.append(f"Missing trajectory log: {traj_path}")
+        passed = False
+    else:
+        try:
+            tdata = json.loads(traj_path.read_text(encoding="utf-8"))
+            required_traj_keys = ["timestamp", "mode", "total_score", "status", "checks"]
+            for k in required_traj_keys:
+                if k not in tdata:
+                    errors.append(f"trajectory_latest.json missing required key: '{k}'")
+                    passed = False
+            # Verify duration_ms tracking
+            checks = tdata.get("checks", [])
+            if not isinstance(checks, list):
+                errors.append("trajectory_latest.json 'checks' must be a list")
+                passed = False
+            else:
+                for c in checks:
+                    if "duration_ms" not in c or not isinstance(c["duration_ms"], (int, float)):
+                        errors.append(f"Check step '{c.get('step')}' missing valid 'duration_ms'")
+                        passed = False
+            print(f"[OK] Trajectory log conforms to v2.2 contract ({len(checks)} check steps).")
+        except Exception as e:
+            errors.append(f"trajectory_latest.json parse error: {e}")
+            passed = False
+
+    # 2. Cognitive State Contract Verification
+    if not state_path.exists():
+        errors.append(f"Missing cognitive state: {state_path}")
+        passed = False
+    else:
+        try:
+            sdata = json.loads(state_path.read_text(encoding="utf-8"))
+            for section in ["project_meta", "summary_kpis", "runs_history"]:
+                if section not in sdata:
+                    errors.append(f"cognitive_state.json missing section: '{section}'")
+                    passed = False
+
+            runs = sdata.get("runs_history", [])
+            if runs:
+                latest_run = runs[-1]
+                req_run_keys = ["run_id", "status", "eval_score", "telemetry_source", "metrics"]
+                for rk in req_run_keys:
+                    if rk not in latest_run:
+                        errors.append(f"Latest run missing key: '{rk}'")
+                        passed = False
+
+                metrics = latest_run.get("metrics", {})
+                for mk in ["prompt_tokens", "output_tokens", "useful_actions", "wasted_actions"]:
+                    if mk not in metrics:
+                        errors.append(f"Latest run metrics missing key: '{mk}'")
+                        passed = False
+
+                source = latest_run.get("telemetry_source")
+                if source not in ("LIVE_TRANSCRIPT", "ESTIMATED_FALLBACK", "MANUAL_CLI"):
+                    errors.append(f"Invalid telemetry_source: '{source}'")
+                    passed = False
+
+                print(f"[OK] Cognitive state conforms to v2.2 contract ({len(runs)} recorded runs).")
+                print(f"     Latest run: {latest_run.get('run_id')} ({latest_run.get('telemetry_source')}, Score: {latest_run.get('eval_score')}%)")
+            else:
+                print(f"[INFO] Cognitive state exists with 0 runs recorded yet.")
+        except Exception as e:
+            errors.append(f"cognitive_state.json parse error: {e}")
+            passed = False
+
+    print("-" * 50)
+    if passed:
+        print("[SUCCESS] All telemetry and trajectory files conform 100% to cognitive-rsi-ops contract.")
+        return True
+    else:
+        print(f"[FAIL] Contract verification failed ({len(errors)} error(s)):")
+        for err in errors:
+            print(f"  - {err}")
+        return False
+
+
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="RSI Telemetry Hook")
+    parser.add_argument("--verify-contract", action="store_true", help="Verify JSON contract conformities for cognitive-rsi-ops")
+    parser.add_argument("--target", default=".", help="Target project directory to verify")
+    args, unknown = parser.parse_known_args()
+
+    if args.verify_contract:
+        ok = verify_contract(Path(args.target).resolve())
+        sys.exit(0 if ok else 1)
+
     record_latest_eval()
