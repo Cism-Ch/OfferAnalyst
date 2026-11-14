@@ -5,8 +5,14 @@ import { Offer, AgentActionResult } from "@/types";
 import { AgentError, parseJSONFromText, retryWithBackoff, validateWithZod, toAgentActionError, extractOffersArray } from "./shared/agent-utils";
 import { z } from 'zod';
 import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
-import { searchWebOffers } from '@/lib/tavily';
+import { searchWebOffers, extractUrlsContent } from '@/lib/tavily';
 import { getCountryOption, normalizeCountryCode } from '@/lib/geo';
+import {
+    classifyOfferIntent,
+    detectQueryLanguage,
+    buildTavilyFetchQuery,
+    getIntentExtractionGuidance,
+} from '@/lib/search-intent';
 
 // Schéma Zod résilient pour valider une offre
 const OfferSchema = z.object({
@@ -137,18 +143,28 @@ export async function fetchOffersAction(
         };
     }
 
-    // Step 1: Real-time grounded web search via Tavily
+    // Step 1: Real-time grounded web search via Tavily (intent & single-language localized)
     const countryMeta = getCountryOption(normalizedCountry);
-    const geoHint = normalizedCountry === 'INTL' ? '' : ` ${countryMeta.labelEn} ${countryMeta.labelFr}`;
-    const searchQuery = `${domain} ${context}${geoHint}`.trim().slice(0, 380);
+    const intent = classifyOfferIntent(domain, context);
+    const queryLang = detectQueryLanguage(`${domain} ${context}`, countryMeta.tavilyLanguage);
+    const searchQuery = buildTavilyFetchQuery({
+        domain,
+        context,
+        countryCode: normalizedCountry,
+        intent,
+        queryLang,
+    });
+    const excludeSocialNoise = !/\b(linkedin|facebook|instagram|tiktok)\b/i.test(context);
 
     let tavilyResults;
     let tavilyMeta = { creditsUsed: 0, keySource: 'none' as string };
     try {
         const searchOut = await searchWebOffers(searchQuery, {
             country: normalizedCountry,
+            language: normalizedCountry === 'INTL' ? queryLang : queryLang,
             searchDepth: 'advanced',
             maxResults: 10,
+            excludeSocialNoise,
             clientTavilyKey,
             userId,
             actionName: 'fetch_offers_tavily',
@@ -198,19 +214,46 @@ export async function fetchOffersAction(
         };
     }
 
+    // Selective enrichment: if >= 50% of top 4 results have short snippets (<220 chars) without prices/numbers, extract up to 3 URLs
+    const topSlice = tavilyResults.slice(0, 4);
+    const thinResults = topSlice.filter(
+        (r) => r.content.trim().length < 220 && !/\d/.test(r.content)
+    );
+    if (thinResults.length >= Math.max(2, Math.ceil(topSlice.length / 2))) {
+        try {
+            const extracted = await extractUrlsContent(
+                thinResults.slice(0, 3).map((r) => r.url),
+                { clientTavilyKey, userId }
+            );
+            tavilyMeta.creditsUsed += extracted.creditsUsed;
+            const extractedMap = new Map(extracted.items.map((e) => [e.url, e.rawContent]));
+            tavilyResults = tavilyResults.map((r) => {
+                const raw = extractedMap.get(r.url);
+                if (!raw || raw.trim().length <= r.content.trim().length) return r;
+                return { ...r, content: raw.slice(0, 1800) };
+            });
+        } catch {
+            // Best-effort enrichment; keep original snippets if extraction fails
+        }
+    }
+
     // Step 2: Structure & deduplicate ONLY from verified Tavily web results (zero hallucinated URLs)
     const openrouter = new OpenRouter({
         apiKey: apiKeyResult.key,
     });
+
+    const intentGuidance = getIntentExtractionGuidance(intent);
 
     const systemInstruction = `
     You are a strict Web Data Extraction & Deduplication Agent.
 
     GOAL: Convert the verified Tavily live web search results below into structured, deduplicated Offer objects.
 
+    ${intentGuidance}
+
     CRITICAL GROUNDING RULES:
     1. NEVER invent, fabricate, or alter URLs. Every "url" in the output MUST be copied verbatim from the provided TAVILY_WEB_RESULTS.
-    2. Extract real details from the snippet/title: exact price/salary/rent if stated (otherwise "À vérifier sur l'annonce"), location (anchored to ${countryMeta.labelFr} if applicable), and a clear factual description.
+    2. Extract real details from the snippet/title: exact price/salary/rent/MOQ if stated (otherwise "À vérifier sur l'annonce"), location (anchored to ${countryMeta.labelFr} if applicable), and a clear factual description.
     3. Deduplicate identical listings pointing to the same offer.
     4. Ignore pure generic homepages/blog posts if better direct listings exist; otherwise synthesize the real offering accurately with its exact source URL.
     5. Return ONLY a valid JSON object matching the schema below.

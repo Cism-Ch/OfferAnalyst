@@ -19,7 +19,8 @@ import {
   XCircle, 
   Key, 
   Zap, 
-  ChevronRight
+  ChevronRight,
+  Globe2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ export function ProviderErrorPanel({
   const isRateLimit = error.code === 'RATE_LIMITED';
   const isOverloaded = error.code === 'MODEL_OVERLOADED';
   const isTimeout = error.code === 'TIMEOUT';
+  const isEmptyOffers = error.code === 'EMPTY_OFFERS';
 
   let title = "Anomalie lors de l'inférence IA";
   if (isKeyError) title = "Clé d'accès API requise ou invalide";
@@ -71,6 +73,7 @@ export function ProviderErrorPanel({
   else if (isRateLimit) title = "Cadence de requêtes dépassée (Rate Limit)";
   else if (isOverloaded) title = "Moteur IA temporairement surchargé";
   else if (isTimeout) title = "Délai d'attente réseau dépassé";
+  else if (isEmptyOffers) title = "Aucune offre trouvée pour cette zone";
 
   return (
     <Card className="rounded-2xl border-2 border-destructive/40 bg-destructive/5 shadow-xl overflow-hidden transition-all">
@@ -174,9 +177,21 @@ export function ProviderErrorPanel({
               </Button>
             )}
 
+            {/* If Empty Offers on a localized country -> 1-click Broaden to International */}
+            {isEmptyOffers && analysisContext.country !== 'INTL' && (
+              <Button
+                size="sm"
+                onClick={() => void analysisContext.broadenCountryAndRetry('INTL')}
+                className="gap-2 bg-primary text-primary-foreground shadow-sm"
+              >
+                <Globe2 className="h-4 w-4" />
+                Élargir à International (INTL) &amp; Relancer
+              </Button>
+            )}
+
             {/* General Retry Button */}
             <Button
-              variant={isKeyError || isCreditError ? "outline" : "default"}
+              variant={isKeyError || isCreditError || (isEmptyOffers && analysisContext.country !== 'INTL') ? "outline" : "default"}
               size="sm"
               onClick={() => onRetry()}
               className="gap-2"

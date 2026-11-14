@@ -77,7 +77,20 @@ export default function SearchContextPage() {
                                 <span className="text-xs text-muted-foreground">{sc.presetsClick}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {sc.presets.map((p) => (
+                                {[
+                                    ...sc.presets,
+                                    {
+                                        label: isFr ? 'Commerce de Gros / Sourcing' : 'Wholesale / Bulk Sourcing',
+                                        icon: '📦',
+                                        domain: isFr ? 'Commerce de gros & Sourcing' : 'Wholesale & Bulk Sourcing',
+                                        criteria: isFr
+                                            ? 'Chaussures en gros, MOQ flexible, prix unitaire compétitif'
+                                            : 'Bulk sneakers/shoes, low MOQ, competitive unit price',
+                                        context: isFr
+                                            ? 'Fournisseur fiable avec livraison internationale ou locale'
+                                            : 'Reliable verified supplier with shipping options',
+                                    },
+                                ].map((p) => (
                                     <button
                                         key={p.label}
                                         type="button"

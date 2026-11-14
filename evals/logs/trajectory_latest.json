@@ -1,68 +1,68 @@
 {
-  "timestamp": "2026-11-13T15:35:58.235535+00:00",
-  "mode": "FULL",
-  "total_score": 100,
-  "raw_score": 110,
-  "max_score": 110,
-  "total_duration_ms": 108494,
-  "status": "PASS",
+  "timestamp": "2026-11-14T00:50:15.744689+00:00",
+  "mode": "QUICK",
+  "total_score": 86,
+  "raw_score": 100,
+  "max_score": 115,
+  "total_duration_ms": 59721,
+  "status": "FAIL",
   "checks": [
     {
       "step": "typecheck",
       "passed": true,
-      "score": 25,
-      "max_score": 25,
-      "duration_ms": 44612,
+      "score": 30,
+      "max_score": 30,
+      "duration_ms": 28175,
       "error_log": ""
     },
     {
       "step": "lint",
       "passed": true,
-      "score": 25,
-      "max_score": 25,
-      "duration_ms": 14379,
+      "score": 30,
+      "max_score": 30,
+      "duration_ms": 16358,
       "error_log": ""
     },
     {
       "step": "prisma_hygiene",
       "passed": true,
-      "score": 15,
-      "max_score": 15,
-      "duration_ms": 5570,
+      "score": 25,
+      "max_score": 25,
+      "duration_ms": 8228,
       "error_log": ""
     },
     {
       "step": "rsi_memory_hygiene",
       "passed": true,
-      "score": 10,
-      "max_score": 10,
-      "duration_ms": 209,
+      "score": 15,
+      "max_score": 15,
+      "duration_ms": 383,
       "error_log": ""
     },
     {
       "step": "security_audit",
-      "passed": true,
-      "score": 10,
-      "max_score": 10,
-      "duration_ms": 4219,
-      "error_log": ""
-    },
-    {
-      "step": "prod_build",
-      "passed": true,
-      "score": 25,
-      "max_score": 25,
-      "duration_ms": 39505,
-      "error_log": ""
+      "passed": false,
+      "score": 0,
+      "max_score": 15,
+      "duration_ms": 6576,
+      "error_log": "- [Database URI with hardcoded password] .agents/skills/tigris-backup-export/SKILL.md:268 -> ?? sprintf('postgresql://%s:%s@%s:%s/%s',\n  - [Database URI with hardcoded password] docs/DEPLOYMENT.md:73 -> | `DATABASE_URL` | `mongodb+srv://user:pass@...` | **Product\n  - [Database URI with hardcoded password] docs/MONGODB_INTEGRATION.md:21 -> DATABASE_URL=\"mongodb+srv://username:password@cluster.mongod\n  - [Database URI with hardcoded password] docs/MONGODB_SETUP.md:55 -> mongodb+srv://<username>:<password>@cluster.mongodb.net/?ret\n  - [Database URI with hardcoded password] docs/MONGODB_SETUP.md:67 -> DATABASE_URL=\"mongodb+srv://offeranalyst:YOUR_PASSWORD@clust\n  - [Hardcoded Auth Secret] docs/MONGODB_SETUP.md:75 -> OPENROUTER_API_KEY=\"sk-or-v1-your-key-here\"\n  [OK] Operational Pattern Guard: 0 runtime anti-patterns found.\n  [OK] Pure ASCII & Emoji Hygiene: 0 non-ASCII or emoji characters found.\n  [INFO] Local .env files present: ['.env', '.env.local'] (must stay ignored by git)\n[FAIL] SECURITY & HYGIENE AUDIT: FAILED"
     }
   ],
-  "failed_steps": [],
+  "failed_steps": [
+    {
+      "step": "security_audit",
+      "passed": false,
+      "score": 0,
+      "max_score": 15,
+      "duration_ms": 6576,
+      "error_log": "- [Database URI with hardcoded password] .agents/skills/tigris-backup-export/SKILL.md:268 -> ?? sprintf('postgresql://%s:%s@%s:%s/%s',\n  - [Database URI with hardcoded password] docs/DEPLOYMENT.md:73 -> | `DATABASE_URL` | `mongodb+srv://user:pass@...` | **Product\n  - [Database URI with hardcoded password] docs/MONGODB_INTEGRATION.md:21 -> DATABASE_URL=\"mongodb+srv://username:password@cluster.mongod\n  - [Database URI with hardcoded password] docs/MONGODB_SETUP.md:55 -> mongodb+srv://<username>:<password>@cluster.mongodb.net/?ret\n  - [Database URI with hardcoded password] docs/MONGODB_SETUP.md:67 -> DATABASE_URL=\"mongodb+srv://offeranalyst:YOUR_PASSWORD@clust\n  - [Hardcoded Auth Secret] docs/MONGODB_SETUP.md:75 -> OPENROUTER_API_KEY=\"sk-or-v1-your-key-here\"\n  [OK] Operational Pattern Guard: 0 runtime anti-patterns found.\n  [OK] Pure ASCII & Emoji Hygiene: 0 non-ASCII or emoji characters found.\n  [INFO] Local .env files present: ['.env', '.env.local'] (must stay ignored by git)\n[FAIL] SECURITY & HYGIENE AUDIT: FAILED"
+    }
+  ],
   "summary": {
     "typecheck": "PASSED",
     "lint": "PASSED",
     "prisma_hygiene": "PASSED",
     "rsi_memory_hygiene": "PASSED",
-    "security_audit": "PASSED",
-    "prod_build": "PASSED"
+    "security_audit": "FAILED"
   }
 }

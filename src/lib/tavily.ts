@@ -19,6 +19,14 @@ import {
 } from '@/lib/platform-config';
 import { getCountryOption } from '@/lib/geo';
 import { isValidWebhookUrl } from '@/lib/webhooks';
+import { getCache, setCache, generateCacheKey } from '@/lib/cache';
+
+const SOCIAL_NOISE_DOMAINS = [
+  'pinterest.com',
+  'pinterest.fr',
+  'tiktok.com',
+  'instagram.com',
+];
 
 export const TAVILY_FREE_CREDITS_LIMIT = 1000;
 const TAVILY_SATURATION_THRESHOLD = 980;
@@ -193,8 +201,11 @@ export async function searchWebOffers(
   query: string,
   options: {
     country?: string;
+    language?: 'fr' | 'en' | 'auto';
     searchDepth?: 'basic' | 'advanced';
     maxResults?: number;
+    excludeSocialNoise?: boolean;
+    bypassCache?: boolean;
     clientTavilyKey?: string;
     userId?: string;
     actionName?: string;
@@ -209,18 +220,83 @@ export async function searchWebOffers(
   const depth = options.searchDepth ?? 'advanced';
   const maxResults = Math.min(15, Math.max(3, options.maxResults ?? 8));
   const countryOpt = getCountryOption(options.country);
+  const excludeSocialNoise = Boolean(options.excludeSocialNoise);
+  const effectiveLanguage =
+    options.language === 'fr' || options.language === 'en'
+      ? options.language
+      : options.language === 'auto' || countryOpt.code === 'INTL'
+        ? undefined
+        : countryOpt.tavilyLanguage;
 
-  const runSearch = async (apiKey: string) => {
+  const cacheKey = generateCacheKey(
+    'tavily_search_v2',
+    depth,
+    countryOpt.code,
+    effectiveLanguage || 'auto',
+    excludeSocialNoise ? 'no_social' : 'all',
+    query.trim()
+  );
+
+  if (!options.bypassCache) {
+    const cachedResults = await getCache<TavilyWebResult[]>(cacheKey).catch(() => null);
+    if (cachedResults && Array.isArray(cachedResults) && cachedResults.length > 0) {
+      return {
+        results: cachedResults,
+        creditsUsed: 0,
+        keySource: cred.source,
+        responseTimeMs: Date.now() - startedAt,
+      };
+    }
+  }
+
+  const buildLocalizedQuery = (forceAppendCountry: boolean): string => {
+    if (countryOpt.code === 'INTL') return query;
+    const needsHint = forceAppendCountry || !countryOpt.tavilyCountry;
+    if (!needsHint) return query;
+    const lower = query.toLowerCase();
+    if (
+      lower.includes(countryOpt.labelFr.toLowerCase()) ||
+      lower.includes(countryOpt.labelEn.toLowerCase())
+    ) {
+      return query;
+    }
+    const localizedCountry =
+      effectiveLanguage === 'en' ? countryOpt.labelEn : countryOpt.labelFr;
+    return `${query} ${localizedCountry}`;
+  };
+
+  const runSearch = async (apiKey: string, allowCountryParam = true) => {
     const client = tavily({ apiKey });
-    return client.search(query, {
+    const useCountryParam = allowCountryParam && Boolean(countryOpt.tavilyCountry);
+    const effectiveQuery = buildLocalizedQuery(!useCountryParam);
+    const baseParams = {
       searchDepth: depth,
+      topic: 'general' as const,
       maxResults,
-      includeAnswer: false,
-      includeRawContent: false,
+      includeAnswer: false as const,
+      includeRawContent: false as const,
       includeUsage: true,
       timeout: 20,
-      ...(countryOpt.tavilyCountry ? { country: countryOpt.tavilyCountry } : {}),
-    });
+      ...(depth === 'advanced' ? { chunksPerSource: 3 } : {}),
+      ...(excludeSocialNoise ? { excludeDomains: SOCIAL_NOISE_DOMAINS } : {}),
+      ...(effectiveLanguage ? { language: effectiveLanguage } : {}),
+    };
+
+    try {
+      return await client.search(effectiveQuery, {
+        ...baseParams,
+        ...(useCountryParam && countryOpt.tavilyCountry
+          ? { country: countryOpt.tavilyCountry }
+          : {}),
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+      // Defensive fallback if Tavily rejects an unsupported `country` enum value
+      if (useCountryParam && msg.includes('country')) {
+        return client.search(buildLocalizedQuery(true), baseParams);
+      }
+      throw err;
+    }
   };
 
   let activeSource = cred.source;
@@ -278,6 +354,10 @@ export async function searchWebOffers(
     score: typeof r.score === 'number' ? r.score : 0.5,
     publishedDate: r.publishedDate,
   }));
+
+  if (results.length > 0 && !options.bypassCache) {
+    await setCache(cacheKey, results, 1800).catch(() => {});
+  }
 
   return {
     results,

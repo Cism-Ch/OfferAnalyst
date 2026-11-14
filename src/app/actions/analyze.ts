@@ -9,6 +9,12 @@ import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 import { evaluateDdosProtection } from '@/lib/ddos-defense';
 import { searchWebOffers, hasTavilyAvailability } from '@/lib/tavily';
 import { getCountryOption, normalizeCountryCode } from '@/lib/geo';
+import {
+    classifyOfferIntent,
+    detectQueryLanguage,
+    buildTavilyBenchmarkQuery,
+    getIntentScoringGuidance,
+} from '@/lib/search-intent';
 
 const ScoredOfferSchema = z.object({
     id: z.string(),
@@ -146,15 +152,27 @@ export async function analyzeOffersAction(
         console.log(`[analyzeOffersAction] Using ${apiKeyResult.source} API key (country: ${targetCountry}, language: ${language})`);
     }
 
-    // Real-time Market Benchmark via Tavily (localized to user's target country)
+    // Real-time Market Benchmark via Tavily (localized to user's target country & business intent)
+    const intent = classifyOfferIntent(profile.domain, profile.explicitCriteria);
+    const queryLang = detectQueryLanguage(
+        `${profile.domain} ${profile.explicitCriteria}`,
+        countryMeta.tavilyLanguage
+    );
     let benchmarkSources: { title: string; uri: string }[] = [];
     let marketBenchmarkContext = 'No external web benchmark available.';
     try {
         const canUseTavily = await hasTavilyAvailability(clientTavilyKey);
         if (canUseTavily) {
-            const benchmarkQuery = `${profile.domain} ${profile.explicitCriteria} ${targetCountry === 'INTL' ? 'global market benchmark price salary trend' : `${countryMeta.labelEn} prix salaire tendance marché`}`.trim().slice(0, 320);
+            const benchmarkQuery = buildTavilyBenchmarkQuery({
+                domain: profile.domain,
+                criteria: profile.explicitCriteria,
+                countryCode: targetCountry,
+                intent,
+                queryLang,
+            });
             const benchRes = await searchWebOffers(benchmarkQuery, {
                 country: targetCountry,
+                language: queryLang,
                 searchDepth: 'basic',
                 maxResults: 5,
                 clientTavilyKey,
@@ -191,11 +209,15 @@ export async function analyzeOffersAction(
             : offer.description
     }));
 
+    const intentScoringGuidance = getIntentScoringGuidance(intent);
+
     const systemInstruction = `
     You are an expert Market Analyst AI specializing in grounded evaluation and risk detection.
     
     TASK: Rank the provided offers and return the top ${limit} based on the user profile, target country (${countryMeta.labelFr} / ${targetCountry}), and real-time web market benchmark.
     
+    ${intentScoringGuidance}
+
     PROCESS:
     1. Analyze every offer rigorously against the User Profile explicit criteria and implicit context.
     2. Cross-reference prices, compensation, location, and terms with the LIVE_MARKET_BENCHMARK below (adapted to ${countryMeta.labelFr}).

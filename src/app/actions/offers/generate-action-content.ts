@@ -129,6 +129,11 @@ export async function generateOfferActionContentAction(
         natureGuidance = isNegotiation
             ? 'Adapt to B2B/freelance contracting: justify target TJM/forfait via ROI, scope delimitation, payment terms, or volume commitment.'
             : 'Draft a commercial proposal / pitch tailored to the client brief: problem understanding, concrete methodology, relevant deliverables, and call-to-action for a discovery call.';
+    } else if (/(en\s+gros|grossiste|fournisseur|marchandise|moq|wholesale|bulk|supplier|stock|destockage|lot\b)/i.test(natureSignal)) {
+        offerNature = 'Commerce de Gros / Sourcing Fournisseur B2B';
+        natureGuidance = isNegotiation
+            ? 'Adapt specifically to wholesale/bulk sourcing: negotiate unit price tiers by volume, Minimum Order Quantity (MOQ), sample testing before bulk order, payment security (escrow/LC/30-70 split), and shipping/incoterm fees.'
+            : 'Draft a professional B2B buyer proforma request & supplier qualification email asking for MOQ, tiered unit pricing (EXW/FOB/CIF), product catalog/specs, sample availability, and delivery lead times.';
     } else if (/(produit|product|e-commerce|achat|vendeur|gpu|macbook|iphone|voiture|équipement|saas|abonnement|pricing)/i.test(natureSignal)) {
         offerNature = 'Achat Produit / Équipement / SaaS';
         natureGuidance = isNegotiation

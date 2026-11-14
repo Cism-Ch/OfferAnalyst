@@ -212,6 +212,39 @@ def sync_protocol_to_target(target_path_str: str, init_mode: bool = False) -> No
     else:
         print(f"[Preserve] Kept existing target backlog: docs/TASKS.md (SSOT intact)")
 
+    # 5. Automatically register standard RSI scripts in target package.json if present
+    target_pkg = target_dir / "package.json"
+    if target_pkg.exists():
+        try:
+            with open(target_pkg, "r", encoding="utf-8") as f:
+                pkg_data = json.load(f)
+            scripts = pkg_data.setdefault("scripts", {})
+            standard_rsi_scripts = {
+                "rsi:pulse": "python evals/rsi_orchestrator.py --pulse",
+                "rsi:eval": "python evals/run_fullstack_eval.py --quick",
+                "rsi:eval:full": "python evals/run_fullstack_eval.py",
+                "rsi:scope": "python evals/rsi_orchestrator.py --scope",
+                "rsi:guardrail": "python evals/rsi_orchestrator.py --guardrail",
+                "rsi:map": "python evals/stack_inspector.py --map",
+                "rsi:memory": "python evals/memory_engine.py --audit",
+                "rsi:security": "python evals/security_audit.py",
+                "rsi:verify": "python evals/telemetry_hook.py --verify-contract",
+            }
+            added_scripts = []
+            for sc_name, sc_cmd in standard_rsi_scripts.items():
+                if sc_name not in scripts:
+                    scripts[sc_name] = sc_cmd
+                    added_scripts.append(sc_name)
+            if added_scripts:
+                with open(target_pkg, "w", encoding="utf-8") as f:
+                    json.dump(pkg_data, f, indent=2, ensure_ascii=False)
+                    f.write("\n")
+                print(f"[OK] Injected {len(added_scripts)} standard RSI script(s) into package.json: {', '.join(added_scripts)}")
+            else:
+                print(f"[OK] Standard RSI scripts already present in package.json")
+        except Exception as e:
+            print(f"[WARN] Could not update target package.json: {e}")
+
     print("-" * 50)
     print(f"[SUCCESS] Agentic-RSI-Protocol engine synchronized successfully to:")
     print(f"          {target_dir}")

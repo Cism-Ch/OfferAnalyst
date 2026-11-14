@@ -11,24 +11,26 @@ export interface CountryOption {
   labelEn: string;
   flag: string;
   tavilyCountry?: string;
+  tavilyLanguage?: string;
   lat: number;
   lng: number;
 }
 
 export const SUPPORTED_COUNTRIES: CountryOption[] = [
   { code: 'INTL', labelFr: 'International (Global)', labelEn: 'International (Global)', flag: '🌍', lat: 20, lng: 0 },
-  { code: 'FR', labelFr: 'France', labelEn: 'France', flag: '🇫🇷', tavilyCountry: 'france', lat: 46.2, lng: 2.2 },
-  { code: 'CI', labelFr: "Côte d'Ivoire", labelEn: 'Ivory Coast', flag: '🇨🇮', tavilyCountry: 'ivory coast', lat: 7.5, lng: -5.5 },
-  { code: 'SN', labelFr: 'Sénégal', labelEn: 'Senegal', flag: '🇸🇳', tavilyCountry: 'senegal', lat: 14.5, lng: -14.4 },
-  { code: 'CM', labelFr: 'Cameroun', labelEn: 'Cameroon', flag: '🇨🇲', tavilyCountry: 'cameroon', lat: 7.3, lng: 12.3 },
-  { code: 'MA', labelFr: 'Maroc', labelEn: 'Morocco', flag: '🇲🇦', tavilyCountry: 'morocco', lat: 31.8, lng: -7.1 },
-  { code: 'TN', labelFr: 'Tunisie', labelEn: 'Tunisia', flag: '🇹🇳', tavilyCountry: 'tunisia', lat: 33.9, lng: 9.5 },
-  { code: 'DZ', labelFr: 'Algérie', labelEn: 'Algeria', flag: '🇩🇿', tavilyCountry: 'algeria', lat: 28.0, lng: 1.6 },
-  { code: 'BE', labelFr: 'Belgique', labelEn: 'Belgium', flag: '🇧🇪', tavilyCountry: 'belgium', lat: 50.5, lng: 4.5 },
-  { code: 'CH', labelFr: 'Suisse', labelEn: 'Switzerland', flag: '🇨🇭', tavilyCountry: 'switzerland', lat: 46.8, lng: 8.2 },
-  { code: 'CA', labelFr: 'Canada', labelEn: 'Canada', flag: '🇨🇦', tavilyCountry: 'canada', lat: 56.1, lng: -106.3 },
-  { code: 'US', labelFr: 'États-Unis', labelEn: 'United States', flag: '🇺🇸', tavilyCountry: 'united states', lat: 37.1, lng: -95.7 },
-  { code: 'GB', labelFr: 'Royaume-Uni', labelEn: 'United Kingdom', flag: '🇬🇧', tavilyCountry: 'united kingdom', lat: 55.4, lng: -3.4 },
+  { code: 'FR', labelFr: 'France', labelEn: 'France', flag: '🇫🇷', tavilyCountry: 'france', tavilyLanguage: 'fr', lat: 46.2, lng: 2.2 },
+  // Tavily's strict `country` enum omits Côte d'Ivoire; localize via query + French language hint instead
+  { code: 'CI', labelFr: "Côte d'Ivoire", labelEn: 'Ivory Coast', flag: '🇨🇮', tavilyLanguage: 'fr', lat: 7.5, lng: -5.5 },
+  { code: 'SN', labelFr: 'Sénégal', labelEn: 'Senegal', flag: '🇸🇳', tavilyCountry: 'senegal', tavilyLanguage: 'fr', lat: 14.5, lng: -14.4 },
+  { code: 'CM', labelFr: 'Cameroun', labelEn: 'Cameroon', flag: '🇨🇲', tavilyCountry: 'cameroon', tavilyLanguage: 'fr', lat: 7.3, lng: 12.3 },
+  { code: 'MA', labelFr: 'Maroc', labelEn: 'Morocco', flag: '🇲🇦', tavilyCountry: 'morocco', tavilyLanguage: 'fr', lat: 31.8, lng: -7.1 },
+  { code: 'TN', labelFr: 'Tunisie', labelEn: 'Tunisia', flag: '🇹🇳', tavilyCountry: 'tunisia', tavilyLanguage: 'fr', lat: 33.9, lng: 9.5 },
+  { code: 'DZ', labelFr: 'Algérie', labelEn: 'Algeria', flag: '🇩🇿', tavilyCountry: 'algeria', tavilyLanguage: 'fr', lat: 28.0, lng: 1.6 },
+  { code: 'BE', labelFr: 'Belgique', labelEn: 'Belgium', flag: '🇧🇪', tavilyCountry: 'belgium', tavilyLanguage: 'fr', lat: 50.5, lng: 4.5 },
+  { code: 'CH', labelFr: 'Suisse', labelEn: 'Switzerland', flag: '🇨🇭', tavilyCountry: 'switzerland', tavilyLanguage: 'fr', lat: 46.8, lng: 8.2 },
+  { code: 'CA', labelFr: 'Canada', labelEn: 'Canada', flag: '🇨🇦', tavilyCountry: 'canada', tavilyLanguage: 'en', lat: 56.1, lng: -106.3 },
+  { code: 'US', labelFr: 'États-Unis', labelEn: 'United States', flag: '🇺🇸', tavilyCountry: 'united states', tavilyLanguage: 'en', lat: 37.1, lng: -95.7 },
+  { code: 'GB', labelFr: 'Royaume-Uni', labelEn: 'United Kingdom', flag: '🇬🇧', tavilyCountry: 'united kingdom', tavilyLanguage: 'en', lat: 55.4, lng: -3.4 },
   { code: 'DE', labelFr: 'Allemagne', labelEn: 'Germany', flag: '🇩🇪', tavilyCountry: 'germany', lat: 51.2, lng: 10.4 },
   { code: 'ES', labelFr: 'Espagne', labelEn: 'Spain', flag: '🇪🇸', tavilyCountry: 'spain', lat: 40.5, lng: -3.7 },
   { code: 'IT', labelFr: 'Italie', labelEn: 'Italy', flag: '🇮🇹', tavilyCountry: 'italy', lat: 41.9, lng: 12.6 },

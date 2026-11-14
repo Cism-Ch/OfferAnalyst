@@ -10,6 +10,7 @@ Static Security Audit & Secret Leak Detector
 import sys
 import re
 import os
+import subprocess
 from pathlib import Path
 
 # Fix Windows console UTF-8 encoding
@@ -32,24 +33,7 @@ SECRET_PATTERNS = [
     (re.compile(r'(?i)(?:api_key|secret_key|private_key|auth_token)\s*=\s*["\'][a-zA-Z0-9_\-\.]{16,}["\']'), "Hardcoded Auth Secret")
 ]
 
-IGNORE_DIRS = {
-    '.git', 'node_modules', '__pycache__', '.venv', 'venv',
-    'dist', 'build', '.next', 'playwright-report', 'test-results',
-    '.playwright-mcp', 'backups', '.vercel'
-}
-BINARY_EXTENSIONS = {
-    '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.svg',
-    '.woff', '.woff2', '.ttf', '.eot', '.zip', '.tar', '.gz',
-    '.pdf', '.pyc', '.exe', '.dll', '.so', '.dylib', '.db', '.sqlite'
-}
-
-def _iter_project_files():
-    """Walks ROOT_DIR while pruning IGNORE_DIRS early for fast traversal."""
-    for root, dirs, files in os.walk(ROOT_DIR):
-        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
-        root_path = Path(root)
-        for name in files:
-            yield root_path / name
+IGNORE_DIRS = {'.git', 'node_modules', '__pycache__', '.venv', 'venv', 'dist', 'build', '.next', 'playwright-report', 'test-results', '.turbo', '.cache'}
 
 def audit_gitignore() -> list[str]:
     issues = []
@@ -65,46 +49,53 @@ def audit_gitignore() -> list[str]:
             issues.append(f"Missing essential security rule in .gitignore: '{rule}'")
     return issues
 
-PLACEHOLDER_MARKERS = (
-    "your_password", "your-key-here", "<user>", "<password>", "<username>",
-    "[votre-", "user:pass", "username:password", "%s:%s", "example.com"
-)
+def is_gitignored(rel_path_str: str) -> bool:
+    """Checks if a file is ignored by git using git check-ignore."""
+    try:
+        res = subprocess.run(
+            ["git", "check-ignore", "-q", rel_path_str],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            check=False
+        )
+        return res.returncode == 0
+    except Exception:
+        return False
 
 def audit_secrets() -> list[dict]:
     findings = []
-    for path in _iter_project_files():
-        # Skip local gitignored .env files, lockfiles, and this audit script
-        if path.name in {"security_audit.py", "pnpm-lock.yaml", "package-lock.json", ".env.example"}:
-            continue
-        if path.name == ".env" or path.name.startswith(".env."):
-            continue
-        if path.suffix.lower() in BINARY_EXTENSIONS:
-            continue
-        try:
-            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
-            for idx, line in enumerate(lines, start=1):
-                lower_line = line.lower()
-                if any(marker in lower_line for marker in PLACEHOLDER_MARKERS):
-                    continue
-                for pattern, label in SECRET_PATTERNS:
-                    if pattern.search(line):
-                        findings.append({
-                            "file": str(path.relative_to(ROOT_DIR)),
-                            "line": idx,
-                            "type": label,
-                            "sample": line.strip()[:60]
-                        })
-        except Exception as e:
-            findings.append({
-                "file": str(path.relative_to(ROOT_DIR)),
-                "line": 0,
-                "type": "Read Error",
-                "sample": str(e)
-            })
+    for root, dirs, files in os.walk(ROOT_DIR):
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS and not d.startswith('.git')]
+        for f in files:
+            if f == "security_audit.py":
+                continue
+            path = Path(root) / f
+            rel_str = str(path.relative_to(ROOT_DIR)).replace("\\", "/")
+            # Legitimate local environment files ignored by git are not leaks
+            if f.startswith(".env") and is_gitignored(rel_str):
+                continue
+            try:
+                lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+                for idx, line in enumerate(lines, start=1):
+                    for pattern, label in SECRET_PATTERNS:
+                        if pattern.search(line):
+                            findings.append({
+                                "file": rel_str,
+                                "line": idx,
+                                "type": label,
+                                "sample": line.strip()[:60]
+                            })
+            except Exception as e:
+                findings.append({
+                    "file": rel_str,
+                    "line": 0,
+                    "type": "Read Error",
+                    "sample": str(e)
+                })
     return findings
 
 def audit_ascii_hygiene() -> list[dict]:
-    """Ensures that eval Python scripts are 100% pure ASCII to prevent Windows cp1252 console crashes."""
+    """Ensures that executable Python scripts are 100% pure ASCII to prevent terminal/CI encoding crashes."""
     violations = []
     check_patterns = ["evals/**/*.py"]
     scanned_files = set()
@@ -121,14 +112,14 @@ def audit_ascii_hygiene() -> list[dict]:
                         non_ascii_chars = [ch for ch in line if ord(ch) > 127]
                         if non_ascii_chars:
                             violations.append({
-                                "file": str(path.relative_to(ROOT_DIR)),
+                                "file": str(path.relative_to(ROOT_DIR)).replace("\\", "/"),
                                 "line": idx,
-                                "type": "Non-ASCII / Emoji Character",
+                                "type": "Non-ASCII Character in Python Script",
                                 "sample": line.strip()[:60]
                             })
                 except Exception as e:
                     violations.append({
-                        "file": str(path.relative_to(ROOT_DIR)),
+                        "file": str(path.relative_to(ROOT_DIR)).replace("\\", "/"),
                         "line": 0,
                         "type": "Read Error",
                         "sample": str(e)
@@ -156,37 +147,45 @@ APP_CODE_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py"}
 def audit_operational_patterns() -> list[dict]:
     """Detects operational security anti-patterns (public secret vars, non-singleton DB clients, dynamic eval)."""
     violations = []
-    for path in _iter_project_files():
-        # Skip RSI harness, skills/validators, standalone CLI scripts, and test files
-        if any(part in {"evals", ".agents", "scripts", "tests"} for part in path.parts):
+    for root, dirs, files in os.walk(ROOT_DIR):
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS and not d.startswith('.git')]
+        root_path = Path(root)
+        if "evals" in root_path.parts:
             continue
-        is_env = path.name.startswith(".env")
-        if path.suffix not in APP_CODE_EXTENSIONS and not is_env:
-            continue
+        rel_root_parts = root_path.relative_to(ROOT_DIR).parts
+        is_src_dir = len(rel_root_parts) > 0 and rel_root_parts[0] == "src"
 
-        try:
-            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
-            for idx, line in enumerate(lines, start=1):
-                stripped = line.strip()
-                if stripped.startswith("//") or stripped.startswith("#"):
-                    continue
-                for pattern, label in OPERATIONAL_ANTI_PATTERNS:
-                    if "PrismaClient" in label and path.name in SINGLETON_ALLOWED_FILES:
+        for f in files:
+            path = root_path / f
+            is_env = f.startswith(".env")
+            if path.suffix not in APP_CODE_EXTENSIONS and not is_env:
+                continue
+
+            try:
+                lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+                for idx, line in enumerate(lines, start=1):
+                    stripped = line.strip()
+                    if stripped.startswith("//") or stripped.startswith("#"):
                         continue
-                    if pattern.search(line):
-                        violations.append({
-                            "file": str(path.relative_to(ROOT_DIR)),
-                            "line": idx,
-                            "type": label,
-                            "sample": stripped[:60]
-                        })
-        except Exception as e:
-            violations.append({
-                "file": str(path.relative_to(ROOT_DIR)),
-                "line": 0,
-                "type": "Read Error",
-                "sample": str(e)
-            })
+                    for pattern, label in OPERATIONAL_ANTI_PATTERNS:
+                        if "PrismaClient" in label:
+                            # Rule [R-DB-02] applies to application code in src/ to prevent serverless pool exhaustion
+                            if not is_src_dir or path.name in SINGLETON_ALLOWED_FILES:
+                                continue
+                        if pattern.search(line):
+                            violations.append({
+                                "file": str(path.relative_to(ROOT_DIR)).replace("\\", "/"),
+                                "line": idx,
+                                "type": label,
+                                "sample": stripped[:60]
+                            })
+            except Exception as e:
+                violations.append({
+                    "file": str(path.relative_to(ROOT_DIR)).replace("\\", "/"),
+                    "line": 0,
+                    "type": "Read Error",
+                    "sample": str(e)
+                })
     return violations
 
 def run_security_audit() -> bool:

@@ -5,7 +5,7 @@
 
 **Dernière mise à jour :** 13 Novembre 2026  
 **Responsable :** Équipe & Agents IA OfferAnalyst  
-**Statut Global :** Sprint 56 Achevé — Modernisation Dépendances, Abandon `bcryptjs`, Prisma 7 (Supabase) & TypeScript 6
+**Statut Global :** Sprint 58 En Cours — Cohérence Avancée API Tavily + OpenRouter (`TASK-AGT-02`)
 
 ---
 
@@ -13,16 +13,42 @@
 
 ```
 ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│ 🚀 EN COURS (SP 57)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
+│ 🚀 EN COURS (SP 58)     │  │   ⏳ BACKLOG FUTUR      │  │       ✅ ARCHIVES       │
 ├─────────────────────────┤  ├─────────────────────────┤  ├─────────────────────────┤
-│ (Prêt pour prochain     │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 56 (Maint) │
-│  sprint — aucune tâche  │  │ [ ] Chrome Store Publish│  │     - Sprint 55 (Agents)│
-│  active en cours)       │  │ [ ] Export PDF / CSV    │  │     - Sprint 54 (Secur) │
-│                         │  │                         │  │     - Sprint 53 (RSI v3 │
-│                         │  │                         │  │       Observabilité)    │
-│                         │  │                         │  │     - Sprints 1 à 52    │
+│ [-] TASK-AGT-02         │  │ [ ] TASK-E2E-01 (Playw) │  │     - Sprint 56 (Maint) │
+│     (Cohérence Tavily + │  │ [ ] Chrome Store Publish│  │     - Sprint 55 (Agents)│
+│      Intention Métier)  │  │ [ ] Export PDF / CSV    │  │     - Sprint 54 (Secur) │
+│ [-] TASK-UI-01          │  │                         │  │     - Sprint 53 (RSI v3 │
+│     (Carte @mapcn/map)  │  │                         │  │       Observabilité)    │
 └─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
 ```
+
+---
+
+## Active Sprint 58: Cohérence Avancée API Tavily + OpenRouter (Emploi, Gros, Immo, Freelance)
+
+- [-] **`TASK-AGT-02` - Moteur d'Intention Métier, Cache Tavily, Enrichissement URL & Rebond UX International** *(bloqué en clôture uniquement par `security_audit` sur `README.md:146-197` non-ASCII)*
+  - **Priority:** CRITICAL
+  - **Target files:** `src/lib/search-intent.ts`, `src/lib/geo.ts`, `src/lib/tavily.ts`, `src/app/actions/fetch.ts`, `src/app/actions/analyze.ts`, `src/app/actions/offers/generate-action-content.ts`, `src/app/search-context/page.tsx`, `src/contexts/AnalysisContext.tsx`, `src/components/offers/ProviderErrorPanel.tsx`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-AGT-02.01`: Créer `src/lib/search-intent.ts` (`classifyOfferIntent`, `detectQueryLanguage`, `buildTavilyFetchQuery`, `buildTavilyBenchmarkQuery`) et compléter `tavilyLanguage` dans `src/lib/geo.ts`.
+    - [x] `TASK-AGT-02.02`: Ajouter le cache Upstash Redis dans `searchWebOffers` (`src/lib/tavily.ts`), `chunksPerSource: 3`, `excludeDomains` optionnel, et langue pilotée par la requête.
+    - [x] `TASK-AGT-02.03`: Aligner `fetchOffersAction`, `analyzeOffersAction` et `generateOfferActionContentAction` sur l'intention détectée + enrichissement sélectif `extractUrlsContent` sur snippets courts.
+    - [x] `TASK-AGT-02.04`: Ajouter le preset **Commerce de Gros / Sourcing** (`src/app/search-context/page.tsx`) et le rebond 1-clic vers `🌍 International` sur `EMPTY_OFFERS` (`AnalysisContext.tsx` + `ProviderErrorPanel.tsx`).
+    - [x] `TASK-AGT-02.05`: Valider `tsc --noEmit`, `pnpm run lint`, `pnpm run build` et tests unitaires d'intention.
+
+---
+
+## Active Sprint 57: Carte du Monde Interactive `@mapcn/map` (MapLibre GL)
+
+- [-] **`TASK-UI-01` - Remplacement de la carte SVG manuelle par le composant shadcn `@mapcn/map` (MapLibre GL)**
+  - **Priority:** MEDIUM
+  - **Target files:** `package.json`, `pnpm-lock.yaml`, `next.config.ts`, `src/components/ui/map.tsx`, `src/components/admin/UserWorldMapCard.tsx`, `docs/TASKS.md`
+  - **Acceptance criteria:**
+    - [x] `TASK-UI-01.01`: Installer `@mapcn/map` via `pnpm dlx shadcn@latest add @mapcn/map` (`maplibre-gl` + `src/components/ui/map.tsx`).
+    - [x] `TASK-UI-01.02`: Adapter la CSP dans `next.config.ts` pour autoriser les Web Workers MapLibre GL (`worker-src 'self' blob: https://unpkg.com;`).
+    - [x] `TASK-UI-01.03`: Refondre `src/components/admin/UserWorldMapCard.tsx` avec `<Map>`, `<MapControls>`, `<MapMarker>`, `<MarkerContent>`, `<MarkerTooltip>` et `<MarkerPopup>`.
+    - [ ] `TASK-UI-01.04`: Valider `typecheck`, `lint`, `prod_build` via `python evals/run_fullstack_eval.py` (bloqué par `security_audit` sur `README.md` non-ASCII).
 
 ---
 

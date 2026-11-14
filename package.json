@@ -24,13 +24,20 @@
     "version:check": "python evals/version_manager.py --dry-run",
     "postinstall": "node scripts/silence-baseline.js",
     "cognitive:serve": "python ../cognitive-rsi-ops/cli.py serve",
-    "cognitive:status": "python ../cognitive-rsi-ops/cli.py status"
+    "cognitive:status": "python ../cognitive-rsi-ops/cli.py status",
+    "rsi:pulse": "python evals/rsi_orchestrator.py --pulse",
+    "rsi:eval": "python evals/run_fullstack_eval.py --quick",
+    "rsi:eval:full": "python evals/run_fullstack_eval.py",
+    "rsi:scope": "python evals/rsi_orchestrator.py --scope",
+    "rsi:map": "python evals/stack_inspector.py --map",
+    "rsi:security": "python evals/security_audit.py",
+    "rsi:verify": "python evals/telemetry_hook.py --verify-contract"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1167.0",
     "@aws-sdk/s3-request-presigner": "3.1167.0",
     "@better-auth/infra": "0.4.29",
-    "@openrouter/sdk": "1.5.95",
+    "@openrouter/sdk": "1.5.96",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "7.10.1",
     "@radix-ui/react-avatar": "^1.3.1",
@@ -57,6 +64,7 @@
     "dotenv": "18.0.10",
     "framer-motion": "14.13.0",
     "lucide-react": "1.72.0",
+    "maplibre-gl": "^6.18.0",
     "next": "16.4.6",
     "next-themes": "^0.4.6",
     "pg": "^8.23.1",
@@ -77,6 +85,7 @@
   "devDependencies": {
     "@playwright/test": "1.65.0",
     "@tailwindcss/postcss": "4.3.5",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "26.6.6",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

@@ -20,11 +20,11 @@ A modern B2B and Prosumer SaaS platform for AI-powered offer analysis, contextua
 
 ---
 
-## 📖 Overview
+## Overview
 
 **OFFERAN** is an enterprise-grade contextual recommendation platform designed to analyze, score, and rank offers against complex explicit constraints and subjective user preferences. It leverages multi-model AI reasoning (DeepSeek R1, GPT-4, Claude 3.5 Sonnet, NVIDIA Nemotron) coupled with real-time web citations, multi-tenant team collaboration, and server-side encryption.
 
-### ✨ Core Capabilities
+### Core Capabilities
 
 - **Multi-Axis Evaluation**: Real-time scoring across Match Relevance, Structural Quality, Market Salary/Living Standards, and Industry Trends.
 - **Evidence-Based Insights**: Transparent citations and verification links to eliminate AI hallucinations.
@@ -36,7 +36,7 @@ A modern B2B and Prosumer SaaS platform for AI-powered offer analysis, contextua
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -99,7 +99,7 @@ Open [http://localhost:3000](http://localhost:3000) to access the application.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Domain | Technology | Version | Purpose |
 |---|---|---|---|
@@ -114,45 +114,45 @@ Open [http://localhost:3000](http://localhost:3000) to access the application.
 
 ---
 
-## 📂 Architecture & Directory Layout
+## Architecture & Directory Layout
 
 ```
 OfferAnalyst/
-├── docs/                 # Documentation SSOT, Architecture ADRs & Archives
-│   ├── TASKS.md          # Central Task SSOT (< 250 lines ceiling)
-│   ├── FEATURES.md       # Exhaustive functional specification
-│   ├── QUICKSTART.md     # Express deployment guide
-│   └── DEPLOYMENT.md     # Production deployment instructions
-├── evals/                # Deterministic Evaluation Judges & Telemetry
-│   ├── run_fullstack_eval.py # 100-point deterministic judge (tsc, lint, hygiene)
-│   └── version_manager.py    # Automated semver management
-├── prisma/               # Database Schema
-│   └── schema.prisma     # MongoDB models (User, Session, Account, Workspace, etc.)
-├── scripts/              # Automation & Seeding CLI Tools
-│   └── seed-admin.mjs    # Idempotent admin account provisioning script
-├── src/
-│   ├── app/              # Next.js App Router (RSC by default)
-│   │   ├── actions/      # Type-safe Server Actions with Zod validation
-│   │   ├── api/auth/     # Better-Auth catch-all route handler
-│   │   ├── auth/         # Authentication views (Login, Signup, Verify)
-│   │   ├── dashboard/    # Workspace management & Analytics
-│   │   ├── data-source/  # Multi-source ingestion page
-│   │   └── landing/      # SaaS Vitrine Showcase
-│   ├── components/       # Colocated UI Components
-│   │   ├── brand/        # OFFERAN Monogram & Logo System
-│   │   ├── data-source/  # Ingestion tabs (Bookmarklet, Text, CSV, URL)
-│   │   ├── landing/      # SaaSPresentationView & Floating Dock
-│   │   ├── layout/       # ModernHeader, ModernSidebar, AppShell
-│   │   ├── offers/       # OfferCard, Action Modals (Pitch, Tailored App)
-│   │   └── ui/           # Radix Primitives & shadcn UI components
-│   ├── contexts/         # React Contexts (Language FR/EN, Analysis, Theme)
-│   └── lib/              # Centralized Singletons (Prisma, Auth, AI Models, Cache)
-└── package.json          # Dependencies & Scripts (100% pnpm)
+|-- docs/                 # Documentation SSOT, Architecture ADRs & Archives
+|   |-- TASKS.md          # Central Task SSOT (< 250 lines ceiling)
+|   |-- FEATURES.md       # Exhaustive functional specification
+|   |-- QUICKSTART.md     # Express deployment guide
+|   +-- DEPLOYMENT.md     # Production deployment instructions
+|-- evals/                # Deterministic Evaluation Judges & Telemetry
+|   |-- run_fullstack_eval.py # 100-point deterministic judge (tsc, lint, hygiene)
+|   +-- version_manager.py    # Automated semver management
+|-- prisma/               # Database Schema
+|   +-- schema.prisma     # MongoDB models (User, Session, Account, Workspace, etc.)
+|-- scripts/              # Automation & Seeding CLI Tools
+|   +-- seed-admin.mjs    # Idempotent admin account provisioning script
+|-- src/
+|   |-- app/              # Next.js App Router (RSC by default)
+|   |   |-- actions/      # Type-safe Server Actions with Zod validation
+|   |   |-- api/auth/     # Better-Auth catch-all route handler
+|   |   |-- auth/         # Authentication views (Login, Signup, Verify)
+|   |   |-- dashboard/    # Workspace management & Analytics
+|   |   |-- data-source/  # Multi-source ingestion page
+|   |   +-- landing/      # SaaS Vitrine Showcase
+|   |-- components/       # Colocated UI Components
+|   |   |-- brand/        # OFFERAN Monogram & Logo System
+|   |   |-- data-source/  # Ingestion tabs (Bookmarklet, Text, CSV, URL)
+|   |   |-- landing/      # SaaSPresentationView & Floating Dock
+|   |   |-- layout/       # ModernHeader, ModernSidebar, AppShell
+|   |   |-- offers/       # OfferCard, Action Modals (Pitch, Tailored App)
+|   |   +-- ui/           # Radix Primitives & shadcn UI components
+|   |-- contexts/         # React Contexts (Language FR/EN, Analysis, Theme)
+|   +-- lib/              # Centralized Singletons (Prisma, Auth, AI Models, Cache)
++-- package.json          # Dependencies & Scripts (100% pnpm)
 ```
 
 ---
 
-## 🧰 Available Scripts & Tooling
+## Available Scripts & Tooling
 
 All operations strictly utilize `pnpm`:
 
@@ -178,7 +178,7 @@ pnpm run start                  # Start production build server
 
 ---
 
-## 🚢 Production Deployment (Vercel + MongoDB Atlas)
+## Production Deployment (Vercel + MongoDB Atlas)
 
 1. **Database Setup**: Create an M0 or dedicated cluster on MongoDB Atlas and obtain your `DATABASE_URL`.
 2. **Environment Configuration**: Set all required variables in Vercel Project Settings:
@@ -194,7 +194,7 @@ For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
 
 ---
 
-## 🤝 Contributing & Engineering Rules
+## Contributing & Engineering Rules
 
 This repository enforces strict engineering rules:
 - **Task-Driven Development**: No code without formal registration in [`docs/TASKS.md`](docs/TASKS.md).

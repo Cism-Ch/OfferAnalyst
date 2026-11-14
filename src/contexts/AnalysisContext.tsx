@@ -68,6 +68,7 @@ interface AnalysisContextValue {
   startAnalysis: () => Promise<boolean>;
   retryAnalysis: () => Promise<boolean>;
   switchModelAndRetry: (newModelId: string) => Promise<boolean>;
+  broadenCountryAndRetry: (targetCountry?: string) => Promise<boolean>;
   cancelAnalysis: () => void;
   clearError: () => void;
 }
@@ -239,12 +240,14 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
 
   // Main orchestration function
   const executeAnalysis = useCallback(
-    async (targetModel: string): Promise<boolean> => {
+    async (targetModel: string, countryOverride?: string): Promise<boolean> => {
       // Strict anti-concurrency guard against double-clicks and race conditions
       if (isExecutingRef.current) {
         console.warn('[AnalysisContext] Analysis execution already in progress, dropping duplicate request');
         return false;
       }
+
+      const activeCountry = normalizeCountryCode(countryOverride ?? country);
 
       isExecutingRef.current = true;
       abortRef.current = false;
@@ -277,7 +280,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
             `${explicitCriteria} ${implicitContext}`,
             targetModel,
             clientKey,
-            country,
+            activeCountry,
             clientTavilyKey
           );
 
@@ -357,7 +360,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
           domain,
           explicitCriteria,
           implicitContext,
-          country
+          country: activeCountry
         };
 
         const clientKey = tempKeys.getKey('openrouter') || 
@@ -461,6 +464,15 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
     [executeAnalysis]
   );
 
+  const broadenCountryAndRetry = useCallback(
+    async (targetCountry = 'INTL'): Promise<boolean> => {
+      const normalized = normalizeCountryCode(targetCountry);
+      setCountry(normalized);
+      return executeAnalysis(model, normalized);
+    },
+    [executeAnalysis, model, setCountry]
+  );
+
   const loading = status === 'initializing' || status === 'fetching' || status === 'analyzing';
   const fetching = status === 'fetching';
 
@@ -495,6 +507,7 @@ export function AnalysisProvider({ children }: { children: React.ReactNode }) {
         startAnalysis,
         retryAnalysis,
         switchModelAndRetry,
+        broadenCountryAndRetry,
         cancelAnalysis,
         clearError
       }}
