@@ -67,3 +67,8 @@ next-env.d.ts
 
 # Cognitive-RSI-Ops temporary files
 .agent/telemetry/*.tmp
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
